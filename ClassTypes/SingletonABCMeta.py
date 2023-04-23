@@ -7,3 +7,6 @@ class SingletonABCMeta (ABCMeta):
         if cls not in cls._instances:
             cls._instances[cls] = super(SingletonABCMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+    def clear(cls):
+        cls._instances.clear()

@@ -1,21 +1,25 @@
 from abc import ABC, abstractmethod
 
 from ServiceProviders.IDictProvider import IDictProvider
-class IPathProvider(IDictProvider):
+
+class IKeyProvider(IDictProvider):
 
     @abstractmethod
-    def setModelName(self, model):
+    def get(self, key):
         pass
 
     @abstractmethod
-    def getModelName(self):
+    def set(self, context):
         pass
 
     @abstractmethod
-    def getPathWithModelName(self, key):
+    def add(self, context):
         pass
 
     @abstractmethod
-    def getAllPathsWithModelName(self):
+    def remove(self, context):
         pass
 
+    @abstractmethod
+    def getAll(self):
+        pass

@@ -4,16 +4,7 @@ import os
 import sys
 import traceback
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+from Helpers.BColors import BColors
 
 class TestRunner:
 
@@ -35,13 +26,13 @@ class TestRunner:
             result = self.run_test(file)
 
             if(result[1] == "success"):
-                print(bcolors.OKGREEN + f"Test {file} succeeded" + bcolors.ENDC)
+                print(BColors.OKGREEN + f"Test {file} succeeded" + BColors.ENDC)
             else:
-                print(bcolors.FAIL + f"Test {file} failed with error:\n{result[1]}" + bcolors.ENDC)
+                print(BColors.FAIL + f"Test {file} failed with error:\n{result[1]}" + BColors.ENDC)
             # add the result to the list
             results.append(result)
 
-            return results
+        return results
 
     def run_test(self, file: str) -> tuple[str, str]:
         # run test and return result with possible error

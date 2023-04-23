@@ -1,20 +1,49 @@
+
+
+from Helpers.BColors import BColors
 from ServiceProviders.IPathProvider import IPathProvider
 
 
 class PathProvider(IPathProvider):
-    def __init__(self, paths=None):
-        self.paths: dict[str, str] = paths
-        if paths is None:
-            self.paths: dict[str, str] = {}
 
-    def getPaths(self):
-        return self.paths
+    DEFAULT_MODEL_NAME = "NO_MODEL_PROVIDED"
 
-    def setPaths(self, paths: dict[str,str]):
-        self.paths = paths
+    def __init__(self, contexts=None, model=None):
+        self.contexts: dict[str, str] = contexts
+        self.model= model
+        if contexts is None:
+            self.contexts: dict[str, str] = {}
+        if model is None:
+            self.model: str = PathProvider.DEFAULT_MODEL_NAME
+            print(BColors.WARNING + f"WARNING: NO MODEL PROVIDED so the class was set to: {PathProvider.DEFAULT_MODEL_NAME}" + BColors.ENDC)
 
-    def addPath(self, key, path):
-        self.paths[key] = path
 
-    def removePath(self, key):
-        del self.paths[key]
+    def get(self, key):
+        return self.contexts[key]
+
+    def set(self, contexts: dict[str,str]):
+        self.contexts = contexts
+
+    def add(self, key, context):
+        self.contexts[key] = context
+
+    def remove(self, key):
+        del self.contexts[key]
+
+    def setModelName(self, model):
+        self.model = model
+
+    def getModelName(self):
+        return self.model
+
+    def getPathWithModelName(self, key):
+        return self.get(key)(self.getModelName())
+
+    def getAll(self):
+        return self.contexts
+
+    def getAllPathsWithModelName(self):
+        paths = {}
+        for key in self.getAll():
+            paths[key] = self.getPathWithModelName(key)
+        return paths

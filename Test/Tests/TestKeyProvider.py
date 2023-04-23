@@ -1,12 +1,14 @@
 from ServiceProviders.DictProvider import DictProvider
+from ServiceProviders.KeyProvider import KeyProvider
 from ServiceProviders.PathProvider import PathProvider
 from Test.ITest import ITest
 
 
-class TestPathProvider(ITest):
+class TestKeyProvider(ITest):
 
     def run(self):
-        # add data to dict provider to test overlap
+        # pass
+        # adding data to the other providers to test overlap
         dp = DictProvider(contexts={"test2": "test2"})
 
         dp.add("test", "test")
@@ -21,14 +23,17 @@ class TestPathProvider(ITest):
         assert(pp.getAllPathsWithModelName() == {"somepath": "somepath/test"})
         assert(pp.getPathWithModelName("somepath") == "somepath/test")
 
-        PathProvider.clear()
+        kp = KeyProvider()
 
-        # add path provider without model
-        pp = PathProvider()
-        # add data to dict
-        pp.add("test", lambda model: f"test/{model}")
+        assert(kp.getAll() == {})
 
-        assert(pp.getAllPathsWithModelName() == {"test": f"test/{PathProvider.DEFAULT_MODEL_NAME}"})
+        # test key provider
+
+        kp.add("test", "test")
+
+        assert(kp.getAll() == {"test": "test"})
+
 
         DictProvider.clear()
         PathProvider.clear()
+        KeyProvider.clear()
