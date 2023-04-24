@@ -2,13 +2,15 @@ import pandas as pd
 import os.path as path
 import os
 from Decorators.CSVCache import CSVCache
+from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Gatherer.IDataGatherer import IDataGatherer
 from Logger.Logger import Logger
 from ServiceProviders.IDictProvider import IDictProvider
 from ServiceProviders.IKeyProvider import IKeyProvider
 from ServiceProviders.IPathProvider import IPathProvider
 
-
+# MAKE SURE THAT THE DEPENDENCIES ARE LAST IN THE ARGS
+@StandardDependencyInjection
 class DataGatherer(IDataGatherer):
 
         def __init__(self, pathprovider: IPathProvider, contextprovider: IDictProvider):
