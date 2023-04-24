@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 class IDataGatherer(ABC):
 
     @abstractmethod
-    def gatherData(self):
+    def gather_data(self):
         pass
 
     @abstractmethod
-    def getGatheredData(self):
+    def get_gathered_data(self):
         pass

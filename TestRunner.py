@@ -32,6 +32,14 @@ class TestRunner:
             # add the result to the list
             results.append(result)
 
+        # print how many passed and how many failed
+        print(BColors.OKGREEN + f"{len([result for result in results if result[1] == 'success'])} tests passed" + BColors.ENDC)
+
+        failed = [result[0] for result in results if result[1] != 'success']
+        if (len(failed) > 0):
+            print(BColors.FAIL + f"{len(failed)} tests failed" + BColors.ENDC)
+            print(BColors.FAIL + f"Failed tests: {failed}" + BColors.ENDC)
+
         return results
 
     def run_test(self, file: str) -> tuple[str, str]:
@@ -45,12 +53,23 @@ class TestRunner:
 
         # run the "run" method and catch errors and return result
 
+        # sub function to run cleanup method and catch errors
+        def cleanup():
+            try:
+                cls().cleanup()
+            except Exception as e:
+                error = traceback.format_exc()
+                return (file, error)
+
         try:
             result = cls().run()
+            cleanup()
             return (file, "success")
         except Exception as e:
             error = traceback.format_exc()
+            cleanup()
             return (file, error)
+
 
 if __name__ == "__main__":
     TestRunner().run_all_tests()

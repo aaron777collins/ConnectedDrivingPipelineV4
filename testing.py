@@ -1,3 +1,4 @@
+from Decorators.FileCache import FileCache
 from Logger.Logger import Logger
 from ServiceProviders.DictProvider import DictProvider
 from ServiceProviders.IDictProvider import IDictProvider
@@ -12,6 +13,7 @@ class Testing:
         self.logger = Logger("testing", self._pathprovider.__class__)
         self.logger.log("Testing")
 
+
 if __name__ == "__main__":
     pp = PathProvider(model="test",
         contexts={
@@ -19,4 +21,6 @@ if __name__ == "__main__":
         }
     )
     dp = DictProvider()
-    Testing(PathProvider, DictProvider)
+    testingclass = Testing(PathProvider, DictProvider)
+
+

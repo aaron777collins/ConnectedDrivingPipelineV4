@@ -5,7 +5,7 @@ from ServiceProviders.IDictProvider import IDictProvider
 class IKeyProvider(IDictProvider):
 
     @abstractmethod
-    def get(self, key):
+    def get(self, key, defaultValue=None):
         pass
 
     @abstractmethod

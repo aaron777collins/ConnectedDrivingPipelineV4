@@ -30,5 +30,7 @@ class TestPathProvider(ITest):
 
         assert(pp.getAllPathsWithModelName() == {"test": f"test/{PathProvider.DEFAULT_MODEL_NAME}"})
 
+    def cleanup(self):
+
         DictProvider.clear()
         PathProvider.clear()

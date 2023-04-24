@@ -5,3 +5,6 @@ class ITest:
     @abstractmethod
     def run():
         pass
+
+    def cleanup():
+        pass

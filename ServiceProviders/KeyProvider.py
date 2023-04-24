@@ -8,7 +8,9 @@ class KeyProvider(IKeyProvider):
         if contexts is None:
             self.contexts: dict[str, str] = {}
 
-    def get(self, key):
+    def get(self, key, defaultValue=None):
+        if defaultValue is not None:
+            return self.contexts.get(key, defaultValue)
         return self.contexts[key]
 
     def set(self, contexts: dict[str,str]):

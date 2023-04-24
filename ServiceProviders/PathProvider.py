@@ -18,7 +18,9 @@ class PathProvider(IPathProvider):
             print(BColors.WARNING + f"WARNING: NO MODEL PROVIDED so the class was set to: {PathProvider.DEFAULT_MODEL_NAME}" + BColors.ENDC)
 
 
-    def get(self, key):
+    def get(self, key, defaultValue=None):
+        if defaultValue is not None:
+            return self.contexts.get(key, defaultValue)
         return self.contexts[key]
 
     def set(self, contexts: dict[str,str]):
@@ -36,8 +38,8 @@ class PathProvider(IPathProvider):
     def getModelName(self):
         return self.model
 
-    def getPathWithModelName(self, key):
-        return self.get(key)(self.getModelName())
+    def getPathWithModelName(self, key, defaultValue=None):
+        return self.get(key, defaultValue)(self.getModelName())
 
     def getAll(self):
         return self.contexts

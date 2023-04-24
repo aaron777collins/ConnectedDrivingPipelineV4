@@ -12,7 +12,7 @@ class IPathProvider(IDictProvider):
         pass
 
     @abstractmethod
-    def getPathWithModelName(self, key):
+    def getPathWithModelName(self, key, defaultValue=None):
         pass
 
     @abstractmethod

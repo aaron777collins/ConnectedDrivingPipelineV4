@@ -33,7 +33,7 @@ class TestKeyProvider(ITest):
 
         assert(kp.getAll() == {"test": "test"})
 
-
+    def cleanup(self):
         DictProvider.clear()
         PathProvider.clear()
         KeyProvider.clear()

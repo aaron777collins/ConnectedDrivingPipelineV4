@@ -5,7 +5,7 @@ from ClassTypes.SingletonABCMeta import SingletonABCMeta
 class IDictProvider(ABC, metaclass=SingletonABCMeta):
 
     @abstractmethod
-    def get(self, key):
+    def get(self, key, defaultValue=None):
         pass
 
     @abstractmethod

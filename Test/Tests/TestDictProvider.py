@@ -32,5 +32,6 @@ class TestDictProvider(ITest):
         dp = DictProvider()
         # ensure empty
         assert(dp.getAll() == {})
-        # clear again
+
+    def cleanup(self):
         DictProvider.clear()
