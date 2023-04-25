@@ -17,7 +17,7 @@ class DataGatherer(IDataGatherer):
         def __init__(self, pathprovider: IPathProvider, contextprovider: IGeneratorContextProvider):
             self._pathprovider = pathprovider()
             self._contextprovider = contextprovider()
-            self.logger = Logger("DataGatherer", self._pathprovider.__class__)
+            self.logger = Logger("DataGatherer")
 
             self.data = None
             self.numrows = self._contextprovider.get("DataGatherer.numrows")

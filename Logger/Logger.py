@@ -1,13 +1,15 @@
 # Create a class Logger to log the info of the program with an elevation level, prefix and message.
 import os
 from datetime import datetime
+from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Logger.LogLevel import LogLevel
 
 from ServiceProviders.IPathProvider import IPathProvider
 
-class Logger:
+DEFAULT_LOG_PATH = lambda model: f"logs/{model}/"
 
-    DEFAULT_LOG_PATH = lambda model: f"logs/{model}/"
+@StandardDependencyInjection
+class Logger:
 
     def __init__(self, prefix, pathprovider: IPathProvider):
         self._pathprovider = pathprovider()
