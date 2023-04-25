@@ -7,6 +7,7 @@ from Gatherer.IDataGatherer import IDataGatherer
 from Logger.Logger import Logger
 from ServiceProviders.IDictProvider import IDictProvider
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
+from ServiceProviders.IInitialGathererPathProvider import IInitialGathererPathProvider
 from ServiceProviders.IKeyProvider import IKeyProvider
 from ServiceProviders.IPathProvider import IPathProvider
 
@@ -14,7 +15,7 @@ from ServiceProviders.IPathProvider import IPathProvider
 @StandardDependencyInjection
 class DataGatherer(IDataGatherer):
 
-        def __init__(self, pathprovider: IPathProvider, contextprovider: IGeneratorContextProvider):
+        def __init__(self, pathprovider: IInitialGathererPathProvider, contextprovider: IGeneratorContextProvider):
             self._pathprovider = pathprovider()
             self._contextprovider = contextprovider()
             self.logger = Logger("DataGatherer")
@@ -38,7 +39,8 @@ class DataGatherer(IDataGatherer):
             return self.data
 
         # splits the data for easier cleaning
-        def split_large_data(self, lines_per_file=100000) -> pd.DataFrame:
+        def split_large_data(self) -> pd.DataFrame:
+            lines_per_file = self._contextprovider.get("DataGatherer.lines_per_file")
 
             if path.isfile(self.splitfilespath + "split0.csv"):
                 self.logger.log("Found split files! Skipping regeneration.")

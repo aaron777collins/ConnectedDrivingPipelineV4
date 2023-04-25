@@ -45,8 +45,6 @@ class FileCache:
             for cache_variable in cache_variables:
                 file_name += "_" + str(cache_variable)
 
-            full_file_name = os.path.join(file_name + "." + cache_file_type)
-
             cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: os.path.join("cache", name))
             # create the file path
             full_path = os.path.join(cache_path, file_name + "." + cache_file_type)
@@ -84,3 +82,16 @@ class FileCache:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as file:
             file.write(str(content))
+
+    @staticmethod
+    def getCalculatedCachePath(fn, cache_variables, cache_file_type):
+        # create the file name
+        file_name = fn.__name__
+        for cache_variable in cache_variables:
+            file_name += "_" + str(cache_variable)
+
+        cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: os.path.join("cache", name))
+        # create the file path
+        full_path = os.path.join(cache_path, file_name + "." + cache_file_type)
+
+        return full_path

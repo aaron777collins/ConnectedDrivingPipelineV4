@@ -12,24 +12,24 @@ from Helpers.DataConverter import DataConverter
 from Helpers.MathHelper import MathHelper
 from Logger.Logger import Logger
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
-from ServiceProviders.IPathProvider import IPathProvider
-from ServiceProviders.MLContextProvider import MLContextProvider
-from ServiceProviders.PathProvider import PathProvider
+from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
+
+import os.path as path
+
 
 # Dependency injects the providers (make sure they are the last arguments but before kwargs)
 @StandardDependencyInjection
 class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
-    def __init__(self, pathProvider: IPathProvider, contextProvider: IGeneratorContextProvider, data=None):
+    def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None):
         self._pathprovider = pathProvider()
         self._contextprovider = contextProvider()
         self.logger = Logger("ConnectedDrivingCleaner")
+        # Make sure it is unique to the option chosen (timestamps or no timestamps AND isXYCoords or not)
         self.cleandatapath = self._pathprovider.getPathWithModelName("ConnectedDrivingCleaner.cleandatapath")
-        self.cleandatapathtimestamps = self._pathprovider.getPathWithModelName("ConnectedDrivingCleaner.cleandatapathtimestamps")
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
-        os.makedirs(os.path.dirname(self.cleandatapathtimestamps), exist_ok=True)
-        os.makedirs(os.path.dirname(self.cleandatapathXY), exist_ok=True)
-        os.makedirs(os.path.dirname(self.cleandatapathtimestampsXY), exist_ok=True)
+
+        self.isXYCoords = self._contextprovider.get("ConnectedDrivingCleaner.isXYCoords")
 
         self.data = data
         self.x_pos = self._contextprovider.get("ConnectedDrivingCleaner.x_pos")
@@ -52,6 +52,10 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
         self.cleaned_data["x_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[0])
         self.cleaned_data["y_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[1])
         self.cleaned_data.drop(columns=["coreData_position"], inplace=True)
+
+        if (self.isXYCoords):
+            self.convert_to_XY_Coordinates()
+
         return self.cleaned_data
 
     # executes the cleaning of the data with timestamps and caches it
@@ -80,6 +84,10 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
         self.cleaned_data["metadata_generatedAt"]
         self.cleaned_data.drop(columns=["coreData_position", "coreData_position_lat", "coreData_position_long"], inplace=True)
+
+        if (self.isXYCoords):
+            self.convert_to_XY_Coordinates()
+
         return self.cleaned_data
 
     # too small of a change to be worth caching
