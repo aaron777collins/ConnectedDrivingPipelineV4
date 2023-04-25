@@ -6,6 +6,7 @@ from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Gatherer.IDataGatherer import IDataGatherer
 from Logger.Logger import Logger
 from ServiceProviders.IDictProvider import IDictProvider
+from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IKeyProvider import IKeyProvider
 from ServiceProviders.IPathProvider import IPathProvider
 
@@ -13,7 +14,7 @@ from ServiceProviders.IPathProvider import IPathProvider
 @StandardDependencyInjection
 class DataGatherer(IDataGatherer):
 
-        def __init__(self, pathprovider: IPathProvider, contextprovider: IDictProvider):
+        def __init__(self, pathprovider: IPathProvider, contextprovider: IGeneratorContextProvider):
             self._pathprovider = pathprovider()
             self._contextprovider = contextprovider()
             self.logger = Logger("DataGatherer", self._pathprovider.__class__)

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 from Decorators.FileCache import FileCache
@@ -18,6 +19,8 @@ class CSVCache:
         customkwargs = kwargs.copy()
         kwargs["cache_file_type"] = "csv"
         def read_csv(path, return_type):
+            # create path if it doesn't exist
+            os.makedirs(os.path.dirname(path), exist_ok=True)
             data = pd.read_csv(path)
             try:
                 data.drop("Unnamed: 0",axis=1, inplace=True)
@@ -26,6 +29,8 @@ class CSVCache:
             return data
         kwargs["cache_file_reader_function"] = lambda path, return_type: pd.read_csv(path)
         def write_csv(path, data):
+            # create path if it doesn't exist
+            os.makedirs(os.path.dirname(path), exist_ok=True)
             data.to_csv(path, index=False)
             try:
                 data.drop("Unnamed: 0",axis=1, inplace=True)

@@ -1,8 +1,12 @@
 from ServiceProviders.DictProvider import DictProvider
+from ServiceProviders.GeneratorContextProvider import GeneratorContextProvider
 from ServiceProviders.IDictProvider import IDictProvider
+from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IKeyProvider import IKeyProvider
+from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IPathProvider import IPathProvider
 from ServiceProviders.KeyProvider import KeyProvider
+from ServiceProviders.MLContextProvider import MLContextProvider
 from ServiceProviders.PathProvider import PathProvider
 
 
@@ -12,7 +16,9 @@ class StandardDependencyInjection(object):
 
         IDictProvider.__name__: DictProvider,
         IKeyProvider.__name__: KeyProvider,
-        IPathProvider.__name__: PathProvider
+        IPathProvider.__name__: PathProvider,
+        IGeneratorContextProvider.__name__: GeneratorContextProvider,
+        IMLContextProvider.__name__: MLContextProvider,
     }
 
     def __init__(self, class_to_instantiate):
