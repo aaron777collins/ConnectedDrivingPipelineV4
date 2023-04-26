@@ -32,6 +32,9 @@ class StandardDependencyInjection(object):
 
     def __init__(self, class_to_instantiate):
         self.class_to_instantiate = class_to_instantiate
+        # copying all attributes from the class to instantiate to this class
+        # so that the class to instantiate can be called as if it were this class
+        self.__dict__.update(class_to_instantiate.__dict__)
 
     def __call__(self, *args, **kwargs):
 

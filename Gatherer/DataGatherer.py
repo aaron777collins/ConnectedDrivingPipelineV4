@@ -62,3 +62,6 @@ class DataGatherer(IDataGatherer):
             file.close()
 
             return self
+
+        def get_gathered_data(self):
+            return self.data

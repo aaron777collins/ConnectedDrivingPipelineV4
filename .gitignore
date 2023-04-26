@@ -9,6 +9,7 @@ logs/
 results/
 venv/
 cache/
+Outputs/
 
 # C extensions
 *.so

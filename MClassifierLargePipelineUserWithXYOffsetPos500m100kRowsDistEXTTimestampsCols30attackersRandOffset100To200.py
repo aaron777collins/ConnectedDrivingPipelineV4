@@ -50,10 +50,11 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # DataGatherer.filepath
         # DataGatherer.subsectionpath
         # DataGatherer.splitfilespath
+        # DataGatherer.lines_per_file
         self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
             "DataGatherer.filepath": lambda model: os.path.join("data", "data.csv"),
             "DataGatherer.subsectionpath": lambda model: os.path.join("data", "classifierdata", "subsection", model),
-            "DataGatherer.splitfilespath": lambda model: os.path.join("data", "classifierdata", "splitfiles", model),
+            "DataGatherer.splitfilespath": lambda model: os.path.join("data", "classifierdata", "splitfiles", model)
         }
         )
 
@@ -99,6 +100,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         #
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": 100000,
+            "DataGatherer.lines_per_file": 1000000,
             "ConnectedDrivingCleaner.x_pos": -105.1159611,
             "ConnectedDrivingCleaner.y_pos": 41.0982327,
             "ConnectedDrivingLargeDataCleaner.max_dist": 500,
