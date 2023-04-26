@@ -6,8 +6,14 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from EasyMLLib.CSVWriter import CSVWriter
+from Generator.Attackers.ConnectedDrivingAttacker import ConnectedDrivingAttacker
+from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
+from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
+from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
+from MachineLearning.MClassifierPipeline import MClassifierPipeline
+from MachineLearning.MConnectedDrivingDataCleaner import MConnectedDrivingDataCleaner
 from ServiceProviders.GeneratorContextProvider import GeneratorContextProvider
 from ServiceProviders.GeneratorPathProvider import GeneratorPathProvider
 from ServiceProviders.InitialGathererPathProvider import InitialGathererPathProvider
@@ -33,9 +39,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
     def __init__(self):
 
-        # CONFIG FOR ALL PROPERTIES IN THE PIPELINE
-
-        # TODO: FINISH THIS CLASS
+        #################  CONFIG FOR ALL PROPERTIES IN THE PIPELINE #################################################
 
         # used for the logger's path
         self._pathprovider = PathProvider(model=LOG_NAME, contexts={
@@ -43,43 +47,94 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         })
 
         # Properties:
-        #
+        # DataGatherer.filepath
+        # DataGatherer.subsectionpath
+        # DataGatherer.splitfilespath
         self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
-
+            "DataGatherer.filepath": lambda model: os.path.join("data", "data.csv"),
+            "DataGatherer.subsectionpath": lambda model: os.path.join("data", "classifierdata", "subsection", model),
+            "DataGatherer.splitfilespath": lambda model: os.path.join("data", "classifierdata", "splitfiles", model),
         }
         )
 
         # Properties:
+        #
+        # ConnectedDrivingLargeDataCleaner.cleanedfilespath
+        # ConnectedDrivingLargeDataCleaner.combinedcleandatapath
+        # ConnectedDrivingCleaner.cleandatapath
+        # MConnectedDrivingLargeDataCleaner.dtypes # AUTO_FILLED
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
         self._generatorPathProvider = GeneratorPathProvider(model="CCDDWithTimestampsAndWithXYCoords", contexts={
-
+            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model: os.path.join("data", "classifierdata", "split", "cleaned", model),
+            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: os.path.join("data", "classifierdata", "split","combinedcleaned", model),
+            "ConnectedDrivingCleaner.cleandatapath": lambda model: os.path.join("data", "classifierdata", "cleaned", model),
         }
         )
 
         # Properties:
+        #
+        # MConnectedDrivingDataCleaner.cleandatapath
+        # MDataClassifier.plot_confusion_matrix_path
         #
         self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-
+            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: os.path.join("data", "mclassifierdata", "cleaned", model),
+            "MDataClassifier.plot_confusion_matrix_path": lambda model: os.path.join("data", "mclassifierdata", "results", model),
         }
         )
 
         # Properties:
+        #
+        # DataGatherer.numrows
+        # ConnectedDrivingCleaner.x_pos
+        # ConnectedDrivingCleaner.y_pos
+        # ConnectedDrivingLargeDataCleaner.max_dist
+        # ConnectedDrivingLargeDataCleaner.cleanFunc
+        # ConnectedDrivingLargeDataCleaner.filterFunc
+        # ConnectedDrivingAttacker.SEED
+        # ConnectedDrivingCleaner.isXYCoords
+        # ConnectedDrivingAttacker.attack_ratio
+        # ConnectedDrivingCleaner.cleanFuncName
         #
         self.generatorContextProvider = GeneratorContextProvider(contexts={
+            "DataGatherer.numrows": 100000,
+            "ConnectedDrivingCleaner.x_pos": -105.1159611,
+            "ConnectedDrivingCleaner.y_pos": 41.0982327,
+            "ConnectedDrivingLargeDataCleaner.max_dist": 500,
+            "ConnectedDrivingLargeDataCleaner.cleanFunc": ConnectedDrivingCleaner.clean_data_with_timestamps,
+            "ConnectedDrivingLargeDataCleaner.filterFunc": ConnectedDrivingLargeDataCleaner.within_rangeXY,
+            "ConnectedDrivingAttacker.SEED": 42,
+            "ConnectedDrivingCleaner.isXYCoords": True,
+            "ConnectedDrivingAttacker.attack_ratio": 0.3,
+            "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
 
         # Properties:
         #
+        # MConnectedDrivingDataCleaner.columns
+        # MClassifierPipeline.classifier_instances # AUTO_FILLED
+        #
         self.MLContextProvider = MLContextProvider(contexts={
+            "MConnectedDrivingDataCleaner.columns": [
+            # "metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+            #  "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+            #  "metadata_serialId_serialNumber", "metadata_receivedAt",
+            #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
+            #  "metadata_rmd_rxSource","metadata_bsmSource",
+            "coreData_id",  # "coreData_position_lat", "coreData_position_long",
+            "coreData_secMark", "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+            "month", "day", "year", "hour", "minute", "second", "pm",
+            "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
+
+            # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
 
         }
         )
 
-
+        ######### END OF CONFIG FOR ALL PROPERTIES IN THE PIPELINE ##################################################
 
         self.logger = Logger(LOG_NAME)
         self.csvWriter = CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS)
@@ -93,52 +148,24 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         self.csvWriter.addRow(row)
 
     def run(self):
-        ldpgacuLogName = "LargeDataPipelineGathererAndCleanerWithCustomXYUserDist500m"
-        ldpgacu = LargeDataPipelineGathererAndCleanerWithCustomXYUserDist(
-            logger=Logger(ldpgacuLogName),
-            csvWriter=CSVWriter(f"{ldpgacuLogName}.csv", CSV_COLUMNS, outputpath=os.path.join("data", "classifierdata", "results")),
-            LOG_NAME=ldpgacuLogName
-        ).run(
-            cleanFunc=DataCleaner.clean_data_with_OTHER_FUNC_Then_XY,
-            otherCleanFunc=DataCleaner.clean_data_with_timestamps,
-            filterFunction=LargeDataCleaner.within_rangeXY,
-            max_dist=500, x_col="x_pos", y_col="y_pos",
-            x_pos=-105.1159611, y_pos=41.0982327, lines_per_file=1000000
-        )
 
-        data: DataFrame = ldpgacu.getNRows(200000)
+        mcdldpgac = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
+
+        data: DataFrame = mcdldpgac.getNRows(200000)
 
         # splitting into train and test sets
         train = data.iloc[:100000].copy()
         test = data.iloc[100000:200000].copy()
 
         # cleaning/adding attackers to the data
-        train = DataAttacker(train,
-                             modified_data_path=f"data/classifierdata/modified/{LOG_NAME}/modified_train.csv", SEED=24, logger=self.logger.newPrefix("DataAttacker"),
-                             isXYCoords=True).add_attackers(attack_ratio=0.3).add_attacks_positional_offset_rand(min_dist=50000, max_dist=100000).getData()
-        test = DataAttacker(test,
-                            modified_data_path=f"data/classifierdata/modified/{LOG_NAME}/modified_test.csv", SEED=48, logger=self.logger.newPrefix("DataAttacker"),
-                            isXYCoords=True).add_attackers(attack_ratio=0.3).add_attacks_positional_offset_rand(min_dist=50000, max_dist=100000).getData()
+        train = ConnectedDrivingAttacker(train).add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        test = ConnectedDrivingAttacker(test).add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
 
-        # Normally ["coreData_id", "coreData_position_lat", "coreData_position_long",
-        # "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"]
 
-        COLUMNS_EXT_WITH_TIMESTAMPS = [
-            # "metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
-            #  "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
-            #  "metadata_serialId_serialNumber", "metadata_receivedAt",
-            #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
-            #  "metadata_rmd_rxSource","metadata_bsmSource",
-            "coreData_id",  # "coreData_position_lat", "coreData_position_long",
-            "coreData_secMark", "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
-            "month", "day", "year", "hour", "minute", "second", "pm",
-            "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"]
 
         # Cleaning it for the malicious data detection
-        mdcleaner_train = MDataCleaner(
-            train, cleandatapath=f"data/classifierdata/Mclean/{LOG_NAME}/clean_train.csv", columns=COLUMNS_EXT_WITH_TIMESTAMPS, logger=self.logger.newPrefix("MDataCleaner"))
-        mdcleaner_test = MDataCleaner(
-            test, cleandatapath=f"data/classifierdata/Mclean/{LOG_NAME}/clean_test.csv", columns=COLUMNS_EXT_WITH_TIMESTAMPS, logger=self.logger.newPrefix("MDataCleaner"))
+        mdcleaner_train = MConnectedDrivingDataCleaner(train)
+        mdcleaner_test = MConnectedDrivingDataCleaner(test)
         m_train = mdcleaner_train.clean_data().get_cleaned_data()
         m_test = mdcleaner_test.clean_data().get_cleaned_data()
 
@@ -150,8 +177,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         test_Y = m_test[attacker_col_name]
 
         # training the classifiers
-        mcp = MClassifierPipeline(train_X, train_Y, test_X, test_Y, classifier_instances=CLASSIFIER_INSTANCES,
-                                  logger=self.logger.newPrefix("MClassifierPipeline"))
+        mcp = MClassifierPipeline(train_X, train_Y, test_X, test_Y)
 
         mcp.train()
         mcp.test()
@@ -208,9 +234,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
         # calculating confusion matrices and storing them
         mcp.logger.log("Calculating confusion matrices and storing...")
-        # path to store the confusion matrices
-        plotpath = f"data/classifierdata/results/plots/{LOG_NAME}/confusion_matrices"
-        mcp.calculate_classifiers_and_confusion_matrices().plot_confusion_matrices(plotpath)
+        mcp.calculate_classifiers_and_confusion_matrices().plot_confusion_matrices()
 
 
 if __name__ == "__main__":

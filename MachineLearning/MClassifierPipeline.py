@@ -14,9 +14,9 @@ DEFAULT_CLASSIFIER_INSTANCES = [RandomForestClassifier(
 class MClassifierPipeline:
     def __init__(self, train_X, train_Y, test_X, test_Y, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._pathprovider = pathprovider()
-        self._contextprovider = contextprovider()
+        self._MLContextProvider = contextprovider()
         self.logger = Logger("MClassifierPipeline")
-        self.classifier_instances = contextprovider.get("MClassifierPipeline.classifier_instances", DEFAULT_CLASSIFIER_INSTANCES)
+        self.classifier_instances = self._MLContextProvider.get("MClassifierPipeline.classifier_instances", DEFAULT_CLASSIFIER_INSTANCES)
 
         self.classifiers_and_confusion_matrices: list[tuple[MDataClassifier, list[list[float]]]] = []
 
@@ -59,8 +59,6 @@ class MClassifierPipeline:
     def get_classifiers_and_confusion_matrices(self):
         return self.classifiers_and_confusion_matrices
 
-    # path should be the path to store the plot (ending without a slash)
-    # i.e. f"data/classifierdata/results/plots/{LOG_NAME}/confusion_matrices"
     def plot_confusion_matrices(self):
         for mClassifier, confusion_matrix in self.classifiers_and_confusion_matrices:
             mClassifier.plot_confusion_matrix(confusion_matrix, mClassifier.classifier.__class__.__name__)

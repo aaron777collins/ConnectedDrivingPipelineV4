@@ -1,9 +1,7 @@
 
 from abc import ABC, abstractmethod
 
-from ClassTypes.SingletonABCMeta import SingletonABCMeta
-
-class IConnectedDrivingAttacker(ABC, metaclass=SingletonABCMeta):
+class IConnectedDrivingAttacker(ABC):
 
     # Must be run after the data is clean to get a proper result.
     # This function returns the list of unique IDs from the coreData_id column

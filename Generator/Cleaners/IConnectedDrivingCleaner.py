@@ -1,9 +1,7 @@
 
 from abc import ABC, abstractmethod
 
-from ClassTypes.SingletonABCMeta import SingletonABCMeta
-
-class IConnectedDrivingCleaner(ABC, metaclass=SingletonABCMeta):
+class IConnectedDrivingCleaner(ABC):
 
     @abstractmethod
     def clean_data(self):

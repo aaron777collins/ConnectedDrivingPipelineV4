@@ -16,16 +16,15 @@ from ServiceProviders.IPathProvider import IPathProvider
 class DataGatherer(IDataGatherer):
 
         def __init__(self, pathprovider: IInitialGathererPathProvider, contextprovider: IGeneratorContextProvider):
-            self._pathprovider = pathprovider()
-            self._contextprovider = contextprovider()
+            self._initialGathererPathProvider = pathprovider()
+            self._generatorContextProvider = contextprovider()
             self.logger = Logger("DataGatherer")
 
             self.data = None
-            self.numrows = self._contextprovider.get("DataGatherer.numrows")
-            self.filepath = self._pathprovider.getPathWithModelName("DataGatherer.filepath")
-            self.subsectionpath = self._pathprovider.getPathWithModelName("DataGatherer.subsectionpath")
-            self.subsectionname = self._contextprovider.get("DataGatherer.subsectionname")
-            self.splitfilespath = self._pathprovider.getPathWithModelName("DataGatherer.splitfilespath")
+            self.numrows = self._generatorContextProvider.get("DataGatherer.numrows")
+            self.filepath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.filepath")
+            self.subsectionpath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.subsectionpath")
+            self.splitfilespath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.splitfilespath")
 
         def gather_data(self):
             self.data = self._gather_data(full_file_cache_path=self.subsectionpath)
@@ -40,7 +39,7 @@ class DataGatherer(IDataGatherer):
 
         # splits the data for easier cleaning
         def split_large_data(self) -> pd.DataFrame:
-            lines_per_file = self._contextprovider.get("DataGatherer.lines_per_file")
+            lines_per_file = self._generatorContextProvider.get("DataGatherer.lines_per_file")
 
             if path.isfile(self.splitfilespath + "split0.csv"):
                 self.logger.log("Found split files! Skipping regeneration.")

@@ -11,20 +11,20 @@ from Logger.Logger import Logger
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 
-# TO AVOID ERRORS, ALL FILES FROM THIS CLASS ONWARDS ARE AUTO_CACHED in the cache folder using the cache_variables for the
+# TO AVOID ERRORS, ALL FILES FROM THIS CLASS ARE AUTO_CACHED in the cache folder using the cache_variables for the
 # respective cached function
 @StandardDependencyInjection
 class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
-    def __init__(self, data, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider):
+    def __init__(self, data, pathProvider: IGeneratorPathProvider, generatorContextProvider: IGeneratorContextProvider):
         self._pathprovider = pathProvider()
-        self._contextprovider = contextProvider()
+        self._generatorContextProvider = generatorContextProvider()
         self.logger = Logger("ConnectedDrivingAttacker")
 
         self.data = data
-        self.SEED = contextProvider.get("ConnectedDrivingAttacker.SEED")
-        self.isXYCoords = contextProvider.get("ConnectedDrivingCleaner.isXYCoords")
-        self.attack_ratio = contextProvider.get("ConnectedDrivingAttacker.attack_ratio")
+        self.SEED = self._generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
+        self.isXYCoords = self._generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords")
+        self.attack_ratio = self._generatorContextProvider.get("ConnectedDrivingAttacker.attack_ratio")
 
         self.pos_lat_col = "y_pos"
         self.pos_long_col = "x_pos"
@@ -70,7 +70,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
     # Affected columns: coreData_position_lat,coreData_position_long
     # direction_angle is north at 0 (- is to the west, + is to the east)
     def add_attacks_positional_offset_const(self, direction_angle=45, distance_meters=50):
-        clean_func_name = self._contextprovider.get("ConnectedDrivingCleaner.cleanFuncName")
+        clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_const(direction_angle, distance_meters, cache_variables=[
             self.__class__.__name__, direction_angle, distance_meters, self.isXYCoords, self.attack_ratio, self.SEED,
@@ -114,7 +114,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
         return row
 
     def add_attacks_positional_offset_rand(self, min_dist=25, max_dist = 250):
-        clean_func_name = self._contextprovider.get("ConnectedDrivingCleaner.cleanFuncName")
+        clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_rand(min_dist, max_dist, cache_variables=[
             self.__class__.__name__, min_dist, max_dist, self.isXYCoords, self.attack_ratio, self.SEED,

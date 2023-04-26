@@ -22,18 +22,18 @@ import os.path as path
 class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None):
-        self._pathprovider = pathProvider()
-        self._contextprovider = contextProvider()
+        self._generatorPathProvider = pathProvider()
+        self._generatorContextProvider = contextProvider()
         self.logger = Logger("ConnectedDrivingCleaner")
         # Make sure it is unique to the option chosen (timestamps or no timestamps AND isXYCoords or not)
-        self.cleandatapath = self._pathprovider.getPathWithModelName("ConnectedDrivingCleaner.cleandatapath")
+        self.cleandatapath = self._generatorPathProvider.getPathWithModelName("ConnectedDrivingCleaner.cleandatapath")
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
 
-        self.isXYCoords = self._contextprovider.get("ConnectedDrivingCleaner.isXYCoords")
+        self.isXYCoords = self._generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords")
 
         self.data = data
-        self.x_pos = self._contextprovider.get("ConnectedDrivingCleaner.x_pos")
-        self.y_pos = self._contextprovider.get("ConnectedDrivingCleaner.y_pos")
+        self.x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
+        self.y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
 
         if not isinstance(self.data, pd.DataFrame):
             self.logger.log("No data specified. Using the gatherer to get the data (gather_data func).")

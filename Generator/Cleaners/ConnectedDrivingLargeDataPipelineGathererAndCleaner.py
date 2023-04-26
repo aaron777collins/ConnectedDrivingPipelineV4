@@ -2,26 +2,23 @@ from Decorators.StandardDependencyInjection import StandardDependencyInjection
 import os
 from pandas import DataFrame
 from Gatherer.DataGatherer import DataGatherer
+from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Logger.Logger import Logger
-from MachineLearning.MConnectedDrivingLargeDataCleaner import MConnectedDrivingLargeDataCleaner
 from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IMLPathProvider import IMLPathProvider
 
-@StandardDependencyInjection
-class MConnectedDrivingLargeDataPipelineGathererAndCleaner:
+class ConnectedDrivingLargeDataPipelineGathererAndCleaner:
 
-    def __init__(self, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
+    def __init__(self):
 
-        self._pathprovider = pathprovider()
-        self._contextprovider = contextprovider()
-        self.logger = Logger("MConnectedDrivingLargeDataPipelineGathererAndCleaner")
+        self.logger = Logger("ConnectedDrivingLargeDataPipelineGathererAndCleaner")
 
     def run(self):
 
         self.dg = DataGatherer()
         self.dg.split_large_data()
 
-        self.dc = MConnectedDrivingLargeDataCleaner()
+        self.dc = ConnectedDrivingLargeDataCleaner()
         self.dc.clean_data()
         self.dc.combine_data()
         return self
