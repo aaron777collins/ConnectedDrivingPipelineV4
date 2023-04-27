@@ -64,7 +64,6 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         #
         # ConnectedDrivingLargeDataCleaner.cleanedfilespath
         # ConnectedDrivingLargeDataCleaner.combinedcleandatapath
-        # ConnectedDrivingCleaner.cleandatapath
         # MConnectedDrivingLargeDataCleaner.dtypes # AUTO_FILLED
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
