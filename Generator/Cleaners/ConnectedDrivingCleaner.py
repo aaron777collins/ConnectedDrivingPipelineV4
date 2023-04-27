@@ -76,41 +76,6 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
         return self.cleaned_data
 
-    # executes the cleaning of the data with timestamps and caches it
-    def clean_data_with_timestamps(self):
-        self.cleaned_data = self._clean_data_with_timestamps(cache_variables=[
-            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
-            self.clean_func_name, self.filename, self.numrows, self.x_pos, self.y_pos
-        ])
-        return self
-
-    # caches the cleaned data with timestamps
-    @CSVCache
-    def _clean_data_with_timestamps(self, cache_variables=["REPLACE_ME"]) -> pd.DataFrame:
-        os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
-        self.cleaned_data = self.data[self.columns]
-        self.cleaned_data = self.cleaned_data.dropna()
-        self.cleaned_data["x_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[0])
-        self.cleaned_data["y_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[1])
-        # of format "07/31/2019 12:41:59 PM"
-        # convert to datetime
-        self.cleaned_data["metadata_generatedAt"] = pd.to_datetime(self.cleaned_data["metadata_generatedAt"], format="%m/%d/%Y %I:%M:%S %p")
-        self.cleaned_data["month"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.month)
-        self.cleaned_data["day"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.day)
-        self.cleaned_data["year"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.year)
-        self.cleaned_data["hour"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.hour)
-        self.cleaned_data["minute"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.minute)
-        self.cleaned_data["second"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: x.second)
-        self.cleaned_data["pm"] = self.cleaned_data["metadata_generatedAt"].map(lambda x: 0 if x.hour < 12 else 1) # 0 if am, 1 if pm
-
-        self.cleaned_data["metadata_generatedAt"]
-        self.cleaned_data.drop(columns=["coreData_position", "coreData_position_lat", "coreData_position_long"], inplace=True)
-
-        if (self.isXYCoords):
-            self.convert_to_XY_Coordinates()
-
-        return self.cleaned_data
-
     # too small of a change to be worth caching
     def convert_to_XY_Coordinates(self):
         self.cleaned_data["x_pos"] = self.cleaned_data["x_pos"].map(lambda x: MathHelper.dist_between_two_points(x, self.y_pos, self.x_pos, self.y_pos))

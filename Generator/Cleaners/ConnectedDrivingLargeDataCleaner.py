@@ -43,6 +43,7 @@ class ConnectedDrivingLargeDataCleaner:
         self.y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
         self.max_dist = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.max_dist")
 
+        self.cleanerClass: ConnectedDrivingCleaner = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.cleanerClass")
         self.cleanFunc = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.cleanFunc")
         self.filterFunc = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.filterFunc")
 
@@ -70,7 +71,7 @@ class ConnectedDrivingLargeDataCleaner:
             self.logger.log(f"Cleaning file {file}")
             filename = path.basename(file)
             df = pd.read_csv(file)
-            dc = ConnectedDrivingCleaner(data=df, filename=filename)
+            dc = self.cleanerClass(data=df, filename=filename)
             newDf = self.cleanFunc(dc).get_cleaned_data()
             if (self.filterFunc != None):
                 newDf = self.filterFunc(self, newDf)

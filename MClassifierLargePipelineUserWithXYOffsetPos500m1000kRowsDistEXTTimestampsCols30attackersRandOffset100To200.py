@@ -9,6 +9,7 @@ from EasyMLLib.CSVWriter import CSVWriter
 from Generator.Attackers.ConnectedDrivingAttacker import ConnectedDrivingAttacker
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
+from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
 from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
@@ -118,7 +119,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 500,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
-            "ConnectedDrivingLargeDataCleaner.cleanFunc": ConnectedDrivingCleaner.clean_data_with_timestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
             "ConnectedDrivingLargeDataCleaner.filterFunc": ConnectedDrivingLargeDataCleaner.within_rangeXY,
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
