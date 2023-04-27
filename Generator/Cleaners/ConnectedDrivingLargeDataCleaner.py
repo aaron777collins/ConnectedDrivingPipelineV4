@@ -68,8 +68,9 @@ class ConnectedDrivingLargeDataCleaner:
 
         for file in glob.glob(f"{self.splitfilespath}*.csv"):
             self.logger.log(f"Cleaning file {file}")
+            filename = path.basename(file)
             df = pd.read_csv(file)
-            dc = ConnectedDrivingCleaner(data=df)
+            dc = ConnectedDrivingCleaner(data=df, filename=filename)
             newDf = self.cleanFunc(dc).get_cleaned_data()
             if (self.filterFunc != None):
                 newDf = self.filterFunc(self, newDf)

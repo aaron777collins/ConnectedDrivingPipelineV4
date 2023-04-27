@@ -21,12 +21,21 @@ import os.path as path
 @StandardDependencyInjection
 class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
-    def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None):
+    def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None, filename=None):
         self._generatorPathProvider = pathProvider()
         self._generatorContextProvider = contextProvider()
         self.logger = Logger("ConnectedDrivingCleaner")
         # Make sure it is unique to the option chosen (timestamps or no timestamps AND isXYCoords or not)
-        self.cleandatapath = self._generatorPathProvider.getPathWithModelName("ConnectedDrivingCleaner.cleandatapath")
+
+        # cleaning function name to be used in the cache
+        self.clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
+        self.filename = filename
+        if (self.filename is None):
+            # defaults the filename to clean{numrows}.csv
+            # This ensures that even in the non-large data cleaner, the filename is unique with the number of rows in the data
+            numrows = self._generatorContextProvider.get("DataGatherer.numrows")
+            self.filename = self._generatorContextProvider.get("ConnectedDrivingCleaner.filename", f"clean{numrows}.csv")
+
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
 
         self.isXYCoords = self._generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords")
@@ -37,18 +46,25 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
         self.x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
         self.y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
 
-        if not isinstance(self.data, pd.DataFrame):
+        self.shouldGatherAutomatically = self._generatorContextProvider.get("ConnectedDrivingCleaner.shouldGatherAutomatically")
+
+        if not isinstance(self.data, pd.DataFrame) and self.shouldGatherAutomatically:
             self.logger.log("No data specified. Using the gatherer to get the data (gather_data func).")
             self.data = DataGatherer().gather_data()
+        elif not isinstance(self.data, pd.DataFrame):
+            raise self.logger.log("No data specified. You may want to specify data or set ConnectedDrivingCleaner.shouldGatherAutomatically to True.")
 
     # executes the cleaning of the data and caches it
     def clean_data(self):
-        self.cleaned_data = self._clean_data(full_file_cache_path=self.cleandatapath)
+        self.cleaned_data = self._clean_data(cache_variables=[
+            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
+            self.clean_func_name, self.filename, self.numrows, self.x_pos, self.y_pos
+        ])
         return self
 
     # caches the cleaned data
     @CSVCache
-    def _clean_data(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
+    def _clean_data(self, cache_variables=["REPLACE_ME"]) -> pd.DataFrame:
         self.cleaned_data = self.data[self.columns]
         self.cleaned_data = self.cleaned_data.dropna()
         self.cleaned_data["x_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[0])
@@ -62,12 +78,15 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     # executes the cleaning of the data with timestamps and caches it
     def clean_data_with_timestamps(self):
-        self.cleaned_data = self._clean_data_with_timestamps(full_file_cache_path=self.cleandatapath)
+        self.cleaned_data = self._clean_data_with_timestamps(cache_variables=[
+            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
+            self.clean_func_name, self.filename, self.numrows, self.x_pos, self.y_pos
+        ])
         return self
 
     # caches the cleaned data with timestamps
     @CSVCache
-    def _clean_data_with_timestamps(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
+    def _clean_data_with_timestamps(self, cache_variables=["REPLACE_ME"]) -> pd.DataFrame:
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
         self.cleaned_data = self.data[self.columns]
         self.cleaned_data = self.cleaned_data.dropna()

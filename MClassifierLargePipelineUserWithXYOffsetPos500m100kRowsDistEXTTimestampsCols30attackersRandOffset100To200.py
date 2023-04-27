@@ -46,6 +46,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
                 "Logger.logpath": DEFAULT_LOG_PATH,
         })
 
+        numSubsectionRows = 100000
+
         # Properties:
         # DataGatherer.filepath
         # DataGatherer.subsectionpath
@@ -53,7 +55,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # DataGatherer.lines_per_file
         self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
             "DataGatherer.filepath": lambda model: "data/data.csv",
-            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/subsection.csv",
+            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/subsection{numSubsectionRows}.csv",
             "DataGatherer.splitfilespath": lambda model: f"data/classifierdata/splitfiles/{model}/",
         }
         )
@@ -70,7 +72,6 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         self._generatorPathProvider = GeneratorPathProvider(model="CCDDWithTimestampsAndWithXYCoords", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
-            "ConnectedDrivingCleaner.cleandatapath": lambda model: f"data/classifierdata/cleaned/{model}/cleaned.csv",
         }
         )
 
@@ -111,12 +112,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
 
         self.generatorContextProvider = GeneratorContextProvider(contexts={
-            "DataGatherer.numrows": 100000,
+            "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
             "ConnectedDrivingCleaner.x_pos": -105.1159611,
             "ConnectedDrivingCleaner.y_pos": 41.0982327,
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 500,
+            "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
             "ConnectedDrivingLargeDataCleaner.cleanFunc": ConnectedDrivingCleaner.clean_data_with_timestamps,
             "ConnectedDrivingLargeDataCleaner.filterFunc": ConnectedDrivingLargeDataCleaner.within_rangeXY,
             "ConnectedDrivingAttacker.SEED": 42,
