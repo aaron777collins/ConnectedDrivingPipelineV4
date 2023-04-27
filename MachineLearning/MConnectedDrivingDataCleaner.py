@@ -2,10 +2,10 @@
 import os
 from Decorators.CSVCache import CSVCache
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
-from Logger import Logger
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from Logger.Logger import Logger
 from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IMLPathProvider import IMLPathProvider
 
@@ -18,12 +18,12 @@ class MConnectedDrivingDataCleaner:
 
         self.data = data
 
-        self.cleandatapath = self._MLPathProvider.get("MConnectedDrivingDataCleaner.cleandatapath")
+        self.cleandatapath = self._MLPathProvider.getPathWithModelName("MConnectedDrivingDataCleaner.cleandatapath")
         self.columns = self._MLContextprovider.get("MConnectedDrivingDataCleaner.columns")
 
 
     def clean_data(self):
-        _cleaned_data = self._clean_data(full_file_cache_path=self.cleandatapath)
+        self.cleaned_data = self._clean_data(full_file_cache_path=self.cleandatapath)
         return self
 
     @CSVCache

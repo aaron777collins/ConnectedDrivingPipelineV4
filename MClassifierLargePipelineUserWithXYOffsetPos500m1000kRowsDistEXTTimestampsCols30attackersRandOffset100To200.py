@@ -25,7 +25,7 @@ from ServiceProviders.PathProvider import PathProvider
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsCols30attackersRandOffset100To200"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -35,7 +35,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200:
+class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsCols30attackersRandOffset100To200:
 
     def __init__(self):
 
@@ -111,7 +111,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
 
         self.generatorContextProvider = GeneratorContextProvider(contexts={
-            "DataGatherer.numrows": 100000,
+            "DataGatherer.numrows": 1000000,
             "DataGatherer.lines_per_file": 1000000,
             "ConnectedDrivingCleaner.x_pos": -105.1159611,
             "ConnectedDrivingCleaner.y_pos": 41.0982327,
@@ -166,11 +166,11 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
         mcdldpgac = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
-        data: DataFrame = mcdldpgac.getNRows(200000)
+        data: DataFrame = mcdldpgac.getNRows(2000000)
 
         # splitting into train and test sets
-        train = data.iloc[:100000].copy()
-        test = data.iloc[100000:200000].copy()
+        train = data.iloc[:1000000].copy()
+        test = data.iloc[1000000:2000000].copy()
 
         # cleaning/adding attackers to the data
         train = ConnectedDrivingAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
@@ -253,5 +253,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsCols30attackersRandOffset100To200()
     mcplu.run()

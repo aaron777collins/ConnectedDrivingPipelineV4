@@ -43,7 +43,7 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     # executes the cleaning of the data and caches it
     def clean_data(self):
-        self._clean_data(full_file_cache_path=self.cleandatapath)
+        self.cleaned_data = self._clean_data(full_file_cache_path=self.cleandatapath)
         return self
 
     # caches the cleaned data
@@ -62,7 +62,7 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     # executes the cleaning of the data with timestamps and caches it
     def clean_data_with_timestamps(self):
-        self._clean_data_with_timestamps(full_file_cache_path=self.cleandatapath)
+        self.cleaned_data = self._clean_data_with_timestamps(full_file_cache_path=self.cleandatapath)
         return self
 
     # caches the cleaned data with timestamps

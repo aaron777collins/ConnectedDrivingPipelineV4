@@ -17,10 +17,13 @@ from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 @StandardDependencyInjection
 class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
-    def __init__(self, data, pathProvider: IGeneratorPathProvider, generatorContextProvider: IGeneratorContextProvider):
+    def __init__(self, data, id: str, pathProvider: IGeneratorPathProvider, generatorContextProvider: IGeneratorContextProvider):
+
+        self.id = id
+
         self._pathprovider = pathProvider()
         self._generatorContextProvider = generatorContextProvider()
-        self.logger = Logger("ConnectedDrivingAttacker")
+        self.logger = Logger("ConnectedDrivingAttacker" + id)
 
         self.data = data
         self.SEED = self._generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
@@ -75,7 +78,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_const(direction_angle, distance_meters, cache_variables=[
             self.__class__.__name__, direction_angle, distance_meters, self.isXYCoords, self.attack_ratio, self.SEED,
-            clean_func_name
+            clean_func_name, self.id
         ]
         )
 
@@ -119,7 +122,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_rand(min_dist, max_dist, cache_variables=[
             self.__class__.__name__, min_dist, max_dist, self.isXYCoords, self.attack_ratio, self.SEED,
-            clean_func_name
+            clean_func_name, self.id
         ]
         )
 

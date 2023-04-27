@@ -2,7 +2,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
-from Logger import Logger
+from Logger.Logger import Logger
 from MachineLearning.MDataClassifier import MDataClassifier
 from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IMLPathProvider import IMLPathProvider

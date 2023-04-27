@@ -29,7 +29,7 @@ class ConnectedDrivingLargeDataCleaner:
         self._generatorPathProvider = generatorPathProvider()
         self._initialgathererpathprovider = initialGathererPathProvider()
         self._generatorContextProvider = generatorContextProvider()
-        self.logger = Logger("ConnectedDrivingCleaner")
+        self.logger = Logger("ConnectedDrivingLargeDataCleaner")
 
         self.splitfilespath = self._initialgathererpathprovider.getPathWithModelName("DataGatherer.splitfilespath")
         self.cleanedfilespath = self._generatorPathProvider.getPathWithModelName("ConnectedDrivingLargeDataCleaner.cleanedfilespath")
@@ -71,8 +71,8 @@ class ConnectedDrivingLargeDataCleaner:
             df = pd.read_csv(file)
             dc = ConnectedDrivingCleaner(data=df)
             newDf = self.cleanFunc(dc).get_cleaned_data()
-            if (self.filterFunction != None):
-                newDf = self.filterFunction(newDf)
+            if (self.filterFunc != None):
+                newDf = self.filterFunc(self, newDf)
 
             # only write file if there are rows in newDf
             if len(newDf) > 0:
@@ -167,7 +167,7 @@ class ConnectedDrivingLargeDataCleaner:
 
     def getNRows(self, n):
 
-        dtypes = self._generatorContextProvider.get("MConnectedDrivingLargeDataCleaner.dtypes", dtypes)
+        dtypes = self._generatorContextProvider.get("MConnectedDrivingLargeDataCleaner.dtypes", ConnectedDrivingLargeDataCleaner.default_dtypes)
 
         # returns n rowsfrom the data from the combined file. ONLY reads n rows
         #  reads n lines of a file and saves it again as [filename]-[n].csv
