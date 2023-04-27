@@ -52,9 +52,9 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # DataGatherer.splitfilespath
         # DataGatherer.lines_per_file
         self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
-            "DataGatherer.filepath": lambda model: os.path.join("data", "data.csv"),
-            "DataGatherer.subsectionpath": lambda model: os.path.join("data", "classifierdata", "subsection", model),
-            "DataGatherer.splitfilespath": lambda model: os.path.join("data", "classifierdata", "splitfiles", model)
+            "DataGatherer.filepath": lambda model: "data/data.csv",
+            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/",
+            "DataGatherer.splitfilespath": lambda model: f"data/classifierdata/splitfiles/{model}/",
         }
         )
 
@@ -68,9 +68,9 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
         self._generatorPathProvider = GeneratorPathProvider(model="CCDDWithTimestampsAndWithXYCoords", contexts={
-            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model: os.path.join("data", "classifierdata", "split", "cleaned", model),
-            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: os.path.join("data", "classifierdata", "split","combinedcleaned", model),
-            "ConnectedDrivingCleaner.cleandatapath": lambda model: os.path.join("data", "classifierdata", "cleaned", model),
+            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/split/cleaned/{model}/",
+            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/split/combinedcleaned/{model}/",
+            "ConnectedDrivingCleaner.cleandatapath": lambda model: f"data/classifierdata/cleaned/{model}/",
         }
         )
 
@@ -80,8 +80,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # MDataClassifier.plot_confusion_matrix_path
         #
         self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: os.path.join("data", "mclassifierdata", "cleaned", model),
-            "MDataClassifier.plot_confusion_matrix_path": lambda model: os.path.join("data", "mclassifierdata", "results", model),
+            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/",
+            "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
         }
         )
 

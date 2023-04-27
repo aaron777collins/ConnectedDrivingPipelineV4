@@ -56,17 +56,17 @@ class ConnectedDrivingLargeDataCleaner:
     def clean_data(self):
 
         # reads each file from the split folder and cleans them and then saves them in the cleaned split folder
-        glob.glob(self.splitfilespath + "*.csv")
+        glob.glob(f"{self.splitfilespath}*.csv")
 
         # create the cleaned split folder if it doesn't exist
         os.makedirs(path.dirname(self.cleanedfilespath), exist_ok=True)
 
         # check if there is already a cleaned file for this model type
-        if len(glob.glob(self.cleanedfilespath + "*.csv")) > 0:
+        if len(glob.glob(f"{self.cleanedfilespath}*.csv")) > 0:
             self.logger.log("Found cleaned files! Skipping regeneration.")
             return self
 
-        for file in glob.glob(self.splitfilespath + "*.csv"):
+        for file in glob.glob(f"{self.splitfilespath}*.csv"):
             self.logger.log(f"Cleaning file {file}")
             df = pd.read_csv(file)
             dc = ConnectedDrivingCleaner(data=df)
@@ -76,7 +76,7 @@ class ConnectedDrivingLargeDataCleaner:
 
             # only write file if there are rows in newDf
             if len(newDf) > 0:
-                newDf.to_csv(self.cleanedfilespath + path.basename(file), index=False)
+                newDf.to_csv(f"{self.cleanedfilespath}{path.basename(file)}", index=False)
             else:
                 self.logger.log(f"Skipping writing file {file} because it has no rows.")
 
@@ -119,7 +119,7 @@ class ConnectedDrivingLargeDataCleaner:
 
         first_file = True
         with open(self.combinedcleandatapath, 'w') as outfile:
-            for file in glob.glob(self.cleanedfilespath + "*.csv"):
+            for file in glob.glob(f"{self.cleanedfilespath}*.csv"):
                 self.logger.log(f"Combining file {file}")
                 with open(file) as infile:
                     if first_file:

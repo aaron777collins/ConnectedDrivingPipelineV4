@@ -91,7 +91,7 @@ class MDataClassifier:
     # plots confusion matrix using ConfusionMatrixDisplay
     def plot_confusion_matrix(self, confusion_matrix, model_name):
         path = self._pathprovider.get_path("MDataClassifier.plot_confusion_matrix_path")
-        path = os.path.join(path, model_name + ".png")
+        path = f"{path}{model_name}.png"
         os.makedirs(os.path.dirname(path), exist_ok=True)
         # sets the labels to "Regular" and "Malicious" by default
         labels = self._contextprovider.get_context("MDataClassifier.plot_confusion_matrix_labels", ["Regular", "Malicious"])

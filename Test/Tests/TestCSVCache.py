@@ -32,14 +32,14 @@ class TestCSVCache(ITest):
         assert(self.some_function(1, 3).equals(pd.DataFrame({'a': [1], 'b': [3]})))
 
         # check that the cache correctly stores a file at the cache location
-        assert(os.path.exists(os.path.join("cache", PathProvider.DEFAULT_MODEL_NAME, "some_function_1_2.csv")))
-        assert(os.path.exists(os.path.join("cache", PathProvider.DEFAULT_MODEL_NAME, "some_function_1_3.csv")))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.csv"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.csv"))
 
     def cleanup(self):
         # remove the cache files
         try:
-            os.remove(os.path.join("cache", PathProvider.DEFAULT_MODEL_NAME, "some_function_1_2.csv"))
-            os.remove(os.path.join("cache", PathProvider.DEFAULT_MODEL_NAME, "some_function_1_3.csv"))
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.csv")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.csv")
         except FileNotFoundError:
             pass
 

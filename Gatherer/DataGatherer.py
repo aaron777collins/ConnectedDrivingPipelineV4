@@ -40,12 +40,12 @@ class DataGatherer(IDataGatherer):
         # splits the data for easier cleaning
         def split_large_data(self) -> pd.DataFrame:
             lines_per_file = self._generatorContextProvider.get("DataGatherer.lines_per_file")
+            os.makedirs(path.dirname(self.splitfilespath), exist_ok=True)
 
-            if path.isfile(self.splitfilespath + "split0.csv"):
+            if path.isfile(f"{self.splitfilespath}split0.csv"):
                 self.logger.log("Found split files! Skipping regeneration.")
                 return self
 
-            os.makedirs(path.dirname(self.splitfilespath), exist_ok=True)
             # loop until we have all the data
             # create new file for each 1000 lines
 
@@ -56,7 +56,7 @@ class DataGatherer(IDataGatherer):
                         self.logger.log(f"Creating new file for line {i}")
                         if i != 0:
                             file.close()
-                        file = open(self.splitfilespath + f"split{i}.csv", "w")
+                        file = open(f"{self.splitfilespath}split{i}.csv", "w")
                         file.write(header)  # write the header at the beginning of the file
                     file.write(line)
             file.close()

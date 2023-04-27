@@ -31,7 +31,7 @@ class TestStandardDependencyInjection(ITest):
         PathProvider(model="test",
                      contexts={
                             "Logger.logpath": DEFAULT_LOG_PATH,
-                            "TestClass.somepath": lambda model: os.path.join(PathProvider.DEFAULT_MODEL_NAME, "somepath"),
+                            "TestClass.somepath": lambda model: model + "/somepath",
                      })
         ContextProvider = DictProvider(contexts={
             "TestClass.somecontext": "somecontext"
@@ -40,7 +40,7 @@ class TestStandardDependencyInjection(ITest):
         # should not fail
         tc = self.TestClass()
 
-        assert(tc.somepath == os.path.join(PathProvider.DEFAULT_MODEL_NAME, "somepath"))
+        assert(tc.somepath == "test/somepath")
         assert(tc.somecontext == "somecontext")
 
 

@@ -22,5 +22,5 @@ class Logger:
         string = f"{elevation} {datetime.now().strftime('%m/%d/%Y, %H:%M:%S')} {self.prefix}: {' '.join(messages)}"
         print(string)
         os.makedirs(os.path.dirname(self.logpath), exist_ok=True)
-        with open(os.path.join(self.logpath, self.prefix+".txt"), "a") as f:
+        with open(f"{self.logpath}{self.prefix}.txt", "a") as f:
             f.write(string + "\n")

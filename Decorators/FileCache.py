@@ -45,9 +45,9 @@ class FileCache:
             for cache_variable in cache_variables:
                 file_name += "_" + str(cache_variable)
 
-            cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: os.path.join("cache", name))
+            cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: f"cache/{name}/")
             # create the file path
-            full_path = os.path.join(cache_path, file_name + "." + cache_file_type)
+            full_path = f"{cache_path}{file_name}.{cache_file_type}"
 
         else:
             full_path = kwargs["full_file_cache_path"]
@@ -90,8 +90,8 @@ class FileCache:
         for cache_variable in cache_variables:
             file_name += "_" + str(cache_variable)
 
-        cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: os.path.join("cache", name))
+        cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: f"cache/{name}/")
         # create the file path
-        full_path = os.path.join(cache_path, file_name + "." + cache_file_type)
+        full_path = f"{cache_path}{file_name}.{cache_file_type}"
 
         return full_path
