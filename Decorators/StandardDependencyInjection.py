@@ -42,8 +42,8 @@ class StandardDependencyInjection(object):
         # check if any of them are of the type of the keys in the dictionary
         # if so then set the argument in args to the value in the dictionary
         # zip(self.class_to_instantiate.__init__.__annotations__.values().insert(0, self.class_to_instantiate), self.class_to_instantiate.__init__.__code__.co_varnames)
-        print(self.class_to_instantiate.__init__.__annotations__.values())
-        print(self.class_to_instantiate.__init__.__annotations__)
+        # print(self.class_to_instantiate.__init__.__annotations__.values())
+        # print(self.class_to_instantiate.__init__.__annotations__)
         args2 = args
         for argtype in self.class_to_instantiate.__init__.__annotations__.values():
             if argtype.__name__ in self.SDI_DEPENDENCIES:
