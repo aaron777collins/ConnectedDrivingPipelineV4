@@ -53,7 +53,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # DataGatherer.lines_per_file
         self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
             "DataGatherer.filepath": lambda model: "data/data.csv",
-            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/",
+            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/subsection.csv",
             "DataGatherer.splitfilespath": lambda model: f"data/classifierdata/splitfiles/{model}/",
         }
         )
@@ -68,9 +68,9 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
         self._generatorPathProvider = GeneratorPathProvider(model="CCDDWithTimestampsAndWithXYCoords", contexts={
-            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/split/cleaned/{model}/",
-            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/split/combinedcleaned/{model}/",
-            "ConnectedDrivingCleaner.cleandatapath": lambda model: f"data/classifierdata/cleaned/{model}/",
+            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
+            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
+            "ConnectedDrivingCleaner.cleandatapath": lambda model: f"data/classifierdata/cleaned/{model}/cleaned.csv",
         }
         )
 
@@ -80,7 +80,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # MDataClassifier.plot_confusion_matrix_path
         #
         self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/",
+            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/clean.csv",
             "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
         }
         )
@@ -98,11 +98,24 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
         # ConnectedDrivingAttacker.attack_ratio
         # ConnectedDrivingCleaner.cleanFuncName
         #
+
+        # XY columns are added after these columns are used for filtering
+        COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+            "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+            "metadata_serialId_serialNumber", "metadata_receivedAt",
+            #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
+            #  "metadata_rmd_rxSource","metadata_bsmSource",
+            "coreData_id", "coreData_secMark", "coreData_position_lat", "coreData_position_long",
+            "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+            "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
+
+
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": 100000,
             "DataGatherer.lines_per_file": 1000000,
             "ConnectedDrivingCleaner.x_pos": -105.1159611,
             "ConnectedDrivingCleaner.y_pos": 41.0982327,
+            "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 500,
             "ConnectedDrivingLargeDataCleaner.cleanFunc": ConnectedDrivingCleaner.clean_data_with_timestamps,
             "ConnectedDrivingLargeDataCleaner.filterFunc": ConnectedDrivingLargeDataCleaner.within_rangeXY,

@@ -1,6 +1,7 @@
 # Dependency injects the providers (make sure they are the last arguments but before kwargs)
 import os
 import random
+import pandas as pd
 
 from sklearn.model_selection import train_test_split
 from Decorators.CSVCache import CSVCache
@@ -83,7 +84,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
     @CSVCache
     def _add_attacks_positional_offset_const(self, direction_angle=45, distance_meters=50, cache_variables=[
      "REPLACE_ME_WITH_ALL_VARIABLES_THAT_CHANGE_THE_OUTPUT_OF_THIS_FUNCTION"
-    ]):
+    ]) -> pd.DataFrame:
         # Applying the attack to the data when the isAttacker column is 1
 
         # Checking if the row is an attacker
@@ -128,7 +129,7 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
     def _add_attacks_positional_offset_rand(self, min_dist=25, max_dist = 250, cache_variables=[
             "REPLACE_ME_WITH_ALL_VARIABLES_THAT_CHANGE_THE_OUTPUT_OF_THIS_FUNCTION"
         ]
-    ):
+    ) -> pd.DataFrame:
         # similar to the const attack, but the distance and direction is random
 
         self.data = self.data.apply(lambda row: self.positional_offset_rand_attack(row, min_dist, max_dist), axis=1)

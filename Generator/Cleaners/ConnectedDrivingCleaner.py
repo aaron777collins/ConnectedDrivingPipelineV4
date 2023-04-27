@@ -31,6 +31,8 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
         self.isXYCoords = self._generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords")
 
+        self.columns = self._generatorContextProvider.get("ConnectedDrivingCleaner.columns")
+
         self.data = data
         self.x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
         self.y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
@@ -46,7 +48,7 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     # caches the cleaned data
     @CSVCache
-    def _clean_data(self, full_file_cache_path="REPLACE_ME"):
+    def _clean_data(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
         self.cleaned_data = self.data[self.columns]
         self.cleaned_data = self.cleaned_data.dropna()
         self.cleaned_data["x_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[0])
@@ -60,12 +62,12 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
     # executes the cleaning of the data with timestamps and caches it
     def clean_data_with_timestamps(self):
-        self._clean_data_with_timestamps(full_file_cache_path=self.cleandatapathtimestamps)
+        self._clean_data_with_timestamps(full_file_cache_path=self.cleandatapath)
         return self
 
     # caches the cleaned data with timestamps
     @CSVCache
-    def _clean_data_with_timestamps(self, full_file_cache_path="REPLACE_ME"):
+    def _clean_data_with_timestamps(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
         self.cleaned_data = self.data[self.columns]
         self.cleaned_data = self.cleaned_data.dropna()

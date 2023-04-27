@@ -12,7 +12,7 @@ class TestFileCache(ITest):
         return a + b
 
     def some_other_func(self, a, b)-> int:
-        return TestFileCache._some_other_func(a, b, cache_variables=[a, b])
+        return self._some_other_func(a, b, cache_variables=[a, b])
 
     @FileCache
     def _some_other_func(self, a, b, cache_variables=["REPLACE ME"])-> int:

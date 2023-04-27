@@ -27,7 +27,7 @@ class MConnectedDrivingDataCleaner:
         return self
 
     @CSVCache
-    def _clean_data(self, full_file_cache_path="REPLACE_ME"):
+    def _clean_data(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
         os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
 
         def convert_large_hex_str_to_hex(num):

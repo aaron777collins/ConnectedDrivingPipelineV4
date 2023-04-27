@@ -32,7 +32,7 @@ class DataGatherer(IDataGatherer):
 
         # caches the results as a file at the specified path
         @CSVCache
-        def _gather_data(self, full_file_cache_path="REPLACE_ME"):
+        def _gather_data(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
             self.logger.log("Didn't find file. Reading from full dataset.")
             self.data = pd.read_csv(self.filepath, nrows=self.numrows)
             return self.data
