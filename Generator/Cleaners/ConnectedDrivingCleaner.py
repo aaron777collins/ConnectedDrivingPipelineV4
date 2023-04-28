@@ -36,8 +36,6 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
             numrows = self._generatorContextProvider.get("DataGatherer.numrows")
             self.filename = self._generatorContextProvider.get("ConnectedDrivingCleaner.filename", f"clean{numrows}.csv")
 
-        os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
-
         self.isXYCoords = self._generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords")
 
         self.columns = self._generatorContextProvider.get("ConnectedDrivingCleaner.columns")
@@ -57,8 +55,8 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
     # executes the cleaning of the data and caches it
     def clean_data(self):
         self.cleaned_data = self._clean_data(cache_variables=[
-            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
-            self.clean_func_name, self.filename, self.numrows, self.x_pos, self.y_pos
+            self.__class__.__name__, self.isXYCoords,
+            self.clean_func_name, self.filename, self.x_pos, self.y_pos
         ])
         return self
 

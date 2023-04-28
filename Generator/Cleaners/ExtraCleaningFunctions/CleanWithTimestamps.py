@@ -7,25 +7,25 @@ from Helpers.DataConverter import DataConverter
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 
-class CleanWithTimestamps:
+class CleanWithTimestamps(ConnectedDrivingCleaner):
     @StandardDependencyInjection
     def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None, filename=None):
         # initialize base class to get the basic dependencies
-        self = ConnectedDrivingCleaner(data=data, filename=filename)
+        super().__init__(data=data, filename=filename)
+
 
 
     # executes the cleaning of the data with timestamps and caches it
     def clean_data_with_timestamps(self):
         self.cleaned_data = self._clean_data_with_timestamps(cache_variables=[
-            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
-            self.clean_func_name, self.filename, self.numrows, self.x_pos, self.y_pos
+            self.__class__.__name__, self.isXYCoords,
+            self.clean_func_name, self.filename, self.x_pos, self.y_pos
         ])
         return self
 
     # caches the cleaned data with timestamps
     @CSVCache
     def _clean_data_with_timestamps(self, cache_variables=["REPLACE_ME"]) -> pd.DataFrame:
-        os.makedirs(os.path.dirname(self.cleandatapath), exist_ok=True)
         self.cleaned_data = self.data[self.columns]
         self.cleaned_data = self.cleaned_data.dropna()
         self.cleaned_data["x_pos"] = self.cleaned_data["coreData_position"].map(lambda x: DataConverter.point_to_tuple(x)[0])
