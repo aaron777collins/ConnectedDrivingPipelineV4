@@ -14,9 +14,9 @@ from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 
 # TO AVOID ERRORS, ALL FILES FROM THIS CLASS ARE AUTO_CACHED in the cache folder using the cache_variables for the
 # respective cached function
-@StandardDependencyInjection
 class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
+    @StandardDependencyInjection
     def __init__(self, data, id: str, pathProvider: IGeneratorPathProvider, generatorContextProvider: IGeneratorContextProvider):
 
         self.id = id

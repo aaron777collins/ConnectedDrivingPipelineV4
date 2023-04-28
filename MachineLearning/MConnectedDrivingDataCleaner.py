@@ -9,8 +9,8 @@ from Logger.Logger import Logger
 from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IMLPathProvider import IMLPathProvider
 
-@StandardDependencyInjection
 class MConnectedDrivingDataCleaner:
+    @StandardDependencyInjection
     def __init__(self, data, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._MLPathProvider = pathprovider()
         self._MLContextprovider = contextprovider()

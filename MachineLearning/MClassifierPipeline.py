@@ -10,8 +10,8 @@ from ServiceProviders.IMLPathProvider import IMLPathProvider
 DEFAULT_CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-@StandardDependencyInjection
 class MClassifierPipeline:
+    @StandardDependencyInjection
     def __init__(self, train_X, train_Y, test_X, test_Y, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._pathprovider = pathprovider()
         self._MLContextProvider = contextprovider()

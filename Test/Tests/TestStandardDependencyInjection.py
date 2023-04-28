@@ -13,8 +13,8 @@ import pandas as pd
 
 class TestStandardDependencyInjection(ITest):
 
-    @StandardDependencyInjection
     class TestClass:
+        @StandardDependencyInjection
         def __init__(self, pathprovider: IPathProvider, contextprovider: IDictProvider, somekw=None, somekw2=None):
             self._pathprovider: PathProvider = pathprovider()
             self._contextprovider: DictProvider = contextprovider()

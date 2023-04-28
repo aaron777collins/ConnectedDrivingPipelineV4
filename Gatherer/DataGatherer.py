@@ -12,9 +12,8 @@ from ServiceProviders.IKeyProvider import IKeyProvider
 from ServiceProviders.IPathProvider import IPathProvider
 
 # MAKE SURE THAT THE DEPENDENCIES ARE LAST IN THE ARGS
-@StandardDependencyInjection
 class DataGatherer(IDataGatherer):
-
+        @StandardDependencyInjection
         def __init__(self, pathprovider: IInitialGathererPathProvider, contextprovider: IGeneratorContextProvider):
             self._initialGathererPathProvider = pathprovider()
             self._generatorContextProvider = contextprovider()

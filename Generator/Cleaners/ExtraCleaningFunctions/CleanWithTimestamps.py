@@ -1,5 +1,5 @@
 import os
-from turtle import pd
+import pandas as pd
 from Decorators.CSVCache import CSVCache
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
@@ -7,11 +7,11 @@ from Helpers.DataConverter import DataConverter
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 
-@StandardDependencyInjection
-class CleanWithTimestamps(ConnectedDrivingCleaner):
+class CleanWithTimestamps:
+    @StandardDependencyInjection
     def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None, filename=None):
         # initialize base class to get the basic dependencies
-        super().__init__(data, filename)
+        self = ConnectedDrivingCleaner(data=data, filename=filename)
 
 
     # executes the cleaning of the data with timestamps and caches it

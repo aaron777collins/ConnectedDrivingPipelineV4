@@ -8,8 +8,8 @@ from ServiceProviders.IPathProvider import IPathProvider
 from ServiceProviders.PathProvider import PathProvider
 
 
-@StandardDependencyInjection
 class Testing:
+    @StandardDependencyInjection
     def __init__(self, pathprovider: IPathProvider, contextprovider: IDictProvider):
         self._pathprovider = pathprovider()
         self._contextprovider = contextprovider()

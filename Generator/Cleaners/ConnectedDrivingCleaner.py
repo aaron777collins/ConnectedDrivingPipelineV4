@@ -18,9 +18,9 @@ import os.path as path
 
 
 # Dependency injects the providers (make sure they are the last arguments but before kwargs)
-@StandardDependencyInjection
 class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
 
+    @StandardDependencyInjection
     def __init__(self, pathProvider: IGeneratorPathProvider, contextProvider: IGeneratorContextProvider, data=None, filename=None):
         self._generatorPathProvider = pathProvider()
         self._generatorContextProvider = contextProvider()

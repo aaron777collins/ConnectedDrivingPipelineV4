@@ -8,9 +8,8 @@ from ServiceProviders.IPathProvider import IPathProvider
 
 DEFAULT_LOG_PATH = lambda model: f"logs/{model}/"
 
-@StandardDependencyInjection
 class Logger:
-
+    @StandardDependencyInjection
     def __init__(self, prefix, pathprovider: IPathProvider):
         self._pathprovider = pathprovider()
         self.logpath = self._pathprovider.getPathWithModelName("Logger.logpath")

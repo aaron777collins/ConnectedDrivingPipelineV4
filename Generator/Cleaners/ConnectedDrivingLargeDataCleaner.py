@@ -22,9 +22,9 @@ from ServiceProviders.IInitialGathererPathProvider import IInitialGathererPathPr
 
 
 # Dependency injects the providers (make sure they are the last arguments but before kwargs)
-@StandardDependencyInjection
 class ConnectedDrivingLargeDataCleaner:
 
+    @StandardDependencyInjection
     def __init__(self, generatorPathProvider: IGeneratorPathProvider, initialGathererPathProvider: IInitialGathererPathProvider, generatorContextProvider: IGeneratorContextProvider):
         self._generatorPathProvider = generatorPathProvider()
         self._initialgathererpathprovider = initialGathererPathProvider()

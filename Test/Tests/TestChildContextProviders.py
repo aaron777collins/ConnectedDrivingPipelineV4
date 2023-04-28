@@ -12,8 +12,8 @@ import pandas as pd
 
 class TestChildContextProviders(ITest):
 
-    @StandardDependencyInjection
     class SomeClass:
+        @StandardDependencyInjection
         def __init__(self, generatorContextProvider: IGeneratorContextProvider, mlContextProvider: IMLContextProvider):
             self._generatorContextProvider = generatorContextProvider()
             self._mlContextProvider = mlContextProvider()

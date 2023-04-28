@@ -12,8 +12,8 @@ from ServiceProviders.IPathProvider import IPathProvider
 
 # Creates uses the data to classify whether or not a vehicle is an attacker
 # Takes in a sklearn classifier and the data to classify
-@StandardDependencyInjection
 class MDataClassifier:
+    @StandardDependencyInjection
     def __init__(self, classifier, train_X, train_Y, test_X, test_Y, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._pathprovider = pathprovider()
         self._contextprovider = contextprovider()
