@@ -8,6 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 from EasyMLLib.CSVWriter import CSVWriter
 from Generator.Attackers.Attacks.StandardPositionalOffsetAttacker import StandardPositionalOffsetAttacker
 from Generator.Attackers.ConnectedDrivingAttacker import ConnectedDrivingAttacker
+from Generator.Cleaners.CleanersWithFilters.CleanerWithFilterWithinRangeXY import CleanerWithFilterWithinRangeXY
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
@@ -48,6 +49,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
                 "Logger.logpath": DEFAULT_LOG_PATH,
         })
 
+        initialGathererModelName = "CreatingConnectedDrivingDataset"
         numSubsectionRows = 1000000
 
         # Properties:
@@ -55,7 +57,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
         # DataGatherer.subsectionpath
         # DataGatherer.splitfilespath
         # DataGatherer.lines_per_file
-        self._initialGathererPathProvider = InitialGathererPathProvider(model="CreatingConnectedDrivingDataset", contexts={
+        self._initialGathererPathProvider = InitialGathererPathProvider(model=initialGathererModelName, contexts={
             "DataGatherer.filepath": lambda model: "data/data.csv",
             "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/subsection{numSubsectionRows}.csv",
             "DataGatherer.splitfilespath": lambda model: f"data/classifierdata/splitfiles/{model}/",
@@ -70,7 +72,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
-        self._generatorPathProvider = GeneratorPathProvider(model="CCDDWithTimestampsAndWithXYCoords", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-500mdist", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -122,7 +124,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
             "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
             "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
-            "ConnectedDrivingLargeDataCleaner.filterFunc": ConnectedDrivingLargeDataCleaner.within_rangeXY,
+            "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": CleanerWithFilterWithinRangeXY,
+            "ConnectedDrivingLargeDataCleaner.filterFunc": CleanerWithFilterWithinRangeXY.within_rangeXY,
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,

@@ -84,29 +84,6 @@ class ConnectedDrivingLargeDataCleaner:
 
         return self
 
-    def within_range(self, df):
-        # calculate the distance between each point and (x_pos, y_pos)
-        df = df.copy()
-        df['distance'] = df.apply(lambda row: MathHelper.dist_between_two_points(row[self.x_col], row[self.y_col], self.x_pos, self.y_pos), axis=1)
-        # filter out points that are outside the max distance
-        df = df[df['distance'] <= self.max_dist]
-        # drop the 'distance' column
-        df.drop('distance', axis=1, inplace=True)
-        return df
-
-    def within_rangeXY(self, df):
-        # assume (0, 0) is the center of the map
-        x_pos = 0
-        y_pos = 0
-        # calculate the distance between each point and (x_pos, y_pos)
-        df = df.copy()
-        df['distance'] = df.apply(lambda row: MathHelper.dist_between_two_pointsXY(row[self.x_col], row[self.y_col], x_pos, y_pos), axis=1)
-        # filter out points that are outside the max distance
-        df = df[df['distance'] <= self.max_dist]
-        # drop the 'distance' column
-        df.drop('distance', axis=1, inplace=True)
-        return df
-
     def combine_data(self):
         # search the cleaned split folder for all csv files
         # combine them into one csv file
