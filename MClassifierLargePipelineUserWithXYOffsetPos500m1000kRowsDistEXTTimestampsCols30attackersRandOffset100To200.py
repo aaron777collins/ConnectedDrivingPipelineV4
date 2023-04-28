@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from EasyMLLib.CSVWriter import CSVWriter
+from Generator.Attackers.Attacks.StandardPositionalOffsetAttacker import StandardPositionalOffsetAttacker
 from Generator.Attackers.ConnectedDrivingAttacker import ConnectedDrivingAttacker
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
@@ -176,8 +177,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m1000kRowsDistEXTTimestampsC
         test = data.iloc[1000000:2000000].copy()
 
         # cleaning/adding attackers to the data
-        train = ConnectedDrivingAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
-        test = ConnectedDrivingAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
 
 
 
