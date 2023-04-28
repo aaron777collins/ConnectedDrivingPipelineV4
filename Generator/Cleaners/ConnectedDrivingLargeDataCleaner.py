@@ -62,9 +62,9 @@ class ConnectedDrivingLargeDataCleaner:
         # create the cleaned split folder if it doesn't exist
         os.makedirs(path.dirname(self.cleanedfilespath), exist_ok=True)
 
-        # check if there is already a cleaned file for this model type
-        if len(glob.glob(f"{self.cleanedfilespath}*.csv")) > 0:
-            self.logger.log("Found cleaned files! Skipping regeneration.")
+        # check if ALL the cleaned files already exist
+        if len(glob.glob(f"{self.cleanedfilespath}*.csv")) == len(glob.glob(f"{self.splitfilespath}*.csv")):
+            self.logger.log("Found all cleaned files! Skipping regeneration.")
             return self
 
         for file in glob.glob(f"{self.splitfilespath}*.csv"):
