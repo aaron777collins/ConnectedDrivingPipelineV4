@@ -10,6 +10,8 @@ results/
 venv/
 cache/
 Outputs/
+# slurms are the slurm files on the super computer
+slurms/
 
 # C extensions
 *.so
