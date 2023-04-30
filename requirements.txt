@@ -6,3 +6,4 @@ easymllib>=0.1.2
 matplotlib
 geopy
 tensorflow
+geographiclib
