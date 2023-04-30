@@ -12,6 +12,7 @@ cache/
 Outputs/
 # slurms are the slurm files on the super computer
 slurms/
+slurm
 
 # C extensions
 *.so
