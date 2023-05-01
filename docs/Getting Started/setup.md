@@ -32,7 +32,8 @@ mkdir data
         sleep 1s;
     done;
     ```
-    6. Create a virtual environment to install the required modules
+
+6. Create a virtual environment to install the required modules
     ``` bash
     python -m venv venv
     ```
@@ -44,7 +45,8 @@ mkdir data
 
     *Make sure to always activate your venv before running anything in this pipeline*
 
-    7. Install the required modules
+7. Install the required modules
+
     ``` bash
     pip install -r requirements.txt
     ```
