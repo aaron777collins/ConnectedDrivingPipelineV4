@@ -1,0 +1,12 @@
+site_name: MachineLearningPipelineV4 Docs
+theme:
+  name: material
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascripts/extra.js
+nav:
+  - Home: 'index.md'
+  - 'Setup':
+    - "Installation": "Installation.md"
+  - "About": "about.md"

@@ -7,3 +7,5 @@ matplotlib
 geopy
 tensorflow
 geographiclib
+mkdocs-material
+
