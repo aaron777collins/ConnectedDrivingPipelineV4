@@ -13,6 +13,7 @@ Outputs/
 # slurms are the slurm files on the super computer
 slurms/
 slurm*
+site/
 
 # C extensions
 *.so

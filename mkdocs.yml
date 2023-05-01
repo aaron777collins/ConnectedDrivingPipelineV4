@@ -1,7 +1,41 @@
 site_name: MachineLearningPipelineV4 Docs
 theme:
   name: material
+  features:
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-3
+        name: Switch to light mode
 extra_css:
   - stylesheets/extra.css
 extra_javascript:
   - javascripts/extra.js
+extra:
+  generator: false # credits to mkdocs-material for generating it
+plugins:
+  - offline
+  - search:
+      lang: en
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde

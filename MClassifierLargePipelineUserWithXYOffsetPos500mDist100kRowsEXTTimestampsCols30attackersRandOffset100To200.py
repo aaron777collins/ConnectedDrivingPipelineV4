@@ -28,7 +28,7 @@ from ServiceProviders.PathProvider import PathProvider
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -38,7 +38,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200:
+class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200:
 
     def __init__(self):
 
@@ -260,5 +260,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCo
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos500m100kRowsDistEXTTimestampsCols30attackersRandOffset100To200()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200()
     mcplu.run()
