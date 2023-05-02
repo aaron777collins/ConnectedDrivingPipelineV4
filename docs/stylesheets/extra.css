@@ -64,7 +64,6 @@
     max-width: var(--max-table-width);
     /* make it so the table is scrollable on overflow */
     display: block;
-
 }
 
 /* make the cells have padding, outlines, etc */
@@ -83,8 +82,8 @@
 /* dark mode */
 [data-md-color-scheme="slate"] .result-table {
     /* color scheme for dark mode */
-    border: 1px solid #ccc;
-    background-color: #222;
+    border: none !important;
+    background-color: transparent !important;
     color: #fff;
 }
 
@@ -96,5 +95,6 @@
 
 [data-md-color-scheme="slate"] .result-table td {
     /* color scheme for dark mode */
+    background-color: #222;
     border: 1px solid #ccc;
 }
