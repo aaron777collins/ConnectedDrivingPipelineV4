@@ -5,25 +5,25 @@
 /* different widths depending on the screen size */
 
 
-@media not (max-width: 700px) {
+@media only screen and not (max-width: 700px) {
     :root {
         --max-table-width: 700px;
     }
 }
 
-@media (max-width: 700px) {
+@media only screen and (max-width: 700px) {
     :root {
         --max-table-width: 700px;
     }
 }
 
-@media (max-width: 450px){
+@media only screen and (max-width: 450px){
     :root {
         --max-table-width: 450px;
     }
 }
 
-@media (max-width: 300px){
+@media only screen and (max-width: 300px){
     :root {
         --max-table-width: 300px;
     }
