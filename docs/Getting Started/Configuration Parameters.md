@@ -1,4 +1,4 @@
-# Parameters
+# Configuration Parameters
 There's a lot of configuration parameters that can be used to customize the behavior of the application. The following tables lists all the available parameters and their default values for each respective provider.
 
 ## PathProvider
@@ -234,4 +234,42 @@ The columns to be used for training the model (and also the final columns after 
 #### Description
 The classifiers to be used for training the model. These are autofilled but we can change them if we want to use different classifiers. At the top of the example class on the [development page](./development.html), we specify the CLASSIFIER_INSTANCES variable to be used for the pipeline but we didn't include it in the config because it was autofilled. However, it would be easy to modify the array and pass it in. **Make sure to include the modified parameters in your LOG_NAME and file name to avoid caching errors though!**
 
+### CleanerWithFilterWithinRangeXYAndDay.day
 
+#### Recommended Value
+``` python
+2
+```
+
+#### Description
+The day to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### CleanerWithFilterWithinRangeXYAndDay.month
+
+#### Recommended Value
+``` python
+4
+```
+
+#### Description
+The month to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### CleanerWithFilterWithinRangeXYAndDay.year
+
+#### Recommended Value
+``` python
+2021
+```
+
+#### Description
+The year to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### MDataClassifier.plot_distribution_path
+
+#### Recommended Value
+``` python
+lambda model: f"data/mclassifierdata/results/{model}/"
+```
+
+#### Description
+The path to be used for plotting the distribution of the data. This parameter is only used in the large pipeline when plotting the distribution of the data during feature analysis.

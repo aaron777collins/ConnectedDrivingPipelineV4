@@ -11,7 +11,7 @@ For example, look at the pipeline user file called `MClassifierLargePipelineUser
 - 100kRows: This specifies that we are only using 100k rows to train our data
 - EXTTimestampscols: This reminds us that we are cleaning our data to use the extended timestamp columns (which I've included in the file)
 - 30attackers: Specifies that we are using 30% attackers (and by default, it is splitting the cars such that 30% are attackers and then making 100% of the BSMs malicious)
-- RandOffset100To200: Specifies that we are using the random offset attak with a min distance of 100m and a max distance of 200m.
+- RandOffset100To200: Specifies that we are using the random offset attack with a min distance of 100m and a max distance of 200m.
 
 Pipeline user files should be placed in the base directory of the project. For example, the `MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200` file is placed in the base directory of the project.
 
