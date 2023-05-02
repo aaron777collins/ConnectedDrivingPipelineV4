@@ -1,0 +1,52 @@
+:root {
+    --max-table-width: 700px;
+}
+
+#results {
+    /* make the results have a max width */
+    width: var(--max-table-width);
+    max-width: var(--max-table-width);
+}
+
+#results > * {
+    /* make the results have a max width */
+    max-width: var(--max-table-width);
+    overflow: auto;
+    word-wrap: break-word;
+}
+
+.result-body-cell-with-links {
+    /* make text wrap around and break no matter what
+        * (even if there are no spaces) */
+    word-wrap: break-word;
+}
+
+/* ensure the first column has a max width of 250px */
+.result-table-with-links td:first-child {
+    max-width: calc(var(--max-table-width)/2);
+}
+
+/* style the tables so that each cell has a border, etc. */
+/* make it pretty */
+.result-table {
+    border-collapse: collapse;
+    margin: 15px 0;
+    overflow: auto;
+    max-width: var(--max-table-width);
+    /* make it so the table is scrollable on overflow */
+    display: block;
+
+}
+
+/* make the cells have padding, outlines, etc */
+.result-table td {
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+/* make the header cells have a background color */
+.result-table th {
+    background-color: #eee;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
