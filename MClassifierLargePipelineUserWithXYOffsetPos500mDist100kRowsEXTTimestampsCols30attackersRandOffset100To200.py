@@ -103,7 +103,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         # ConnectedDrivingCleaner.cleanFuncName
         #
 
-        # XY columns are added after these columns are used for filtering
+        # Cleaned columns are added/modified after these columns are used for filtering
         COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
             "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
             "metadata_serialId_serialNumber", "metadata_receivedAt",

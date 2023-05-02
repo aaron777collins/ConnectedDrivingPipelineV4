@@ -1,133 +1,10 @@
-## Parameters
+# Parameters
 There's a lot of configuration parameters that can be used to customize the behavior of the application. The following tables lists all the available parameters and their default values for each respective provider.
 
-// info:
+## PathProvider
+### Logger.logpath
+#### Recommended Value
 
-#################  CONFIG FOR ALL PROPERTIES IN THE PIPELINE #################################################
-
-        # used for the logger's path
-        self._pathprovider = PathProvider(model=LOG_NAME, contexts={
-                "Logger.logpath": DEFAULT_LOG_PATH,
-        })
-
-        initialGathererModelName = "CreatingConnectedDrivingDataset"
-        numSubsectionRows = 100000
-
-        # Properties:
-        # DataGatherer.filepath
-        # DataGatherer.subsectionpath
-        # DataGatherer.splitfilespath
-        # DataGatherer.lines_per_file
-        self._initialGathererPathProvider = InitialGathererPathProvider(model=initialGathererModelName, contexts={
-            "DataGatherer.filepath": lambda model: "data/data.csv",
-            "DataGatherer.subsectionpath": lambda model: f"data/classifierdata/subsection/{model}/subsection{numSubsectionRows}.csv",
-            "DataGatherer.splitfilespath": lambda model: f"data/classifierdata/splitfiles/{model}/",
-        }
-        )
-
-        # Properties:
-        #
-        # ConnectedDrivingLargeDataCleaner.cleanedfilespath
-        # ConnectedDrivingLargeDataCleaner.combinedcleandatapath
-        # MConnectedDrivingLargeDataCleaner.dtypes # AUTO_FILLED
-        #
-        # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
-        # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-500mdist", contexts={
-            "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
-            "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
-        }
-        )
-
-        # Properties:
-        #
-        # MConnectedDrivingDataCleaner.cleandatapath
-        # MDataClassifier.plot_confusion_matrix_path
-        #
-        self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/clean.csv",
-            "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
-        }
-        )
-
-        # Properties:
-        #
-        # DataGatherer.numrows
-        # ConnectedDrivingCleaner.x_pos
-        # ConnectedDrivingCleaner.y_pos
-        # ConnectedDrivingLargeDataCleaner.max_dist
-        # ConnectedDrivingLargeDataCleaner.cleanFunc
-        # ConnectedDrivingLargeDataCleaner.filterFunc
-        # ConnectedDrivingAttacker.SEED
-        # ConnectedDrivingCleaner.isXYCoords
-        # ConnectedDrivingAttacker.attack_ratio
-        # ConnectedDrivingCleaner.cleanFuncName
-        #
-
-        # XY columns are added after these columns are used for filtering
-        COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
-            "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
-            "metadata_serialId_serialNumber", "metadata_receivedAt",
-            #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
-            #  "metadata_rmd_rxSource","metadata_bsmSource",
-            "coreData_id", "coreData_secMark", "coreData_position_lat", "coreData_position_long",
-            "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
-            "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
-
-
-        self.generatorContextProvider = GeneratorContextProvider(contexts={
-            "DataGatherer.numrows": numSubsectionRows,
-            "DataGatherer.lines_per_file": 1000000,
-            "ConnectedDrivingCleaner.x_pos": -105.1159611,
-            "ConnectedDrivingCleaner.y_pos": 41.0982327,
-            "ConnectedDrivingCleaner.columns": COLUMNS,
-            "ConnectedDrivingLargeDataCleaner.max_dist": 500,
-            "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
-            "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
-            "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
-            "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": CleanerWithFilterWithinRangeXY,
-            "ConnectedDrivingLargeDataCleaner.filterFunc": CleanerWithFilterWithinRangeXY.within_rangeXY,
-            "ConnectedDrivingAttacker.SEED": 42,
-            "ConnectedDrivingCleaner.isXYCoords": True,
-            "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
-
-        }
-        )
-
-        # Properties:
-        #
-        # MConnectedDrivingDataCleaner.columns
-        # MClassifierPipeline.classifier_instances # AUTO_FILLED
-        #
-        self.MLContextProvider = MLContextProvider(contexts={
-            "MConnectedDrivingDataCleaner.columns": [
-            # "metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
-            #  "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
-            #  "metadata_serialId_serialNumber", "metadata_receivedAt",
-            #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
-            #  "metadata_rmd_rxSource","metadata_bsmSource",
-            "coreData_id",  # "coreData_position_lat", "coreData_position_long",
-            "coreData_secMark", "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
-            "month", "day", "year", "hour", "minute", "second", "pm",
-            "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
-
-            # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
-
-        }
-        )
-
-        ######### END OF CONFIG FOR ALL PROPERTIES IN THE PIPELINE ##################################################
-
-
-#
-
-### PathProvider
-
-Parameter:
-`Logger.logpath`
-
-Recommended Value:
 `DEFAULT_LOG_PATH`
 
 Get the default log path by importing it from the Logger module
@@ -136,28 +13,225 @@ Get the default log path by importing it from the Logger module
 from Logger.Logger import DEFAULT_LOG_PATH
 ```
 
-### InitialGathererPathProvider
+#### Description
 
-Parameter:
-`DataGatherer.filepath`
+The path to the log folder. The log folder will contain all the log files generated by the pipeline user file.
 
-Recommended Value:
+## InitialGathererPathProvider
+### DataGatherer.filepath
+#### Recommended Value
 ``` python
 lambda model: "data/data.csv"
 ```
+#### Description
+The path function to the file containing the data to be used for the initial gathering of data. The file should be a csv file.
 
-Parameter:
-`DataGatherer.subsectionpath`
 
-Recommended Value:
+### DataGatherer.subsectionpath
+#### Recommended Value
 ``` python
 lambda model: f"data/classifierdata/subsection/{model}/subsection{numSubsectionRows}.csv"
 ```
+#### Description
+The path function to the file containing the subsection of the data to be used for the initial gathering of data. The file should be a csv file. This file is used to get a subsection of the massive data file to be used for the initial gathering of data. This parameter is used in both the regular (non-large) pipeline and the large pipeline.
 
-Parameter:
-`DataGatherer.splitfilespath`
-
-Recommended Value:
+### DataGatherer.splitfilespath
+#### Recommended Value
 ``` python
 lambda model: f"data/classifierdata/splitfiles/{model}/"
 ```
+#### Description
+The path function to the folder containing the split files of the data. The split files will be individually cleaned and then merged later. This folder is only used in the large pipeline.
+
+## GeneratorPathProvider
+### ConnectedDrivingLargeDataCleaner.cleanedfilespath
+#### Recommended Value
+``` python
+lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/"
+```
+#### Description
+The path function to the folder containing the cleaned split files of the data. The split files will be individually cleaned and then stored in this folder. This folder is only used in the large pipeline.
+
+### ConnectedDrivingLargeDataCleaner.combinedcleandatapath
+#### Recommended Value
+``` python
+lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned"
+```
+#### Description
+The path function to the file containing the combined cleaned data. This file is only used in the large pipeline.
+
+## MLPathProvider
+### MConnectedDrivingDataCleaner.cleandatapath
+#### Recommended Value
+``` python
+lambda model: f"data/mclassifierdata/cleaned/{model}/clean.csv"
+```
+#### Description
+The path function to the file containing the attacked and cleaned data. This file is used in every pipeline to get the data to be used for training and testing.
+
+### MDataClassifier.plot_confusion_matrix_path
+#### Recommended Value
+``` python
+lambda model: f"data/mclassifierdata/results/{model}/"
+```
+#### Description
+The path function to the folder containing the confusion matrix plots. This folder is used to store the confusion matrix plots generated by  each classifier.
+
+## GeneratorContextProvider
+### DataGatherer.numrows
+#### Recommended Value
+``` python
+100000
+```
+#### Description
+The number of rows to gather and store as a subsection from the original dataset. This parameter is used in both the regular (non-large) pipeline and the large pipeline.
+
+### DataGatherer.lines_per_file
+#### Recommended Value
+``` python
+1000000
+```
+#### Description
+The number of rows to store in each split file. This parameter is only used in the large pipeline.
+
+### ConnectedDrivingCleaner.x_pos
+#### Recommended Value
+``` python
+-105.1159611
+```
+#### Description
+The x coordinate of the center of the circle to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### ConnectedDrivingCleaner.y_pos
+#### Recommended Value
+``` python
+41.0982327
+```
+#### Description
+The y coordinate of the center of the circle to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### ConnectedDrivingCleaner.columns
+#### Recommended Value
+``` python
+["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+"metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+"metadata_serialId_serialNumber", "metadata_receivedAt",
+#  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
+#  "metadata_rmd_rxSource","metadata_bsmSource",
+"coreData_id", "coreData_secMark", "coreData_position_lat", "coreData_position_long",
+"coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+"coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
+```
+#### Description
+The columns to be used for filtering the initial data. Most of the columns are useless so these columns are the ones we are choosing to use in the pipeline.
+
+### ConnectedDrivingLargeDataCleaner.max_dist
+#### Recommended Value
+``` python
+500
+```
+#### Description
+The maximum distance from the center of the circle to be used for filtering the data. This parameter is only used in the large pipeline when filtering the data to be within a certain range.
+
+### ConnectedDrivingCleaner.shouldGatherAutomatically
+#### Recommended Value
+``` python
+False
+```
+#### Description
+Whether or not to automatically gather the data if the cleaner isn't given any data. The reason we set it off by default is to prevent data from being collected without the user's knowledge.
+
+### ConnectedDrivingLargeDataCleaner.cleanerClass
+#### Recommended Value
+``` python
+CleanWithTimestamps
+```
+#### Description
+The class to be used for cleaning the data. This parameter should match the class that the cleanFunc comes from.
+
+### ConnectedDrivingLargeDataCleaner.cleanFunc
+#### Recommended Value
+``` python
+CleanWithTimestamps.clean_data_with_timestamps
+```
+#### Description
+The function to be used for cleaning the data. This parameter should match the class that the cleanerClass comes from.
+
+### ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass
+#### Recommended Value
+``` python
+CleanerWithFilterWithinRangeXY
+```
+#### Description
+The class to be used for filtering the data. This parameter should match the class that the filterFunc comes from.
+
+### ConnectedDrivingLargeDataCleaner.filterFunc
+#### Recommended Value
+``` python
+CleanerWithFilterWithinRangeXY.within_rangeXY
+```
+#### Description
+The function to be used for filtering the data. This parameter should match the class that the cleanerWithFilterClass comes from.
+
+### ConnectedDrivingAttacker.SEED
+#### Recommended Value
+``` python
+42
+```
+#### Description
+The seed to be used for the random number generator. This parameter is only used in the large pipeline when generating the attack data.
+
+### ConnectedDrivingCleaner.isXYCoords
+#### Recommended Value
+``` python
+True
+```
+#### Description
+Whether or not the data is in (x,y) coordinates (as distance from the point on the longitude, latitude axis respectively in meters).
+
+### ConnectedDrivingAttacker.attack_ratio
+#### Recommended Value
+``` python
+0.3
+```
+#### Description
+The ratio of the data to be attacked. For example, 0.3 = 30% of the data will be attacked. The attack ratio is used differently depending on the attack distribution method. For example, `add_attackers` will specify a ratio of the cars to be attackers and 100% of their BSMs will be attacked. On the other hand, `add_rand_attackers` will specify a ratio of the BSMs to be attacked randomly.
+
+### ConnectedDrivingCleaner.cleanFuncName
+#### Recommended Value
+``` python
+"clean_data_with_timestamps"
+```
+#### Description
+The name of the function to be used for cleaning the data. This parameter is used in the caching and should match cleanFunc
+
+## MLContextProvider
+### MConnectedDrivingDataCleaner.columns
+#### Recommended Value
+``` python
+ [
+# "metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+#  "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+#  "metadata_serialId_serialNumber", "metadata_receivedAt",
+#  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
+#  "metadata_rmd_rxSource","metadata_bsmSource",
+"coreData_id",  # "coreData_position_lat", "coreData_position_long",
+"coreData_secMark", "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+"month", "day", "year", "hour", "minute", "second", "pm",
+"coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
+```
+#### Description
+The columns to be used for training the model (and also the final columns after the attacker finishes).
+
+### MClassifierPipeline.classifier_instances
+#### Recommended Value (AUTO_FILLED)
+
+``` python
+[RandomForestClassifier(
+), DecisionTreeClassifier(), KNeighborsClassifier()]
+```
+
+#### Description
+The classifiers to be used for training the model. These are autofilled but we can change them if we want to use different classifiers. At the top of the example class on the [development page](./development.html), we specify the CLASSIFIER_INSTANCES variable to be used for the pipeline but we didn't include it in the config because it was autofilled. However, it would be easy to modify the array and pass it in. **Make sure to include the modified parameters in your LOG_NAME and file name to avoid caching errors though!**
+
+

@@ -225,7 +225,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         # ConnectedDrivingCleaner.cleanFuncName
         #
 
-        # XY columns are added after these columns are used for filtering
+        # Cleaned columns are added/modified after these columns are used for filtering
         COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
             "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
             "metadata_serialId_serialNumber", "metadata_receivedAt",
@@ -303,6 +303,9 @@ CLASSIFIER_INSTANCES = [
     KNeighborsClassifier()
 ]
 ```
+
+**However, make sure to include the `classifier_instances` property in the MLContextProvider and set it to `CLASSIFIER_INSTANCES`**
+
 #### Log Name
 The log name is **very important** because it ensures that the caching used in the machine learning part of the pipeline works correctly. It also acts as the log folder name for our logs.
 
@@ -313,7 +316,7 @@ These columns act as our CSV headers for our results file. You won't need to cha
 This is a dictionary that maps the CSV column names to their index in the CSV file. You won't need to change these unless you plan to modify the way we write our results to the CSV file.
 
 #### PathProvider
-You'll notice that the first part we configure within the init method is the PathProvider. We use this to ensure that our logs are written to the correct folder. You won't need to change this unless you plan to modify the way we write our logs.
+You'll notice that the first part we configure within the init method is the PathProvider. We use this to ensure that our logs are written to the correct folder. You won't need to change this unless you plan to modify the way we write our logs. **Make sure that the LOG_NAME is unique to each pipeline user file.**
 
 ```python linenums="1"
 # used for the logger's path
@@ -323,9 +326,10 @@ self._pathprovider = PathProvider(model=LOG_NAME, contexts={
 ```
 
 #### InitialGathererPathProvider
-The paths in the InitialGathererPathProvider are used to gather the data from the initial data source. You'll need to change these to match the paths to your data.
+The paths in the InitialGathererPathProvider are used to gather the data from the initial data source. You'll need to change these to match the paths to your data. **The model name should be shared among all similar initial datasets (i.e. all datasets that are gathered from the same source).**
 
 ```python linenums="1"
+initialGathererModelName = "CreatingConnectedDrivingDataset"
 # Properties:
 # DataGatherer.filepath
 # DataGatherer.subsectionpath
@@ -340,7 +344,7 @@ self._initialGathererPathProvider = InitialGathererPathProvider(model=initialGat
 ```
 
 #### GeneratorPathProvider
-The paths in the GeneratorPathProvider are used to generate the data for the machine learning part of the pipeline. You'll need to change these to match the paths to your generated data.
+The paths in the GeneratorPathProvider are used to generate the data for the machine learning part of the pipeline. You'll need to change these to match the paths to your generated data. **Make sure that the model name is unique to the cleaning/filtering options. For example, it should include whether or not we included timestamps, XY COORDS, etc. and also the distance of the filter (default 500m)**
 
 ```python linenums="1"
 # Properties:
@@ -359,7 +363,7 @@ self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererMode
 ```
 
 #### MLPathProvider
-The paths in the MLPathProvider are used to run the machine learning part of the pipeline. You'll need to change these to match the paths to your ML data.
+The paths in the MLPathProvider are used to run the machine learning part of the pipeline. You'll need to change these to match the paths to your ML data. **Make sure that the model name is unique to the ML options and cleaning options. The best way to do this is to make your file name unique and set the model as the file name (A.K.A. the LOG_NAME)**
 
 ```python linenums="1"
 # Properties:
@@ -372,6 +376,22 @@ self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
     "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
 }
 )
+```
+
+#### COLUMNS
+
+The COLUMNS variable is used to specify the columns that we want to use for our initial cleaning and gathering of data. You'll need to change these to match the columns in your data if they are different.
+
+```python linenums="1"
+# Cleaned columns are added/modified after these columns are used for filtering
+COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+    "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+    "metadata_serialId_serialNumber", "metadata_receivedAt",
+    #  "metadata_rmd_elevation", "metadata_rmd_heading","metadata_rmd_latitude", "metadata_rmd_longitude", "metadata_rmd_speed",
+    #  "metadata_rmd_rxSource","metadata_bsmSource",
+    "coreData_id", "coreData_secMark", "coreData_position_lat", "coreData_position_long",
+    "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+    "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 ```
 
 #### GeneratorContextProvider

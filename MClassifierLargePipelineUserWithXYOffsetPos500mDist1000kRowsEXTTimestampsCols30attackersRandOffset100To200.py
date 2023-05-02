@@ -103,7 +103,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist1000kRowsEXTTimestampsC
         # ConnectedDrivingCleaner.cleanFuncName
         #
 
-        # XY columns are added after these columns are used for filtering
+        # Cleaned columns are added/modified after these columns are used for filtering
         COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
             "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
             "metadata_serialId_serialNumber", "metadata_receivedAt",
@@ -191,7 +191,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist1000kRowsEXTTimestampsC
         m_train = mdcleaner_train.clean_data().get_cleaned_data()
         m_test = mdcleaner_test.clean_data().get_cleaned_data()
 
-        # splitting into X and Y
+        # splitting into the features and the labels
         attacker_col_name = "isAttacker"
         train_X = m_train.drop(columns=[attacker_col_name], axis=1)
         train_Y = m_train[attacker_col_name]
