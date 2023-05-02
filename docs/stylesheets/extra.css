@@ -50,3 +50,22 @@
     padding: 5px;
     border: 1px solid #ccc;
 }
+
+/* dark mode */
+[data-md-color-scheme="slate"] .result-table {
+    /* color scheme for dark mode */
+    border: 1px solid #ccc;
+    background-color: #222;
+    color: #fff;
+}
+
+[data-md-color-scheme="slate"] .result-table th {
+    /* color scheme for dark mode */
+    background-color: #333;
+    border: 1px solid #ccc;
+}
+
+[data-md-color-scheme="slate"] .result-table td {
+    /* color scheme for dark mode */
+    border: 1px solid #ccc;
+}

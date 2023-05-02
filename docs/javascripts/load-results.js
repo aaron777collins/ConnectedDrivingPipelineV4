@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Works!");
 
+//   add event listener to a button with the title "Switch to light more"
+//   when clicked, it makes css changes
+
   loadAllResults();
 });
 
