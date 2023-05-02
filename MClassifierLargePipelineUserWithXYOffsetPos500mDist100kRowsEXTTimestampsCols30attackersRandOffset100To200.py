@@ -191,7 +191,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         m_train = mdcleaner_train.clean_data().get_cleaned_data()
         m_test = mdcleaner_test.clean_data().get_cleaned_data()
 
-        # splitting into X and Y
+        # splitting into the features and the labels
         attacker_col_name = "isAttacker"
         train_X = m_train.drop(columns=[attacker_col_name], axis=1)
         train_Y = m_train[attacker_col_name]

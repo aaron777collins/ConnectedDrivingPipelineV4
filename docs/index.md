@@ -9,3 +9,7 @@ We took the [Wyoming CV Pilot Basic Safety Message One Day Sample](https://www.o
 This pipeline creates malicious datasets based on customizable attacks and then tests them using machine learning models such as [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html), [Decision Tree](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) and [K-Nearest-Neighbours](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html).
 
 Head to [Setup](./Getting%20Started/setup.html) to get started.
+### Links
+- [Setup](./Getting%20Started/setup.html) to get started.
+- [Development](./Getting%20Started/development.html) for developing a pipeline user file.
+- [Repo](https://github.com/aaron777collins/MachineLearningPipelineV4) for the project repository.
