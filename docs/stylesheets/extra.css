@@ -21,9 +21,10 @@
     word-wrap: break-word;
 }
 
-/* ensure the first column has a max width of 250px */
-.result-table-with-links td:first-child {
-    max-width: calc(var(--max-table-width)/2);
+/* ensure each cell has a max width */
+.result-table-with-links td {
+    max-width: calc(var(--max-table-width)/3 - 5px);
+    min-width: calc(var(--max-table-width)/3 - 5px);
 }
 
 /* style the tables so that each cell has a border, etc. */

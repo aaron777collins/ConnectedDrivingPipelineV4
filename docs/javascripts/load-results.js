@@ -7,12 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
   loadAllResults();
 });
 
-function zip(a, b) {
-    var arr = [];
-    for (var key in a) arr.push([a[key], b[key]]);
-    return arr;
-}
-
 function loadAllResults() {
 
     let linksUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3-YLEzjlg7QLghAER39VFa1JiIUmLFZ3PmwAPpn_h44PPcqvy2mdSUA7Ze7Vjk7CDYHe4VNl0sE8s/pub?output=csv";
@@ -22,20 +16,25 @@ function loadAllResults() {
         // parse out the name of the models and the links in the second column (excluding the header row)
         let allRows = data.split(/\r?\n|\r/);
         let names = [];
+        let descriptions = [];
         let links = [];
         for (let singleRow = 1; singleRow < allRows.length; singleRow++) {
             let rowCells = allRows[singleRow].split(",");
             names.push(rowCells[0]);
-            links.push(rowCells[1]);
+            descriptions.push(rowCells[1]);
+            links.push(rowCells[2]);
         }
 
         console.log("Links", links);
-        for (let res of zip(names, links)) {
-            let name = res[0];
-            let link = res[1];
+        for (let name of names) {
+            let idx = names.indexOf(name);
+            let link = links[idx];
+            let description = descriptions[idx];
             console.log("Link URL", link);
             // add h3 with link name and url
             $("#results-content").append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
+            // add description
+            $("#results-content").append("<p>" + description + "</p>");
             loadResults(link, (data) => {
                 writeTableFromResults(data);
             });
