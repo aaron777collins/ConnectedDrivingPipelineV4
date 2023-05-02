@@ -137,3 +137,27 @@ from Logger.Logger import DEFAULT_LOG_PATH
 ```
 
 ### InitialGathererPathProvider
+
+Parameter:
+`DataGatherer.filepath`
+
+Recommended Value:
+``` python
+lambda model: "data/data.csv"
+```
+
+Parameter:
+`DataGatherer.subsectionpath`
+
+Recommended Value:
+``` python
+lambda model: f"data/classifierdata/subsection/{model}/subsection{numSubsectionRows}.csv"
+```
+
+Parameter:
+`DataGatherer.splitfilespath`
+
+Recommended Value:
+``` python
+lambda model: f"data/classifierdata/splitfiles/{model}/"
+```
