@@ -94,6 +94,10 @@ function hideLoading() {
 }
 
 function writeTableFromResults(data, id="results-content") {
+  // find anything with data:image..., and replace the comma ',' with !%! so that it doesn't get split
+  data = data.replace(/data:image[^,]+,/g, function (match) {
+    return match.replace(/,/g, "!$!");
+  });
   var allRows = data.split(/\r?\n|\r/);
   var table = "<table class='result-table result-table-no-links custom-scroll-bar'>";
   for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
@@ -105,13 +109,24 @@ function writeTableFromResults(data, id="results-content") {
     }
     var rowCells = allRows[singleRow].split(",");
     for (var rowCell = 0; rowCell < rowCells.length; rowCell++) {
+      // check if the cell is in double quotes
+      if (rowCells[rowCell].startsWith('"') && rowCells[rowCell].endsWith('"')) {
+        rowCells[rowCell] = rowCells[rowCell].substring(1, rowCells[rowCell].length - 1);
+      }
       if (singleRow === 0) {
         table += "<th class='result-header-cell'>";
         table += rowCells[rowCell];
         table += "</th>";
       } else {
         table += "<td class='result-body-cell'>";
-        table += rowCells[rowCell];
+        // check if it is a base64 image
+        if (rowCells[rowCell].startsWith("data:image")) {
+          // replace !$! with ,
+          rowCells[rowCell] = rowCells[rowCell].replace(/!\$\!/g, ",");
+          table += "<img class='clickable-image' id='clickable-image-" + rowCell + "' src='" + rowCells[rowCell] + "' onclick='showImageModal(this.src)'>";
+        } else {
+          table += rowCells[rowCell];
+        }
         table += "</td>";
       }
     }
@@ -174,4 +189,19 @@ function writeTableFromResultsWithLinks(data) {
     $("#results-content").append(table);
 
 
+}
+
+function showImageModal(src) {
+
+  // if called for the first time, add the #image-modal div to the body, along with the #image-modal-content img
+  if ($("#image-modal").length == 0) {
+    $("body").append("<div id='image-modal'></div>");
+    $("#image-modal").append("<img id='image-modal-content'>");
+    $("#image-modal").click(function () {
+      $("#image-modal").hide();
+    });
+  }
+
+  $("#image-modal").show();
+  $("#image-modal-content").attr("src", src);
 }
