@@ -7,6 +7,14 @@ document.addEventListener("DOMContentLoaded", function () {
   loadAllResults();
 });
 
+const slugify = str =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 function loadAllResults() {
 
     let linksUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3-YLEzjlg7QLghAER39VFa1JiIUmLFZ3PmwAPpn_h44PPcqvy2mdSUA7Ze7Vjk7CDYHe4VNl0sE8s/pub?output=csv";
@@ -18,25 +26,41 @@ function loadAllResults() {
         let names = [];
         let descriptions = [];
         let links = [];
+        let authors = [];
+        let dates = [];
         for (let singleRow = 1; singleRow < allRows.length; singleRow++) {
             let rowCells = allRows[singleRow].split(",");
             names.push(rowCells[0]);
             descriptions.push(rowCells[1]);
             links.push(rowCells[2]);
+            authors.push(rowCells[3]);
+            dates.push(rowCells[4]);
+        }
+
+        for (let arr of [names, descriptions, links, authors, dates]) {
+          // reverse the order of the arrays
+          arr.reverse();
         }
 
         console.log("Links", links);
         for (let name of names) {
+            // create div of class "result-container" with unique id of name, author, date and link
             let idx = names.indexOf(name);
             let link = links[idx];
             let description = descriptions[idx];
+            let author = authors[idx];
+            let date = dates[idx];
+            id = slugify(name + "-" + author + "-" + date + "-" + link);
+            $("#results-content").append("<div class='result-container' id='" + id + "'></div>"); // add id to div of "name-author-date-link
             console.log("Link URL", link);
             // add h3 with link name and url
-            $("#results-content").append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
+            $("#" + id).append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
+            // add author and date
+            $("#" + id).append("<p>" + author + " | " + date + "</p>");
             // add description
-            $("#results-content").append("<p>" + description + "</p>");
+            $("#" + id).append("<p>" + description + "</p>");
             loadResults(link, (data) => {
-                writeTableFromResults(data);
+                writeTableFromResults(data, id=id);
             });
         }
     });
@@ -69,9 +93,9 @@ function hideLoading() {
   $("#loading-results").hide();
 }
 
-function writeTableFromResults(data) {
+function writeTableFromResults(data, id="results-content") {
   var allRows = data.split(/\r?\n|\r/);
-  var table = "<table class='result-table result-table-no-links'>";
+  var table = "<table class='result-table result-table-no-links custom-scroll-bar'>";
   for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
     if (singleRow === 0) {
       table += "<thead>";
@@ -102,13 +126,13 @@ function writeTableFromResults(data) {
   table += "</tbody>";
   table += "</table>";
   hideLoading();
-  $("#results-content").append(table);
+  $("#" + id).append(table);
 }
 
 function writeTableFromResultsWithLinks(data) {
 
     var allRows = data.split(/\r?\n|\r/);
-    var table = "<table class='result-table result-table-with-links'>";
+    var table = "<table class='result-table result-table-with-links custom-scroll-bar'>";
     for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
         if (singleRow === 0) {
         table += "<thead>";

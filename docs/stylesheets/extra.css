@@ -4,97 +4,132 @@
 
 /* different widths depending on the screen size */
 
-
 @media only screen and not (max-width: 700px) {
-    :root {
-        --max-table-width: 700px;
-    }
+  :root {
+    --max-table-width: 700px;
+  }
 }
 
 @media only screen and (max-width: 700px) {
-    :root {
-        --max-table-width: 700px;
-    }
+  :root {
+    --max-table-width: 700px;
+  }
 }
 
-@media only screen and (max-width: 450px){
-    :root {
-        --max-table-width: 450px;
-    }
+@media only screen and (max-width: 450px) {
+  :root {
+    --max-table-width: 450px;
+  }
 }
 
-@media only screen and (max-width: 300px){
-    :root {
-        --max-table-width: 300px;
-    }
+@media only screen and (max-width: 300px) {
+  :root {
+    --max-table-width: 300px;
+  }
 }
-
 
 #results {
-    /* make the results have a max width */
-    width: var(--max-table-width);
-    max-width: var(--max-table-width);
+  /* make the results have a max width */
+  width: var(--max-table-width);
+  max-width: var(--max-table-width);
 }
 
 #results > * {
-    /* make the results have a max width */
-    max-width: var(--max-table-width);
-    overflow: auto;
-    word-wrap: break-word;
+  /* make the results have a max width */
+  max-width: var(--max-table-width);
+  overflow: auto;
+  word-wrap: break-word;
 }
 
 .result-body-cell-with-links {
-    /* make text wrap around and break no matter what
+  /* make text wrap around and break no matter what
         * (even if there are no spaces) */
-    word-wrap: break-word;
+  word-wrap: break-word;
 }
 
 /* ensure each cell has a max width */
 .result-table-with-links td {
-    max-width: calc(var(--max-table-width)/3 - 5px);
-    min-width: calc(var(--max-table-width)/3 - 5px);
+  max-width: calc(var(--max-table-width) / 3 - 5px);
+  min-width: calc(var(--max-table-width) / 3 - 5px);
 }
 
 /* style the tables so that each cell has a border, etc. */
 /* make it pretty */
 .result-table {
-    border-collapse: collapse;
-    margin: 15px 0;
-    overflow: auto;
-    max-width: var(--max-table-width);
-    /* make it so the table is scrollable on overflow */
-    display: block;
+  border-collapse: collapse;
+  margin: 15px 0;
+  overflow: auto;
+  max-width: var(--max-table-width);
+  /* make it so the table is scrollable on overflow */
+  display: block;
+  color: var(--md-fg-color);
+  background-color: var(--md-bg-color);
 }
 
 /* make the cells have padding, outlines, etc */
 .result-table td {
-    padding: 5px;
-    border: 1px solid #ccc;
+  padding: 5px;
+  border: 1px solid #ccc;
 }
 
 /* make the header cells have a background color */
 .result-table th {
-    background-color: #eee;
-    padding: 5px;
-    border: 1px solid #ccc;
+  background-color: #eee;
+  padding: 5px;
+  border: 1px solid #ccc;
 }
 
 /* dark mode */
 [data-md-color-scheme="slate"] .result-table {
-    /* color scheme for dark mode */
-    border: none !important;
-    background-color: transparent !important;
-    color: #fff;
+  /* color scheme for dark mode */
+  border: none !important;
+  color: var(--md-fg-color);
+  background-color: var(--md-bg-color);
 }
 
 [data-md-color-scheme="slate"] .result-table th {
-    /* color scheme for dark mode */
-    background-color: #333;
-    border: 1px solid #ccc;
+  /* color scheme for dark mode */
+  background-color: #333;
+  border: 1px solid #ccc;
 }
 
 [data-md-color-scheme="slate"] .result-table td {
-    /* color scheme for dark mode */
-    background-color: #222;
-    border: 1px solid #ccc;
+  /* color scheme for dark mode */
+  background-color: #222;
+  border: 1px solid #ccc;
+}
+
+/* styles the results container from each link */
+.result-container {
+  /* make it so the results are scrollable on overflow */
+  overflow: auto;
+  max-width: var(--max-table-width);
+  /* make it so the table is scrollable on overflow */
+  display: block;
+
+  /* pretty border */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  color: var(--md-fg-color);
+  background-color: var(--md-bg-color);
+}
+
+.custom-scroll-bar::-webkit-scrollbar {
+  width: 20px;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-thumb {
+  background-color: #d6dee1;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-thumb:hover {
+  background-color: #a8bbbf;
 }
