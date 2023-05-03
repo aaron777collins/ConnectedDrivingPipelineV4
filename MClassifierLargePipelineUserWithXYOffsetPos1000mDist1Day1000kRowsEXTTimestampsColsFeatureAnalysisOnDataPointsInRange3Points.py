@@ -226,7 +226,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         x_pos = self.generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
         y_pos = self.generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
 
-        self.logger(f"Running feature analysis with points: {x_pos}, {y_pos}")
+        self.logger.log(f"Running feature analysis with points: {x_pos}, {y_pos}")
         mcdldpgac = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
         # Aim to get 1 million rows
