@@ -248,7 +248,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # save to the plots folder
         plotPath = self._mlPathProvider.getPathWithModelName("MDataClassifier.plot_distribution_path")
 
-        plt.savefig(plotPath)
+        plt.savefig(plotPath + "distribution.png")
 
 
 
