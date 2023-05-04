@@ -254,7 +254,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
 
         finalPlotPath = plotPath + f"{title}.png"
 
-        os.makedirs(finalPlotPath, exist_ok=True)
+        os.makedirs(plotPath, exist_ok=True)
 
         plt.savefig(finalPlotPath)
 
