@@ -237,7 +237,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         self.logger.log(f"Number of rows: {len(data)}")
 
         # plot the data on a chart to see the x and y position distribution
-        self.plot_data(data, "x_pos", "y_pos", "x_pos vs y_pos")
+        self.plot_data(data, "x_pos", "y_pos", f"x_pos vs y_pos with x={x_pos} and y={y_pos}")
 
 
     def plot_data(self, data: DataFrame, x: str, y: str, title: str):
@@ -248,7 +248,11 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # save to the plots folder
         plotPath = self._mlPathProvider.getPathWithModelName("MDataClassifier.plot_distribution_path")
 
-        plt.savefig(plotPath + "distribution.png")
+        finalPlotPath = plotPath + f"{title}.png"
+
+        os.makedirs(finalPlotPath, exist_ok=True)
+
+        plt.savefig(finalPlotPath)
 
 
 
