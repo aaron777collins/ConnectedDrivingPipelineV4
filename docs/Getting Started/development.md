@@ -37,7 +37,7 @@ testVal = provider.get("test")
 print(testVal) # prints "testvalue"
 ```
 
-However, since the DictProvider is a singleton, we run into trouble if we want to have multiple providers with different values for the same key. Thus, we created context providers for different parts of the pipeline. The ones we used are `GeneratorContextProvider` and `MLContextProvider` which are used for the generator and machine learning parts of the pipeline respectively. These providers are instantiated with a dictionary of key value pairs (similar to DictProvider). The model name is used to create a unique key for each key value pair. For example, the following provider provides a dictionary with the key `test` and the value `testvalue`:
+However, since the DictProvider is a singleton, we run into trouble if we want to have multiple providers with different values for the same key. Thus, we created context providers for different parts of the pipeline. The ones we used are `GeneratorContextProvider` and `MLContextProvider` which are used for the generator and machine learning parts of the pipeline respectively. These providers are instantiated with a dictionary of key value pairs (similar to DictProvider). For example, the following provider provides a dictionary with the key `test` and the value `testvalue`:
 
 ```python linenums="1"
 from ServiceProviders.GeneratorContextProvider import GeneratorContextProvider
