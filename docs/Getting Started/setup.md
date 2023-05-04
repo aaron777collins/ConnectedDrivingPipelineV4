@@ -23,7 +23,7 @@ mkdir data
 5. Download the data from [here](https://data.transportation.gov/api/views/9k4m-a3jc/rows.csv?accessType=DOWNLOAD) and name it `data.csv` within the `data` folder.
 
     **Optionally**: You can download wget.exe from [https://eternallybored.org/misc/wget/](https://eternallybored.org/misc/wget/) and put it in your git bash directory (The default Windows install directory is `C:\Program Files\Git\mingw64\bin`).
-    Next, run the following in git bash to download the file:
+    Next, run the following in git bash (within the project directory) to download the file:
     ``` bash
     while [ 1 ]; do
         wget --retry-connrefused --retry-on-http-error=500 --waitretry=1 --read-timeout=20 --timeout=15 -t 0 --continue -O data/data.csv https://data.transportation.gov/api/views/9k4m-a3jc/rows.csv?accessType=DOWNLOAD
