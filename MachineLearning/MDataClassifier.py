@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import matplotlib.pyplot as plt
 import os
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
+from Helpers.ImageWriter import ImageWriter
 from Logger.Logger import Logger
 from ServiceProviders.IMLContextProvider import IMLContextProvider
 from ServiceProviders.IMLPathProvider import IMLPathProvider
@@ -99,6 +100,10 @@ class MDataClassifier:
         disp = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=labels)
         disp.plot()
         plt.savefig(path)
+        # write image
+        csvWriter = self._MLContextProvider.get("MClassifierPipeline.csvWriter")
+        imageWriter = ImageWriter(csvWriter)
+        imageWriter.writeImage(imageWriter.readImageAsBase64(path))
         return self
 
     # string representation of the classifier classname as MDataClassifier[classifier_name]

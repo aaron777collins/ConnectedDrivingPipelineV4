@@ -260,6 +260,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         #
         # MConnectedDrivingDataCleaner.columns
         # MClassifierPipeline.classifier_instances # AUTO_FILLED
+        # MClassifierPipeline.csvWriter
         #
         self.MLContextProvider = MLContextProvider(contexts={
             "MConnectedDrivingDataCleaner.columns": [
@@ -274,6 +275,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
             "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
 
             # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
+            "MClassifierPipeline.csvWriter": CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS),
 
         }
         )
@@ -452,6 +454,7 @@ The MLContextProvider is used to provide the contexts for the machine learning p
 #
 # MConnectedDrivingDataCleaner.columns
 # MClassifierPipeline.classifier_instances # AUTO_FILLED
+# MClassifierPipeline.csvWriter
 #
 self.MLContextProvider = MLContextProvider(contexts={
     "MConnectedDrivingDataCleaner.columns": [
@@ -466,6 +469,7 @@ self.MLContextProvider = MLContextProvider(contexts={
     "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
 
     # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
+    "MClassifierPipeline.csvWriter": CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS),
 
 }
 )
@@ -478,7 +482,7 @@ The logger and CSV writer are used to log the results of the pipeline. You won't
 # Goes after the config ...
 
 self.logger = Logger(LOG_NAME)
-self.csvWriter = CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS)
+self.csvWriter = self.MLContextProvider.get("MClassifierPipeline.csvWriter")
 ```
 
 #### write_entire_row function
@@ -705,7 +709,7 @@ for mclassifier, train_result, result in results:
     self.write_entire_row(csvrowdata)
 ```
 
-9. Calculating the confusion matrices and storing them.
+9. Calculating the confusion matrices and storing them. *Note that this step also saved the matrices in your results file as base64 images.*
 
 ```python linenums="1"
 # calculating the confusion matrices

@@ -2,6 +2,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
+from Helpers.ImageWriter import ImageWriter
 from Logger.Logger import Logger
 from MachineLearning.MDataClassifier import MDataClassifier
 from ServiceProviders.IMLContextProvider import IMLContextProvider
@@ -60,6 +61,13 @@ class MClassifierPipeline:
         return self.classifiers_and_confusion_matrices
 
     def plot_confusion_matrices(self):
+
+        csvWriter = self._MLContextProvider.get("MClassifierPipeline.csvWriter")
+        # write blank line
+        imageWriter.writeHeaders([])
+        imageWriter = ImageWriter(csvWriter)
+        imageWriter.writeHeaders(["Classifier", "Confusion Matrix"])
+
         for mClassifier, confusion_matrix in self.classifiers_and_confusion_matrices:
             mClassifier.plot_confusion_matrix(confusion_matrix, mClassifier.classifier.__class__.__name__)
         return self

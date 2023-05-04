@@ -14,6 +14,7 @@ from Generator.Cleaners.CleanersWithFilters.CleanerWithFilterWithinRangeXYAndDay
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
+from Helpers.ImageWriter import ImageWriter
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
 from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
@@ -144,6 +145,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         #
         # MConnectedDrivingDataCleaner.columns
         # MClassifierPipeline.classifier_instances # AUTO_FILLED
+        # MClassifierPipeline.csvWriter
         #
         self.MLContextProvider = MLContextProvider(contexts={
             "MConnectedDrivingDataCleaner.columns": [
@@ -158,6 +160,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
             "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
 
             # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
+            "MClassifierPipeline.csvWriter": CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS),
 
         }
         )
@@ -165,7 +168,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         ######### END OF CONFIG FOR ALL PROPERTIES IN THE PIPELINE ##################################################
 
         self.logger = Logger(LOG_NAME)
-        self.csvWriter = CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS)
+        self.csvWriter = self.MLContextProvider.get("MClassifierPipeline.csvWriter")
 
     def write_entire_row(self, dict):
         row = [" "]*len(CSV_COLUMNS)
@@ -223,6 +226,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
 
 
     def runIteration(self):
+
         x_pos = self.generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
         y_pos = self.generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
 
@@ -253,6 +257,12 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         os.makedirs(finalPlotPath, exist_ok=True)
 
         plt.savefig(finalPlotPath)
+
+        # write image to the csv
+        self.csvWriter.addRow([" "]*len(CSV_COLUMNS))
+        imageWriter = ImageWriter(self.csvWriter)
+        imageWriter.writeHeaders("Model", "Image")
+        imageWriter.writeImage(imageWriter.readImageAsBase64(finalPlotPath), title)
 
 
 
