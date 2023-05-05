@@ -208,7 +208,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         print(f"Setting new x and y positions: {x_pos}, {y_pos}")
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
-        self.generatorContextProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
+        self._generatorPathProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
 
         self.runIteration()
 
@@ -219,7 +219,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         print(f"Setting new x and y positions: {x_pos}, {y_pos}")
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
-        self.generatorContextProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
+        self._generatorPathProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
 
         self.runIteration()
 
