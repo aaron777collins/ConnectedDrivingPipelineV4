@@ -17,4 +17,7 @@ class ImageWriter:
     def readImageAsBase64(self, imagepath: str):
         with open(imagepath, "rb") as imageFile:
             # read image as base64
-            return base64.b64encode(imageFile.read()).decode('utf-8')
+            ext = imagepath.split(".")[-1]
+            base64_utf8_str = base64.b64encode(imageFile.read()).decode('utf-8')
+            dataurl = f'data:image/{ext};base64,{base64_utf8_str}'
+            return dataurl
