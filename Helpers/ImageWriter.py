@@ -8,7 +8,8 @@ class ImageWriter:
 
     def writeHeaders(self, headers: list[str]):
         numCols = len(self.csvWriter.columns)
-        self.csvWriter.addRow(headers.extend([""] * (numCols - len(headers))))
+        headers.extend([""] * (numCols - len(headers)))
+        self.csvWriter.addRow(headers)
 
     def writeImage(self, image, label: str):
         self.csvWriter.addRow([label, image])
