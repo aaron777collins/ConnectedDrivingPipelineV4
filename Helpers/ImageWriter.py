@@ -6,7 +6,7 @@ class ImageWriter:
     def __init__(self, csvWriter: CSVWriter):
         self.csvWriter = csvWriter
 
-    def writeHeaders(self, headers: list[str]):
+    def writeRow(self, headers: list[str]):
         numCols = len(self.csvWriter.columns)
         headers.extend([""] * (numCols - len(headers)))
         self.csvWriter.addRow(headers)

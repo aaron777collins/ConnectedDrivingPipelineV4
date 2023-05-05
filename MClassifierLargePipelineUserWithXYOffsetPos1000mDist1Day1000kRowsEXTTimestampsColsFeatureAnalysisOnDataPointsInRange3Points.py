@@ -203,8 +203,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         self.runIteration()
 
         # setting new x and y positions
-        x_pos = 260.87741970223425
-        y_pos = 19.468542202946324
+        x_pos = -106.0831353
+        y_pos = 41.5430216
         print(f"Setting new x and y positions: {x_pos}, {y_pos}")
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
@@ -213,9 +213,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         self.runIteration()
 
         # setting new x and y positions
-        # 418.0377053274485,54.12606216746052
-        x_pos = 418.0377053274485
-        y_pos = 54.12606216746052
+        x_pos = -104.6724598
+        y_pos = 41.1518897
         print(f"Setting new x and y positions: {x_pos}, {y_pos}")
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
@@ -265,8 +264,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # write image to the csv
         self.csvWriter.addRow([" "]*len(CSV_COLUMNS))
         imageWriter = ImageWriter(self.csvWriter)
-        imageWriter.writeHeaders(["Model", "Image"])
-        imageWriter.writeImage(imageWriter.readImageAsBase64(finalPlotPath), title)
+        imageWriter.writeRow(["Model", "Image", "rowCount"])
+        imageWriter.writeRow([title, imageWriter.readImageAsBase64(finalPlotPath), len(data)])
 
 
 
