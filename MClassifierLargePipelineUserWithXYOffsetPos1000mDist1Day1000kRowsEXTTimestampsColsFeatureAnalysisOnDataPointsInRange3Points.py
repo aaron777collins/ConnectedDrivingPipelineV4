@@ -245,6 +245,10 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
 
 
     def plot_data(self, data: DataFrame, x: str, y: str, title: str):
+        # xlim as min and max of x
+        plt.xlim(data[x].min(), data[x].max())
+        # ylim as min and max of y
+        plt.ylim(data[y].min(), data[y].max())
         plt.scatter(data[x], data[y])
         plt.title(title)
         plt.xlabel(x)
