@@ -121,9 +121,24 @@ function writeTableFromResults(data, id="results-content") {
         table += "<td class='result-body-cell'>";
         // check if it is a base64 image
         if (rowCells[rowCell].startsWith("data:image")) {
+
           // replace !$! with ,
           rowCells[rowCell] = rowCells[rowCell].replace(/!\$\!/g, ",");
-          table += "<img class='clickable-image' id='clickable-image-" + rowCell + "' src='" + rowCells[rowCell] + "' onclick='showImageModal(this.src)'>";
+          imageData = ""
+          // loop through this cell and all afterwards until it is a blank cell or the end of the csv
+          // we want to merge the remnants of the image
+          for (var i = rowCell; i < rowCells.length; i++) {
+            if(rowCells[i] === "") {
+              break;
+            }
+            imageData += rowCells[i];
+          }
+
+          table += "<img class='clickable-image' id='clickable-image-" + rowCell + "' src='" + imageData + "' onclick='showImageModal(this.src)'>";
+          // we found the image so we are done rendering for this row (we don't want to render the rest of the cells in this row)
+          // end cell and break
+          table += "</td>";
+          break;
         } else {
           table += rowCells[rowCell];
         }
