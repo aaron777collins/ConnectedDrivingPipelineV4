@@ -132,13 +132,11 @@ function writeTableFromResults(data, id="results-content") {
               break;
             }
             imageData += rowCells[i];
+            // set the current cell data (and all after) to blank
+            rowCells[i] = "";
           }
 
           table += "<img class='clickable-image' id='clickable-image-" + rowCell + "' src='" + imageData + "' onclick='showImageModal(this.src)'>";
-          // we found the image so we are done rendering for this row (we don't want to render the rest of the cells in this row)
-          // end cell and break
-          table += "</td>";
-          break;
         } else {
           table += rowCells[rowCell];
         }
