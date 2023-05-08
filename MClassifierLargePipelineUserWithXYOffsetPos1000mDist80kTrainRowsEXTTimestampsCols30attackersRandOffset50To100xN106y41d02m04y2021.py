@@ -74,7 +74,11 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-1000mdist-N106y41d02m04y2021", contexts={
+        x_pos = -106.0831353
+        y_pos = 41.5430216
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}-dd02mm04yyyy2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -116,10 +120,6 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
             "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
 
-        x_pos = -106.0831353
-        y_pos = 41.5430216
-        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
-        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
