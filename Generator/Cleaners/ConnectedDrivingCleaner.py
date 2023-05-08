@@ -27,8 +27,8 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
         self.logger = Logger("ConnectedDrivingCleaner")
         # Make sure it is unique to the option chosen (timestamps or no timestamps AND isXYCoords or not)
 
-        # cleaning function name to be used in the cache
-        self.clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
+        # cleaning params to be used in the cache
+        self.clean_params = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanParams")
         self.filename = filename
         if (self.filename is None):
             # defaults the filename to clean{numrows}.csv
@@ -56,7 +56,7 @@ class ConnectedDrivingCleaner(IConnectedDrivingCleaner):
     def clean_data(self):
         self.cleaned_data = self._clean_data(cache_variables=[
             self.__class__.__name__, self.isXYCoords,
-            self.clean_func_name, self.filename, self.x_pos, self.y_pos
+            self.clean_params, self.filename, self.x_pos, self.y_pos
         ])
         return self
 

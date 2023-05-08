@@ -197,13 +197,13 @@ Whether or not the data is in (x,y) coordinates (as distance from the point on t
 #### Description
 The ratio of the data to be attacked. For example, 0.3 = 30% of the data will be attacked. The attack ratio is used differently depending on the attack distribution method. For example, `add_attackers` will specify a ratio of the cars to be attackers and 100% of their BSMs will be attacked. On the other hand, `add_rand_attackers` will specify a ratio of the BSMs to be attacked randomly.
 
-### ConnectedDrivingCleaner.cleanFuncName
+### ConnectedDrivingCleaner.cleanParams
 #### Recommended Value
 ``` python
-"clean_data_with_timestamps"
+f"clean_data_with_timestamps-within_rangeXY-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021"
 ```
 #### Description
-The name of the function to be used for cleaning the data. This parameter is used in the caching and should match cleanFunc
+The name of the parameters to be used for cleaning the data. This parameter is used in the caching and should match cleanFunc + any other parameters used such as the filter, etc.
 
 ## MLContextProvider
 ### MConnectedDrivingDataCleaner.columns

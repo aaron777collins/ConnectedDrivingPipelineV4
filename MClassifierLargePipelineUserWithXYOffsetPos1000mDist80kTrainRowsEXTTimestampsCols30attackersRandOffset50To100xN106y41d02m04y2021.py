@@ -9,6 +9,7 @@ from EasyMLLib.CSVWriter import CSVWriter
 from Generator.Attackers.Attacks.StandardPositionalOffsetAttacker import StandardPositionalOffsetAttacker
 from Generator.Attackers.ConnectedDrivingAttacker import ConnectedDrivingAttacker
 from Generator.Cleaners.CleanersWithFilters.CleanerWithFilterWithinRangeXY import CleanerWithFilterWithinRangeXY
+from Generator.Cleaners.CleanersWithFilters.CleanerWithFilterWithinRangeXYAndDay import CleanerWithFilterWithinRangeXYAndDay
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
@@ -29,7 +30,7 @@ from ServiceProviders.PathProvider import PathProvider
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -39,7 +40,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200:
+class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021:
 
     def __init__(self):
 
@@ -73,7 +74,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-500mdist", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-1000mdist-N106y41d02m04y2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -114,26 +115,30 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
             "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
             "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
-        x_pos = -105.1159611
-        y_pos = 41.0982327
+
+        x_pos = -106.0831353
+        y_pos = 41.5430216
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
-            "ConnectedDrivingCleaner.x_pos": -105.1159611,
-            "ConnectedDrivingCleaner.y_pos": 41.0982327,
+            "ConnectedDrivingCleaner.x_pos": x_pos,
+            "ConnectedDrivingCleaner.y_pos": y_pos,
             "ConnectedDrivingCleaner.columns": COLUMNS,
-            "ConnectedDrivingLargeDataCleaner.max_dist": 500,
+            "ConnectedDrivingLargeDataCleaner.max_dist": 1000,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
             "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
             "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
-            "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": CleanerWithFilterWithinRangeXY,
-            "ConnectedDrivingLargeDataCleaner.filterFunc": CleanerWithFilterWithinRangeXY.within_rangeXY,
+            "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": CleanerWithFilterWithinRangeXYAndDay,
+            "ConnectedDrivingLargeDataCleaner.filterFunc": CleanerWithFilterWithinRangeXYAndDay.within_rangeXY_and_day,
+            "CleanerWithFilterWithinRangeXYAndDay.day": 2,
+            "CleanerWithFilterWithinRangeXYAndDay.month": 4,
+            "CleanerWithFilterWithinRangeXYAndDay.year": 2021,
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
@@ -264,5 +269,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021()
     mcplu.run()

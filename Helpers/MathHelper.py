@@ -49,3 +49,6 @@ class MathHelper:
 
         return (x, y)
 
+    @staticmethod
+    def convertNumToTitleStr(num):
+        return str(num).replace(".", "d").replace("-", "n")

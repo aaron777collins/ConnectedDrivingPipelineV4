@@ -222,7 +222,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         # ConnectedDrivingAttacker.SEED
         # ConnectedDrivingCleaner.isXYCoords
         # ConnectedDrivingAttacker.attack_ratio
-        # ConnectedDrivingCleaner.cleanFuncName
+        # ConnectedDrivingCleaner.cleanParams
         #
 
         # Cleaned columns are added/modified after these columns are used for filtering
@@ -236,6 +236,10 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
             "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
 
+        x_pos = -105.1159611
+        y_pos = 41.0982327
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
@@ -251,7 +255,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
@@ -397,7 +401,7 @@ COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_strea
 ```
 
 #### GeneratorContextProvider
-The GeneratorContextProvider is used to provide the contexts for the generation part of the pipeline (including the initial gathering part). You'll need to change these to match configurations for your data.
+The GeneratorContextProvider is used to provide the contexts for the generation part of the pipeline (including the initial gathering part). You'll need to change these to match configurations for your data. Make sure to change the cleanParams to match the cleaning options you want to use. **Make sure that the cleanParams is unique to the cleaning/filtering options. For example, it should include whether or not we included timestamps, XY COORDS, etc. and also the distance of the filter.**
 
 ```python linenums="1"
 # Properties:
@@ -411,7 +415,7 @@ The GeneratorContextProvider is used to provide the contexts for the generation 
 # ConnectedDrivingAttacker.SEED
 # ConnectedDrivingCleaner.isXYCoords
 # ConnectedDrivingAttacker.attack_ratio
-# ConnectedDrivingCleaner.cleanFuncName
+# ConnectedDrivingCleaner.cleanParams
 #
 
 # XY columns are added after these columns are used for filtering
@@ -425,6 +429,10 @@ COLUMNS=["metadata_generatedAt", "metadata_recordType", "metadata_serialId_strea
     "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
 
+x_pos = -105.1159611
+y_pos = 41.0982327
+x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
 self.generatorContextProvider = GeneratorContextProvider(contexts={
     "DataGatherer.numrows": numSubsectionRows,
     "DataGatherer.lines_per_file": 1000000,
@@ -440,7 +448,7 @@ self.generatorContextProvider = GeneratorContextProvider(contexts={
     "ConnectedDrivingAttacker.SEED": 42,
     "ConnectedDrivingCleaner.isXYCoords": True,
     "ConnectedDrivingAttacker.attack_ratio": 0.3,
-    "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
+    "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
 }
 )

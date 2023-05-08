@@ -12,6 +12,7 @@ from Generator.Cleaners.CleanersWithFilters.CleanerWithFilterWithinRangeXY impor
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
+from Helpers.MathHelper import MathHelper
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
 from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
@@ -100,7 +101,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist1000kRowsEXTTimestampsC
         # ConnectedDrivingAttacker.SEED
         # ConnectedDrivingCleaner.isXYCoords
         # ConnectedDrivingAttacker.attack_ratio
-        # ConnectedDrivingCleaner.cleanFuncName
+        # ConnectedDrivingCleaner.cleanParams
         #
 
         # Cleaned columns are added/modified after these columns are used for filtering
@@ -113,12 +114,15 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist1000kRowsEXTTimestampsC
             "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
             "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
-
+        x_pos = -105.1159611
+        y_pos = 41.0982327
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
-            "ConnectedDrivingCleaner.x_pos": -105.1159611,
-            "ConnectedDrivingCleaner.y_pos": 41.0982327,
+            "ConnectedDrivingCleaner.x_pos": x_pos,
+            "ConnectedDrivingCleaner.y_pos": y_pos,
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 500,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
@@ -129,7 +133,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist1000kRowsEXTTimestampsC
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )

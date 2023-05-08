@@ -18,11 +18,11 @@ class StandardPositionalOffsetAttacker(ConnectedDrivingAttacker):
     # Affected columns: coreData_position_lat,coreData_position_long
     # direction_angle is north at 0 (- is to the west, + is to the east)
     def add_attacks_positional_offset_const(self, direction_angle=45, distance_meters=50):
-        clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
+        clean_params = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanParams")
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_const(direction_angle, distance_meters, cache_variables=[
             self.__class__.__name__, direction_angle, distance_meters, self.isXYCoords, self.attack_ratio, self.SEED,
-            clean_func_name, self.id
+            clean_params, self.id
         ]
         )
 
@@ -62,11 +62,11 @@ class StandardPositionalOffsetAttacker(ConnectedDrivingAttacker):
         return row
 
     def add_attacks_positional_offset_rand(self, min_dist=25, max_dist = 250):
-        clean_func_name = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanFuncName")
+        clean_params = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanParams")
         # the function name is already part of the cache_variables, so we don't need to add it here
         self._add_attacks_positional_offset_rand(min_dist, max_dist, cache_variables=[
             self.__class__.__name__, min_dist, max_dist, self.isXYCoords, self.attack_ratio, self.SEED,
-            clean_func_name, self.id
+            clean_params, self.id
         ]
         )
 

@@ -15,6 +15,7 @@ from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
 from Helpers.ImageWriter import ImageWriter
+from Helpers.MathHelper import MathHelper
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
 from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
@@ -72,7 +73,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         #
         # MAKE SURE TO CHANGE THE MODEL NAME TO THE PROPER NAME (IE A NAME THAT MATCHES IF
         # IT HAS TIMESTAMPS OR NOT, AND IF IT HAS XY COORDS OR NOT, ETC)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-500mdist", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-1000mdist-N106y41d02m04y2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -101,7 +102,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # ConnectedDrivingAttacker.SEED
         # ConnectedDrivingCleaner.isXYCoords
         # ConnectedDrivingAttacker.attack_ratio
-        # ConnectedDrivingCleaner.cleanFuncName
+        # ConnectedDrivingCleaner.cleanParams
         #
 
         # Cleaned columns are added/modified after these columns are used for filtering
@@ -114,12 +115,15 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
             "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
             "coreData_elevation", "coreData_accelset_accelYaw","coreData_speed", "coreData_heading", "coreData_position"]
 
-
+        x_pos = -105.1159611
+        y_pos = 41.0982327
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
         self.generatorContextProvider = GeneratorContextProvider(contexts={
             "DataGatherer.numrows": numSubsectionRows,
             "DataGatherer.lines_per_file": 1000000,
-            "ConnectedDrivingCleaner.x_pos": -105.1159611,
-            "ConnectedDrivingCleaner.y_pos": 41.0982327,
+            "ConnectedDrivingCleaner.x_pos": x_pos,
+            "ConnectedDrivingCleaner.y_pos": y_pos,
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 1000,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
@@ -133,7 +137,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanFuncName": "clean_data_with_timestamps", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
@@ -207,6 +211,10 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
         self._generatorPathProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
+        # important that we change the cleanParams to avoid cache overlap
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
+        self.generatorContextProvider.add(key="ConnectedDrivingLargeDataCleaner.cleanParams", context=f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021")
 
         self.runIteration()
 
@@ -217,6 +225,10 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.x_pos", context=x_pos)
         self.generatorContextProvider.add(key="ConnectedDrivingCleaner.y_pos", context=y_pos)
         self._generatorPathProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-f{x_pos}-f{y_pos}-{day}-{month}-{year}")
+        # important that we change the cleanParams to avoid cache overlap
+        x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
+        y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
+        self.generatorContextProvider.add(key="ConnectedDrivingLargeDataCleaner.cleanParams", context=f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021")
 
         self.runIteration()
 
