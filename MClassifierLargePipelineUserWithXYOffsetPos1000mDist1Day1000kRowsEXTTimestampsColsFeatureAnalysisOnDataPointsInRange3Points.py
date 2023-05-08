@@ -264,8 +264,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # write image to the csv
         self.csvWriter.addRow([" "]*len(CSV_COLUMNS))
         imageWriter = ImageWriter(self.csvWriter)
-        imageWriter.writeRow(["Model", "Image", "rowCount"])
-        imageWriter.writeRow([title, imageWriter.readImageAsBase64(finalPlotPath), len(data)])
+        imageWriter.writeRow(["Model", "rowCount", "Image"])
+        imageWriter.writeImageAtEndOfRow([title,  len(data)], imageWriter.readImageAsBase64Array(finalPlotPath))
 
 
 

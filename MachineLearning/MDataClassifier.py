@@ -103,7 +103,7 @@ class MDataClassifier:
         # write image
         csvWriter = self._MLContextProvider.get("MClassifierPipeline.csvWriter")
         imageWriter = ImageWriter(csvWriter)
-        imageWriter.writeImage(imageWriter.readImageAsBase64(path))
+        imageWriter.writeImageAtEndOfRow([model_name], imageWriter.readImageAsBase64(path))
         return self
 
     # string representation of the classifier classname as MDataClassifier[classifier_name]
