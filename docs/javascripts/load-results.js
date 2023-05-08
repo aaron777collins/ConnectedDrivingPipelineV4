@@ -19,8 +19,10 @@ function loadAllResults() {
 
     let linksUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3-YLEzjlg7QLghAER39VFa1JiIUmLFZ3PmwAPpn_h44PPcqvy2mdSUA7Ze7Vjk7CDYHe4VNl0sE8s/pub?output=csv";
 
-    loadResults(linksUrl, (data) => {
-        writeTableFromResultsWithLinks(data);
+    loadResults(linksUrl, "getting-links", (data, _id) => {
+        // writeTableFromResultsWithLinks(data);
+        // this table is for debugging links
+
         // parse out the name of the models and the links in the second column (excluding the header row)
         let allRows = data.split(/\r?\n|\r/);
         let names = [];
@@ -42,7 +44,7 @@ function loadAllResults() {
           arr.reverse();
         }
 
-        console.log("Links", links);
+        // console.log("Links", links);
         for (let name of names) {
             // create div of class "result-container" with unique id of name, author, date and link
             let idx = names.indexOf(name);
@@ -59,14 +61,14 @@ function loadAllResults() {
             $("#" + id).append("<p>" + author + " | " + date + "</p>");
             // add description
             $("#" + id).append("<p>" + description + "</p>");
-            loadResults(link, (data) => {
+            loadResults(link, id, (data, id) => {
                 writeTableFromResults(data, id=id);
             });
         }
     });
 }
 
-function loadResults(url, success) {
+function loadResults(url, id, success) {
 
   results = $.ajax({
     url: url,
@@ -77,9 +79,9 @@ function loadResults(url, success) {
   });
 
   function successFunction(data) {
-    console.log("Success loading results", data);
+    // console.log("Success loading results", data);
     hideLoading();
-    success(data);
+    success(data, id);
   }
 
   function errorFunction(e) {
@@ -94,6 +96,7 @@ function hideLoading() {
 }
 
 function writeTableFromResults(data, id="results-content") {
+  console.log(id);
   // find anything with data:image..., and replace the comma ',' with !%! so that it doesn't get split
   data = data.replace(/data:image[^,]+,/g, function (match) {
     return match.replace(/,/g, "!$!");
@@ -155,6 +158,24 @@ function writeTableFromResults(data, id="results-content") {
   table += "</table>";
   hideLoading();
   $("#" + id).append(table);
+
+  // search for empty column at the end of the table and remove it
+  // this is because the csv has image data
+  // we don't want to show this column if all cells in the column are empty
+  $("table tr").each(function () {
+    // run recursively until we find a cell with content
+    // remove the last cell if it is empty
+    while($(this).find("td:last").text() === "" && $(this).find("td:last").html() === "") {
+      $(this).find("td:last").remove();
+    }
+    // remove the last header cell if it is empty
+    while($(this).find("th:last").text() === "" && $(this).find("th:last").html() === "") {
+      $(this).find("th:last").remove();
+    }
+
+  });
+
+
 }
 
 function writeTableFromResultsWithLinks(data) {
