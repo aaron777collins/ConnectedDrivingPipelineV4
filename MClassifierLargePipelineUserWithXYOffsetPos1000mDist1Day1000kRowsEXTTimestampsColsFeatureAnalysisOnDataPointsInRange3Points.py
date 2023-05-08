@@ -33,7 +33,7 @@ CLASSIFIER_INSTANCES = [RandomForestClassifier(
 
 LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimestampsColsFeatureAnalysisOnDataPointsInRange3Points"
 
-CSV_COLUMNS = ["Model", "rowCount", "Image", "Date"]
+CSV_COLUMNS = ["Model", "rowCount", "Date", "Image"]
 
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
