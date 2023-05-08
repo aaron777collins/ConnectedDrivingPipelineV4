@@ -33,10 +33,7 @@ CLASSIFIER_INSTANCES = [RandomForestClassifier(
 
 LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimestampsColsFeatureAnalysisOnDataPointsInRange3Points"
 
-CSV_COLUMNS = ["Model", "Total_Train_Time",
-               "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
-               "train_accuracy", "train_precision", "train_recall", "train_f1",
-               "test_accuracy", "test_precision", "test_recall", "test_f1"]
+CSV_COLUMNS = ["Model", "rowCount", "Image", "Date"]
 
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
@@ -200,6 +197,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # creating new model name with 'feature-analysis', x, y, day, month, year
         self._generatorPathProvider.setModelName(f"{originalGeneratorPathProviderModelName}-feature-analysis-{x_pos}-{y_pos}-{day}-{month}-{year}")
 
+
         self.runIteration()
 
         # setting new x and y positions
@@ -264,10 +262,17 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         plt.savefig(finalPlotPath)
 
         # write image to the csv
-        self.csvWriter.addRow([" "]*len(CSV_COLUMNS))
         imageWriter = ImageWriter(self.csvWriter)
-        imageWriter.writeRow(["Model", "rowCount", "Image"])
-        imageWriter.writeImageAtEndOfRow([title,  len(data)], imageWriter.readImageAsBase64Array(finalPlotPath))
+        # date = mm/dd/yyyy from the settings
+        day = self.generatorContextProvider.get("CleanerWithFilterWithinRangeXYAndDay.day")
+        month = self.generatorContextProvider.get("CleanerWithFilterWithinRangeXYAndDay.month")
+        year = self.generatorContextProvider.get("CleanerWithFilterWithinRangeXYAndDay.year")
+        # date has filler 0s if needed ex. 1 -> 01
+        daystr = str(day) if day >= 10 else f"0{day}"
+        monthstr = str(month) if month >= 10 else f"0{month}"
+        yearstr = str(year)
+        date = f"{monthstr}/{daystr}/{yearstr}"
+        imageWriter.writeImageAtEndOfRow([title,  len(data), date], imageWriter.readImageAsBase64Array(finalPlotPath))
 
 
 
