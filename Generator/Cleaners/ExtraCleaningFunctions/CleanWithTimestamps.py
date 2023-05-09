@@ -19,7 +19,7 @@ class CleanWithTimestamps(ConnectedDrivingCleaner):
     def clean_data_with_timestamps(self):
         self.cleaned_data = self._clean_data_with_timestamps(cache_variables=[
             self.__class__.__name__, self.isXYCoords,
-            self.clean_func_name, self.filename, self.x_pos, self.y_pos
+            self.clean_params, self.filename, self.x_pos, self.y_pos
         ])
         return self
 
