@@ -156,6 +156,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
             "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
 
             # "MClassifierPipeline.classifier_instances": [...] # AUTO_FILLED
+            "MClassifierPipeline.csvWriter": CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS),
 
         }
         )
@@ -163,7 +164,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCo
         ######### END OF CONFIG FOR ALL PROPERTIES IN THE PIPELINE ##################################################
 
         self.logger = Logger(LOG_NAME)
-        self.csvWriter = CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS)
+        self.csvWriter = self.MLContextProvider.get("MClassifierPipeline.csvWriter")
 
     def write_entire_row(self, dict):
         row = [" "]*len(CSV_COLUMNS)
