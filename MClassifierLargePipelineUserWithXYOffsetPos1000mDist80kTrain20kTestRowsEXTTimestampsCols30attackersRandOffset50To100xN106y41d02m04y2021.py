@@ -30,7 +30,7 @@ from ServiceProviders.PathProvider import PathProvider
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -40,7 +40,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021:
+class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021:
 
     def __init__(self):
 
@@ -78,7 +78,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
         y_pos = 41.5430216
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}-dd02mm04yyyy2021", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-80ktrain-20ktest-1000mdist-x{x_pos_str}y{y_pos_str}-dd02mm04yyyy2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -138,7 +138,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_day-WithXYCoords-80ktrain-20ktest-1000mdist-x{x_pos_str}y{y_pos_str}dd02mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
@@ -184,15 +184,15 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
 
         mcdldpgac = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
-        data: DataFrame = mcdldpgac.getNRows(200000)
+        data: DataFrame = mcdldpgac.getNRows(100000)
 
         # splitting into train and test sets
-        train = data.iloc[:100000].copy()
-        test = data.iloc[100000:200000].copy()
+        train = data.iloc[:80000].copy()
+        test = data.iloc[80000:100000].copy()
 
         # cleaning/adding attackers to the data
-        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
-        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
+        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
 
 
 
@@ -271,5 +271,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimesta
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrainRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021()
     mcplu.run()
