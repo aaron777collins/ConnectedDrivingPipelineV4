@@ -64,8 +64,8 @@ class MClassifierPipeline:
 
         csvWriter = self._MLContextProvider.get("MClassifierPipeline.csvWriter")
         # write blank line
-        imageWriter.writeRow([])
         imageWriter = ImageWriter(csvWriter)
+        imageWriter.writeRow([])
         imageWriter.writeRow(["Classifier", "Confusion Matrix"])
 
         for mClassifier, confusion_matrix in self.classifiers_and_confusion_matrices:
