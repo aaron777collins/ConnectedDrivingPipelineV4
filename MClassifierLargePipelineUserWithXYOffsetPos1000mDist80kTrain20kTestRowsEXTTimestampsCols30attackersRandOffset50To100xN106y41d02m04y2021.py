@@ -90,7 +90,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXT
         # MDataClassifier.plot_confusion_matrix_path
         #
         self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/clean.csv",
+            "MConnectedDrivingDataCleaner.cleandatapathtrain": lambda model: f"data/mclassifierdata/cleaned/{model}/train/clean.csv",
+            "MConnectedDrivingDataCleaner.cleandatapathtest": lambda model: f"data/mclassifierdata/cleaned/{model}/test/clean.csv",
             "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
         }
         )
@@ -197,8 +198,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXT
 
 
         # Cleaning it for the malicious data detection
-        mdcleaner_train = MConnectedDrivingDataCleaner(train)
-        mdcleaner_test = MConnectedDrivingDataCleaner(test)
+        mdcleaner_train = MConnectedDrivingDataCleaner(train, "train")
+        mdcleaner_test = MConnectedDrivingDataCleaner(test, "test")
         m_train = mdcleaner_train.clean_data().get_cleaned_data()
         m_test = mdcleaner_test.clean_data().get_cleaned_data()
 

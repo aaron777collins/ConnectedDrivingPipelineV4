@@ -531,8 +531,8 @@ def run(self):
 
 
     # Cleaning it for the malicious data detection
-    mdcleaner_train = MConnectedDrivingDataCleaner(train)
-    mdcleaner_test = MConnectedDrivingDataCleaner(test)
+    mdcleaner_train = MConnectedDrivingDataCleaner(train, "train")
+    mdcleaner_test = MConnectedDrivingDataCleaner(test, "test")
     m_train = mdcleaner_train.clean_data().get_cleaned_data()
     m_test = mdcleaner_test.clean_data().get_cleaned_data()
 
@@ -635,8 +635,8 @@ test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attack
 
 ``` python linenums="1"
  # Cleaning it for the malicious data detection
-mdcleaner_train = MConnectedDrivingDataCleaner(train)
-mdcleaner_test = MConnectedDrivingDataCleaner(test)
+mdcleaner_train = MConnectedDrivingDataCleaner(train, "train")
+mdcleaner_test = MConnectedDrivingDataCleaner(test, "test")
 m_train = mdcleaner_train.clean_data().get_cleaned_data()
 m_test = mdcleaner_test.clean_data().get_cleaned_data()
 ```

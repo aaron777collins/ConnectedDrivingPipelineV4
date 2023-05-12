@@ -85,7 +85,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDist1Day1000kRowsEXTTimest
         # MDataClassifier.plot_confusion_matrix_path
         #
         self._mlPathProvider = MLPathProvider(model=LOG_NAME, contexts={
-            "MConnectedDrivingDataCleaner.cleandatapath": lambda model: f"data/mclassifierdata/cleaned/{model}/clean.csv",
+            "MConnectedDrivingDataCleaner.cleandatapathtrain": lambda model: f"data/mclassifierdata/cleaned/{model}/train/clean.csv",
+            "MConnectedDrivingDataCleaner.cleandatapathtest": lambda model: f"data/mclassifierdata/cleaned/{model}/test/clean.csv",
             "MDataClassifier.plot_confusion_matrix_path": lambda model: f"data/mclassifierdata/results/{model}/",
             "MDataClassifier.plot_distribution_path": lambda model: f"data/mclassifierdata/results/{model}/",
         }

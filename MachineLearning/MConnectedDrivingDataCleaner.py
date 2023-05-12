@@ -11,14 +11,15 @@ from ServiceProviders.IMLPathProvider import IMLPathProvider
 
 class MConnectedDrivingDataCleaner:
     @StandardDependencyInjection
-    def __init__(self, data, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
+    def __init__(self, data, suffixName, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._MLPathProvider = pathprovider()
         self._MLContextprovider = contextprovider()
-        self.logger = Logger("MConnectedDrivingDataCleaner")
+        self.logger = Logger(f"MConnectedDrivingDataCleaner{self.suffixName}")
 
         self.data = data
+        self.suffixName = suffixName
 
-        self.cleandatapath = self._MLPathProvider.getPathWithModelName("MConnectedDrivingDataCleaner.cleandatapath")
+        self.cleandatapath = self._MLPathProvider.getPathWithModelName(f"MConnectedDrivingDataCleaner.cleandatapath{self.suffixName}")
         self.columns = self._MLContextprovider.get("MConnectedDrivingDataCleaner.columns")
 
 
