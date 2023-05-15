@@ -13,4 +13,4 @@ Head to [Setup](./Getting%20Started/setup.html) to get started.
 - [Setup](./Getting%20Started/setup.html) to get started.
 - [Development](./Getting%20Started/development.html) for developing a pipeline user file.
 - [Repo](https://github.com/aaron777collins/MachineLearningPipelineV4) for the project repository.
-- [Other Projects](https://www.aaroncollins.info/projects/) that I have worked on.
+- [Other Projects](https://www.aaroncollins.info/projects/) that I have created.
