@@ -14,10 +14,10 @@ class MConnectedDrivingDataCleaner:
     def __init__(self, data, suffixName, pathprovider: IMLPathProvider, contextprovider: IMLContextProvider):
         self._MLPathProvider = pathprovider()
         self._MLContextprovider = contextprovider()
+        self.suffixName = suffixName
         self.logger = Logger(f"MConnectedDrivingDataCleaner{self.suffixName}")
 
         self.data = data
-        self.suffixName = suffixName
 
         self.cleandatapath = self._MLPathProvider.getPathWithModelName(f"MConnectedDrivingDataCleaner.cleandatapath{self.suffixName}")
         self.columns = self._MLContextprovider.get("MConnectedDrivingDataCleaner.columns")
