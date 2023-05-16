@@ -1,3 +1,4 @@
+from sklearn.model_selection import train_test_split
 from Decorators.FileCache import FileCache
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Logger.Logger import Logger
@@ -27,4 +28,8 @@ if __name__ == "__main__":
     dp = DictProvider()
     testingclass = Testing()
 
+
+    train, test = train_test_split([1, 2, 3, 4, 5, 6], test_size=0.2, random_state=75)
+    print(train)
+    print(test)
 
