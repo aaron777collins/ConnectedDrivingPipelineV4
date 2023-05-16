@@ -524,6 +524,11 @@ def run(self):
     train = data.iloc[:100000].copy()
     test = data.iloc[100000:200000].copy()
 
+    # Note you can randomize the sampling as follows:
+    # # splitting into train and test sets
+    # seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
+    # train, test = train_test_split(data, test_size=0.2, random_state=seed)
+
     # cleaning/adding attackers to the data
     train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
     test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
@@ -621,6 +626,9 @@ data: DataFrame = mcdldpgac.getNRows(200000)
 # splitting into train and test sets
 train = data.iloc[:100000].copy()
 test = data.iloc[100000:200000].copy()
+# Note you could also randomize the sampling as follows:
+seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
+train, test = train_test_split(data, test_size=0.2, random_state=seed)
 ```
 
 3. Adding attackers to the data.
