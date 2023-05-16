@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J MachineLearningPipelineV4
+#SBATCH -J ConnectedDrivingPipelineV4
 #SBATCH --account=def-arunita
 #SBATCH --cpus-per-task=6
 #SBATCH --mem=32G # 512GiB of memery

@@ -1,4 +1,4 @@
-##  MachineLearningPipelineV4
+##  ConnectedDrivingPipelineV4
 
 This pipeline was created to end the continuous cycle of making maching learning (ML) pipelines.
 
@@ -12,5 +12,5 @@ Head to [Setup](./Getting%20Started/setup.html) to get started.
 ### Links
 - [Setup](./Getting%20Started/setup.html) to get started.
 - [Development](./Getting%20Started/development.html) for developing a pipeline user file.
-- [Repo](https://github.com/aaron777collins/MachineLearningPipelineV4) for the project repository.
+- [Repo](https://github.com/aaron777collins/ConnectedDrivingPipelineV4) for the project repository.
 - [Other Projects](https://www.aaroncollins.info/projects/) that I have created.

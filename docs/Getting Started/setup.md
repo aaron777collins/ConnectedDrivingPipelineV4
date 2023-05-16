@@ -7,13 +7,13 @@
 - [Git](https://git-scm.com/downloads)
 ## Install
 1. Install the requirements listed above.
-2. clone the [github repo](https://github.com/aaron777collins/MachineLearningPipelineV4) by running the following in your git bash terminal:
+2. clone the [github repo](https://github.com/aaron777collins/ConnectedDrivingPipelineV4) by running the following in your git bash terminal:
 ``` bash
-git clone https://github.com/aaron777collins/MachineLearningPipelineV4.git
+git clone https://github.com/aaron777collins/ConnectedDrivingPipelineV4.git
 ```
 3. cd into the folder by typing:
 ``` bash
-cd MachineLearningPipelineV4
+cd ConnectedDrivingPipelineV4
 ```
 *Note that all your future commands will be expected to start from this directory.*
 4. Create a folder called `data`
