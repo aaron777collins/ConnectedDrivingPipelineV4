@@ -171,6 +171,8 @@
 #nav-buttons {
   text-align: right;
   margin-top: 10px;
+  min-height: 40px;
+  margin-right: -4px;
 }
 
 .material-button {

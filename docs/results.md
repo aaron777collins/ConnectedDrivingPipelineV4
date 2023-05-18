@@ -7,6 +7,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
 <div id="loading-results">Loading Results...</div>
 <div id="results">
     <div id="results-content"></div>
+<div id="nav-buttons"></div>
 </div>
 
-<div id="nav-buttons"></div>
