@@ -172,7 +172,10 @@
   text-align: right;
   margin-top: 10px;
   min-height: 40px;
-  margin-right: -4px;
+}
+
+#nav-buttons > *:last-child() {
+  margin-right: 0 !important;
 }
 
 .material-button {
