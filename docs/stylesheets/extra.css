@@ -206,3 +206,26 @@
   background: #3f51b5;
   color: white;
 }
+
+/* dark mode */
+[data-md-color-scheme="slate"] .material-button {
+  background-color: #333;
+  color: var(--md-fg-color);
+  border: 1px solid #ccc;
+}
+
+[data-md-color-scheme="slate"] .material-button:hover {
+  background-color: #444;
+  color: var(--md-fg-color);
+}
+
+[data-md-color-scheme="slate"] .material-button:disabled {
+  background-color: #222;
+  color: var(--md-fg-color);
+  opacity: 0.5;
+}
+
+[data-md-color-scheme="slate"] .material-button.active {
+  background-color: #3f51b5;
+  color: white;
+}
