@@ -1,95 +1,151 @@
+let currentPage;
+let pageSize;
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Works!");
 
-//   add event listener to a button with the title "Switch to light more"
-//   when clicked, it makes css changes
+  // initialize the first page
+  currentPage = 1;
+  pageSize = 3; // number of results per page
 
   loadAllResults();
 });
 
 const slugify = str =>
-  str
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+str
+  .toLowerCase()
+  .trim()
+  .replace(/[^\w\s-]/g, '')
+  .replace(/[\s_-]+/g, '-')
+  .replace(/^-+|-+$/g, '');
 
 function loadAllResults() {
+  let linksUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3-YLEzjlg7QLghAER39VFa1JiIUmLFZ3PmwAPpn_h44PPcqvy2mdSUA7Ze7Vjk7CDYHe4VNl0sE8s/pub?output=csv";
 
-    let linksUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3-YLEzjlg7QLghAER39VFa1JiIUmLFZ3PmwAPpn_h44PPcqvy2mdSUA7Ze7Vjk7CDYHe4VNl0sE8s/pub?output=csv";
+  loadResults(linksUrl, "getting-links", (data, _id) => {
+      let allRows = data.split(/\r?\n|\r/);
+      let names = [];
+      let descriptions = [];
+      let links = [];
+      let authors = [];
+      let dates = [];
+      for (let singleRow = 1; singleRow < allRows.length; singleRow++) {
+          let rowCells = allRows[singleRow].split(",");
+          names.push(rowCells[0]);
+          descriptions.push(rowCells[1]);
+          links.push(rowCells[2]);
+          authors.push(rowCells[3]);
+          dates.push(rowCells[4]);
+      }
 
-    loadResults(linksUrl, "getting-links", (data, _id) => {
-        // writeTableFromResultsWithLinks(data);
-        // this table is for debugging links
-
-        // parse out the name of the models and the links in the second column (excluding the header row)
-        let allRows = data.split(/\r?\n|\r/);
-        let names = [];
-        let descriptions = [];
-        let links = [];
-        let authors = [];
-        let dates = [];
-        for (let singleRow = 1; singleRow < allRows.length; singleRow++) {
-            let rowCells = allRows[singleRow].split(",");
-            names.push(rowCells[0]);
-            descriptions.push(rowCells[1]);
-            links.push(rowCells[2]);
-            authors.push(rowCells[3]);
-            dates.push(rowCells[4]);
-        }
-
-        for (let arr of [names, descriptions, links, authors, dates]) {
-          // reverse the order of the arrays
+      for (let arr of [names, descriptions, links, authors, dates]) {
           arr.reverse();
-        }
+      }
 
-        // console.log("Links", links);
-        for (let name of names) {
-            // create div of class "result-container" with unique id of name, author, date and link
-            let idx = names.indexOf(name);
-            let link = links[idx];
-            let description = descriptions[idx];
-            let author = authors[idx];
-            let date = dates[idx];
-            id = slugify(name + "-" + author + "-" + date + "-" + link);
-            $("#results-content").append("<div class='result-container' id='" + id + "'></div>"); // add id to div of "name-author-date-link
-            console.log("Link URL", link);
-            // add h3 with link name and url
-            $("#" + id).append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
-            // add author and date
-            $("#" + id).append("<p>" + author + " | " + date + "</p>");
-            // add description
-            $("#" + id).append("<p>" + description + "</p>");
-            loadResults(link, id, (data, id) => {
-                writeTableFromResults(data, id=id);
-            });
-        }
-    });
+      // Compute total pages
+      let totalPages = Math.ceil(names.length / pageSize);
+
+      // Clear existing results
+      $("#results-content").empty();
+
+      let start = (currentPage - 1) * pageSize;
+      let end = start + pageSize;
+
+      // Loop only for current page items
+      for (let i = start; i < end && i < names.length; i++) {
+          let name = names[i];
+          let link = links[i];
+          let description = descriptions[i];
+          let author = authors[i];
+          let date = dates[i];
+          id = slugify(name + "-" + author + "-" + date + "-" + link);
+          $("#results-content").append("<div class='result-container' id='" + id + "'></div>");
+          console.log("Link URL", link);
+          $("#" + id).append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
+          $("#" + id).append("<p>" + author + " | " + date + "</p>");
+          $("#" + id).append("<p>" + description + "</p>");
+          loadResults(link, id, (data, id) => {
+              writeTableFromResults(data, id=id);
+          });
+      }
+
+      createNavigationButtons(totalPages);
+  });
 }
 
 function loadResults(url, id, success) {
-
   results = $.ajax({
-    url: url,
-    dataType: "text",
-    cache: false,
-    success: successFunction,
-    error: errorFunction,
+      url: url,
+      dataType: "text",
+      cache: false,
+      success: successFunction,
+      error: errorFunction,
   });
 
   function successFunction(data) {
-    // console.log("Success loading results", data);
-    hideLoading();
-    success(data, id);
+      hideLoading();
+      success(data, id);
   }
 
   function errorFunction(e) {
-    hideLoading();
-    console.log("Error loading results", e);
-    $("#results-content").append("Error loading results");
+      hideLoading();
+      console.log("Error loading results", e);
+      $("#results-content").append("Error loading results");
   }
 }
+
+// Navigation Buttons
+// Navigation Buttons
+function createNavigationButtons(totalPages) {
+  const navButtonsContainer = $('#nav-buttons');
+  navButtonsContainer.empty(); // Clear existing buttons
+
+  // First and Previous buttons
+  const firstButton = $('<button class="material-button" id="first-page-button"><i class="fas fa-backward"></i></button>');
+  const prevButton = $('<button class="material-button" id="prev-page-button"><i class="fas fa-chevron-left"></i></button>');
+  firstButton.on('click', function() {
+    currentPage = 1;
+    loadAllResults();
+  });
+  prevButton.on('click', function() {
+    currentPage--;
+    loadAllResults();
+  });
+  navButtonsContainer.append(firstButton, prevButton);
+
+  // Page number buttons
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, currentPage + 2);
+  for (let i = startPage; i <= endPage; i++) {
+    let pageButton = $(`<button class="material-button page-button ${i === currentPage ? 'active' : ''}">${i}</button>`);
+    pageButton.on('click', function() {
+      currentPage = parseInt(this.innerText);
+      loadAllResults();
+    });
+    navButtonsContainer.append(pageButton);
+  }
+
+  // Next and Last buttons
+  const nextButton = $('<button class="material-button" id="next-page-button"><i class="fas fa-chevron-right"></i></button>');
+  const lastButton = $('<button class="material-button" id="last-page-button"><i class="fas fa-forward"></i></button>');
+  nextButton.on('click', function() {
+    currentPage++;
+    loadAllResults();
+  });
+  lastButton.on('click', function() {
+    currentPage = totalPages;
+    loadAllResults();
+  });
+  navButtonsContainer.append(nextButton, lastButton);
+
+  // Hide or show buttons based on the current page
+  $("#first-page-button, #prev-page-button").prop("disabled", currentPage === 1);
+  $("#next-page-button, #last-page-button").prop("disabled", currentPage === totalPages);
+}
+
+
+
+
 
 function hideLoading() {
   $("#loading-results").hide();

@@ -30,7 +30,7 @@
 
 #results {
   /* make the results have a max width */
-  width: var(--max-table-width);
+  width: 100%;
   max-width: var(--max-table-width);
 }
 
@@ -159,4 +159,44 @@
   width: 80%;
   max-width: 700px;
   max-height: 80%;
+}
+
+#loading-results {
+  text-align: center;
+  font-size: 20px;
+  color: #333;
+  margin: 20px 0;
+}
+
+#nav-buttons {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.material-button {
+  background: white;
+  border: none;
+  padding: 8px 16px;
+  margin: 0 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.2),
+              0px 1px 1px 0px rgba(0,0,0,0.14),
+              0px 2px 1px -1px rgba(0,0,0,0.12);
+  border-radius: 4px;
+}
+
+.material-button:hover {
+  background: #f0f0f0;
+}
+
+.material-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.material-button.active {
+  background: #3f51b5;
+  color: white;
 }
