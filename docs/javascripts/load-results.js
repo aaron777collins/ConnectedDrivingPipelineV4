@@ -64,7 +64,9 @@ function loadAllResults() {
           $("#" + id).append("<a href='" + link + "'>" + "<h3>" + name + "</h3>" + "</a>");
           $("#" + id).append("<p>" + author + " | " + date + "</p>");
           $("#" + id).append("<p>" + description + "</p>");
+          $("#" + id).append("<p class='loading-text'>Loading...</p>");
           loadResults(link, id, (data, id) => {
+              $("#" + id).find("p:last").remove();
               writeTableFromResults(data, id=id);
           });
       }
