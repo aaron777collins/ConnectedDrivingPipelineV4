@@ -174,8 +174,9 @@
   min-height: 40px;
 }
 
-#nav-buttons > *:last-child() {
-  margin-right: 0 !important;
+/* makign the last button have no margin-right */
+#nav-buttons > *:last-child {
+  margin-right: 2px;
 }
 
 .material-button {
