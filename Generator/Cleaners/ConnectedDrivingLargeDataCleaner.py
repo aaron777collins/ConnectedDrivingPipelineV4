@@ -163,3 +163,17 @@ class ConnectedDrivingLargeDataCleaner:
 
         df = pd.read_csv(self.combinedcleandatapath + "-" + str(n) + ".csv", dtype=dtypes)
         return df
+
+    def getNumOfRows(self):
+
+        df = pd.read_csv(self.combinedcleandatapath, dtype=ConnectedDrivingLargeDataCleaner.default_dtypes)
+        return len(df.index)
+
+
+    def getAllRows(self):
+
+        dtypes = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.dtypes", ConnectedDrivingLargeDataCleaner.default_dtypes)
+
+        df = pd.read_csv(self.combinedcleandatapath, dtype=dtypes)
+
+        return df
