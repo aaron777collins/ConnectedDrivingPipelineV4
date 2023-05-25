@@ -155,8 +155,6 @@ function hideLoading() {
 
 function writeTableFromResults(data, id="results-content") {
 
-  const CHARTABLE_HEADERS = ["test_accuracy", "test_precision", "test_recall", "test_f1"];
-
   console.log(id);
   // find anything with data:image..., and replace the comma ',' with !%! so that it doesn't get split
   data = data.replace(/data:image[^,]+,/g, function (match) {
@@ -165,12 +163,14 @@ function writeTableFromResults(data, id="results-content") {
   var allRows = data.split(/\r?\n|\r/);
   var table = "<table class='result-table result-table-no-links custom-scroll-bar'>";
 
+  const CHARTABLE_HEADERS = ["train_accuracy", "train_precision", "train_recall", "train_f1","test_accuracy", "test_precision", "test_recall", "test_f1"];
+
   let chartData = {
-    models: [],
-    accuracy: [],
-    precision: [],
-    recall: [],
-    f1: []
+    models: []
+  }
+
+  for (let header of CHARTABLE_HEADERS) {
+    chartData[header] = [];
   }
 
   for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
@@ -191,14 +191,12 @@ function writeTableFromResults(data, id="results-content") {
       // Here's where we collect the data for our charts.
       if (allRows[0].split(",")[rowCell] === "Model") {
         chartData.models.push(rowCells[rowCell]);
-      } else if (allRows[0].split(",")[rowCell] === "test_accuracy") {
-        chartData.accuracy.push(parseFloat(rowCells[rowCell]));
-      } else if (allRows[0].split(",")[rowCell] === "test_precision") {
-        chartData.precision.push(parseFloat(rowCells[rowCell]));
-      } else if (allRows[0].split(",")[rowCell] === "test_recall") {
-        chartData.recall.push(parseFloat(rowCells[rowCell]));
-      } else if (allRows[0].split(",")[rowCell] === "test_f1") {
-        chartData.f1.push(parseFloat(rowCells[rowCell]));
+      } else {
+        for (let header of CHARTABLE_HEADERS) {
+          if (allRows[0].split(",")[rowCell] === header) {
+            chartData[header].push(parseFloat(rowCells[rowCell]));
+          }
+        }
       }
 
       if (singleRow === 0) {
@@ -268,17 +266,18 @@ function writeTableFromResults(data, id="results-content") {
   // if the model column exists, remove it from the chart data
   if (modelColumnIndex > -1) {
     chartData.models.splice(modelColumnIndex, 1);
-    chartData.accuracy.splice(modelColumnIndex, 1);
-    chartData.precision.splice(modelColumnIndex, 1);
-    chartData.recall.splice(modelColumnIndex, 1);
-    chartData.f1.splice(modelColumnIndex, 1);
+    for (let header of CHARTABLE_HEADERS) {
+      chartData[header].splice(modelColumnIndex, 1);
+    }
   }
 
   // createChart creates charts based on the data only if the data exists
-  createChart(id, id + "chart-accuracy", "Test Accuracy", chartData.models, chartData.accuracy);
-  createChart(id, id + "chart-precision", "Test Precision", chartData.models, chartData.precision);
-  createChart(id, id + "chart-recall", "Test Recall", chartData.models, chartData.recall);
-  createChart(id, id + "chart-f1", "Test F1", chartData.models, chartData.f1);
+
+  for (let header of CHARTABLE_HEADERS) {
+    if (chartData[header].length > 0) {
+      createChart(id, id + "chart-" + header, header, chartData.models, chartData[header]);
+    }
+  }
 
 
 }
