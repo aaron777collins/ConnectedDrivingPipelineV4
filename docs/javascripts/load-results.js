@@ -154,6 +154,9 @@ function hideLoading() {
 }
 
 function writeTableFromResults(data, id="results-content") {
+
+  const CHARTABLE_HEADERS = ["test_accuracy", "test_precision", "test_recall", "test_f1"];
+
   console.log(id);
   // find anything with data:image..., and replace the comma ',' with !%! so that it doesn't get split
   data = data.replace(/data:image[^,]+,/g, function (match) {
@@ -161,6 +164,15 @@ function writeTableFromResults(data, id="results-content") {
   });
   var allRows = data.split(/\r?\n|\r/);
   var table = "<table class='result-table result-table-no-links custom-scroll-bar'>";
+
+  let chartData = {
+    models: [],
+    accuracy: [],
+    precision: [],
+    recall: [],
+    f1: []
+  }
+
   for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
     if (singleRow === 0) {
       table += "<thead>";
@@ -170,16 +182,32 @@ function writeTableFromResults(data, id="results-content") {
     }
     var rowCells = allRows[singleRow].split(",");
     for (var rowCell = 0; rowCell < rowCells.length; rowCell++) {
+
       // check if the cell is in double quotes
       if (rowCells[rowCell].startsWith('"') && rowCells[rowCell].endsWith('"')) {
         rowCells[rowCell] = rowCells[rowCell].substring(1, rowCells[rowCell].length - 1);
       }
+
+      // Here's where we collect the data for our charts.
+      if (allRows[0].split(",")[rowCell] === "Model") {
+        chartData.models.push(rowCells[rowCell]);
+      } else if (allRows[0].split(",")[rowCell] === "test_accuracy") {
+        chartData.accuracy.push(parseFloat(rowCells[rowCell]));
+      } else if (allRows[0].split(",")[rowCell] === "test_precision") {
+        chartData.precision.push(parseFloat(rowCells[rowCell]));
+      } else if (allRows[0].split(",")[rowCell] === "test_recall") {
+        chartData.recall.push(parseFloat(rowCells[rowCell]));
+      } else if (allRows[0].split(",")[rowCell] === "test_f1") {
+        chartData.f1.push(parseFloat(rowCells[rowCell]));
+      }
+
       if (singleRow === 0) {
         table += "<th class='result-header-cell'>";
         table += rowCells[rowCell];
         table += "</th>";
       } else {
         table += "<td class='result-body-cell'>";
+
         // check if it is a base64 image
         if (rowCells[rowCell].startsWith("data:image")) {
 
@@ -201,6 +229,7 @@ function writeTableFromResults(data, id="results-content") {
         } else {
           table += rowCells[rowCell];
         }
+
         table += "</td>";
       }
     }
@@ -233,8 +262,84 @@ function writeTableFromResults(data, id="results-content") {
 
   });
 
+  // looping through the chart data and removing the column info from the "Model" column
+  // First, finding the index of the model column
+  var modelColumnIndex = chartData.models.indexOf("Model");
+  // if the model column exists, remove it from the chart data
+  if (modelColumnIndex > -1) {
+    chartData.models.splice(modelColumnIndex, 1);
+    chartData.accuracy.splice(modelColumnIndex, 1);
+    chartData.precision.splice(modelColumnIndex, 1);
+    chartData.recall.splice(modelColumnIndex, 1);
+    chartData.f1.splice(modelColumnIndex, 1);
+  }
+
+  // createChart creates charts based on the data only if the data exists
+  createChart(id, id + "chart-accuracy", "Test Accuracy", chartData.models, chartData.accuracy);
+  createChart(id, id + "chart-precision", "Test Precision", chartData.models, chartData.precision);
+  createChart(id, id + "chart-recall", "Test Recall", chartData.models, chartData.recall);
+  createChart(id, id + "chart-f1", "Test F1", chartData.models, chartData.f1);
+
 
 }
+
+// This function creates a bar chart with the given parameters.
+function createChart(divID, canvasId, chartTitle, labels, data) {
+  // Only create chart if data array is not empty
+  if (data.length > 0) {
+
+    // remove all elements in the labels and data once an empty string is found
+    // this is because the csv has other data
+
+    // find the first empty string in the labels
+    var firstEmptyLabel = labels.indexOf("");
+    // if there is an empty string, remove all elements after it
+    if (firstEmptyLabel > -1) {
+      labels.splice(firstEmptyLabel, labels.length - firstEmptyLabel);
+      data.splice(firstEmptyLabel, data.length - firstEmptyLabel);
+    }
+
+    // Create the canvas element
+    $("#" + divID).append("<canvas id='" + canvasId + "'></canvas>");
+    var ctx = document.getElementById(canvasId).getContext('2d');
+
+    // Generate random color for the chart
+    var red = Math.floor(Math.random() * 256);
+    var green = Math.floor(Math.random() * 256);
+    var blue = Math.floor(Math.random() * 256);
+    var backgroundColor = 'rgba(' + red + ', ' + green + ', ' + blue + ', 0.2)';
+
+    // Generate darker color for the border
+    var darkerRed = Math.max(red - 25, 0);
+    var darkerGreen = Math.max(green - 25, 0);
+    var darkerBlue = Math.max(blue - 25, 0);
+    var borderColor = 'rgba(' + darkerRed + ', ' + darkerGreen + ', ' + darkerBlue + ', 1)';
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: chartTitle,
+          data: data,
+          backgroundColor: backgroundColor,
+          borderColor: borderColor,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 1
+          }
+        }
+      }
+    });
+  }
+}
+
+
 
 function writeTableFromResultsWithLinks(data) {
 
