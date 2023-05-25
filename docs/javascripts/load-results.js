@@ -332,6 +332,9 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
           y: {
             beginAtZero: true,
             max: 1
+          },
+          legend: {
+            position: 'bottom'
           }
         }
       }
