@@ -12,7 +12,7 @@ USERNAME=$2
 
 # if dependency is not provided, then set it to an empty string
 if [ "$#" -eq 3 ]; then
-    DEPENDENCY="$2"
+    DEPENDENCY="$3"
 else
     DEPENDENCY=""
 fi
