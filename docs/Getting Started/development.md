@@ -744,7 +744,7 @@ See the [Setup](./setup.html) page for more details.
 ### Running On The Super Computer
 To run on the super computer, register with compute canada.
 Next, follow the instructions on the [Setup](./setup.html) page to set up your virtual environment. You'll likely
-want to use the beluga super computer (i.e. <username>@beluga.computecanada.ca)
+want to use the beluga super computer (i.e. <username>@beluga.computecanada.ca).
 You may want to use --no-index when installing requirements to avoid downloading packages from the internet.
 
 Finally, you can run the following command to submit a job to the super computer:
