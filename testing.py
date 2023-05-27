@@ -20,16 +20,24 @@ class Testing:
 
 
 if __name__ == "__main__":
-    pp = PathProvider(model="test",
-        contexts={
-        "Logger.logpath": DEFAULT_LOG_PATH,
-        }
-    )
-    dp = DictProvider()
-    testingclass = Testing()
+
+    while input("Continue? (y/n): ") != "n":
+
+        prefix = input("Prefix: ")
+
+        pp = PathProvider(model=prefix + "test",
+            contexts={
+            "Logger.logpath": DEFAULT_LOG_PATH,
+            }
+        )
+        dp = DictProvider(contexts={"prefix": prefix})
+        testingclass = Testing()
+        print(testingclass._contextprovider.get("prefix"))
 
 
-    train, test = train_test_split([1, 2, 3, 4, 5, 6], test_size=0.2, random_state=75)
-    print(train)
-    print(test)
+        train, test = train_test_split([1, 2, 3, 4, 5, 6], test_size=0.2, random_state=75)
+        print(train)
+        print(test)
+
+
 
