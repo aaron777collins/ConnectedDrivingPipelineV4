@@ -6,7 +6,7 @@
 # check for the required arguments to run the pipeline
 if [ "$#" -lt 8 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: runUserPipeline.sh <USERNAME> <PATH_TO_REPO> <FILE> <DAYS> <HOURS> <MINUTES> <CPUS> <MEM> [OPTIONAL: DEPENDENCY]"
+    echo "Usage: runUserPipeline.sh <USERNAME> <PATH_TO_REPO (not ending in slash)> <FILE> <DAYS> <HOURS> <MINUTES> <CPUS> <MEM> [OPTIONAL: DEPENDENCY]"
     echo "You entered $# parameters"
     echo "You entered: $@"
     exit 1

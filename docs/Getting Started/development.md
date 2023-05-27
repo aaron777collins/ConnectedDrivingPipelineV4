@@ -732,7 +732,7 @@ for mclassifier, train_result, result in results:
 mcp.calculate_classifiers_and_confusion_matrices().plot_confusion_matrices()
 ```
 
-### Running the Pipeline
+### Running The Pipeline
 To run the pipeline, you can run the following command in the terminal:
 
 ```bash
@@ -740,3 +740,34 @@ python <your python file>.py
 ```
 If you haven't already, make sure to activate your virtual environment before running the command.
 See the [Setup](./setup.html) page for more details.
+
+### Running On The Super Computer
+To run on the super computer, register with compute canada.
+Next, follow the instructions on the [Setup](./setup.html) page to set up your virtual environment. You'll likely
+want to use the beluga super computer (i.e. <username>@beluga.computecanada.ca)
+You may want to use --no-index when installing requirements to avoid downloading packages from the internet.
+
+Finally, you can run the following command to submit a job to the super computer:
+
+```bash
+./runUserPipeline.sh <USERNAME> <PATH_TO_REPO (not ending in slash)> <FILE> <DAYS> <HOURS> <MINUTES> <CPUS> <MEM> [OPTIONAL: DEPENDENCY]
+```
+
+Optionally, you can use the defaultrunnerconfig.sh file to use default values:
+
+```bash
+./defaultrunnerconfig.sh <FILE> <USERNAME> [OPTIONAL: DEPENDENCY]
+```
+
+If you decide to run the commands directly from the super computer, you can generate a slurm file
+using the following command:
+
+```bash
+python3 generateSlurm.py <fileName> <days> <hours> <minutes> <cpus> <memory(G)> [dependency]
+```
+
+Or you can create the slurm file yourself and submit it as a job using the following command:
+
+```bash
+sbatch <fileName>
+```

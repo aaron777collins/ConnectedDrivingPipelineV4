@@ -45,7 +45,7 @@ mkdir data
 
     *Make sure to always activate your venv before running anything in this pipeline*
 
-7. Install the required modules
+7. Install the required modules (note that on the super computer you can use --no-index to install from the local cache)
 
     ``` bash
     pip install -r requirements.txt
