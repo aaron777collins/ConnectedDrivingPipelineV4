@@ -24,7 +24,7 @@ MEM=$8
 if [ "$#" -eq 9 ]; then
     echo "Dependency provided: $9"
     echo "Setting dependency to --dependency=afterok:$9"
-    DEPENDENCY="--dependency=afterok:$9"
+    DEPENDENCY="afterok:$9"
 else
     DEPENDENCY=""
 fi
