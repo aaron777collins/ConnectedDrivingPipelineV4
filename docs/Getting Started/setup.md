@@ -7,7 +7,7 @@
 - [Git](https://git-scm.com/downloads)
 ## Install
 1. Install the requirements listed above.
-2. clone the [github repo](https://github.com/aaron777collins/ConnectedDrivingPipelineV4) by running the following in your git bash terminal:
+2. clone the [github repo](https://github.com/aaron777collins/ConnectedDrivingPipelineV4) by running the following in your git bash terminal (note that on the super computer you should do this within the projects directory):
 ``` bash
 git clone https://github.com/aaron777collins/ConnectedDrivingPipelineV4.git
 ```
