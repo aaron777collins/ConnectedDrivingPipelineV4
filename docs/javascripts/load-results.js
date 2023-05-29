@@ -55,6 +55,10 @@ function loadAllResults() {
     // Clear existing results
     $("#in-progress-results-content").empty();
 
+    if (names.length === 0) {
+      $("#in-progress-results-content").append("<p>No jobs are running at the moment.</p>");
+    }
+
     // Loop only for current page items
     for (let i = inProgressJobsNavigation.start; i < inProgressJobsNavigation.end && i < names.length; i++) {
       let name = names[i];
@@ -73,6 +77,7 @@ function loadAllResults() {
       $("#" + id).append("<p>" + author + " | " + date + "</p>");
       $("#" + id).append("<p>" + description + "</p>");
     }
+
   });
 
   let linksUrl =
@@ -104,6 +109,10 @@ function loadAllResults() {
 
     // Clear existing results
     $("#results-content").empty();
+
+    if (names.length === 0) {
+      $("#results-content").append("<p>No results found.</p>");
+    }
 
     // Loop only for current page items
     console.log(resultsNavigation)
