@@ -163,7 +163,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
             "month", "day", "year", "hour", "minute", "second", "pm",
             "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed", "coreData_heading", "x_pos", "y_pos", "isAttacker"],
 
-            "MClassifierPipeline.classifier_instances": COLUMNS,
+            "MClassifierPipeline.classifier_instances": CLASSIFIER_INSTANCES,
             "MClassifierPipeline.csvWriter": CSVWriter(f"{LOG_NAME}.csv", CSV_COLUMNS),
 
 
