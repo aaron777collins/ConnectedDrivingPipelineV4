@@ -161,6 +161,17 @@
   max-height: 80%;
 }
 
+#in-progress-jobs-nav-buttons {
+  text-align: right;
+  margin-top: 10px;
+  min-height: 40px;
+}
+
+/* makign the last button have no margin-right */
+#in-progress-jobs-nav-buttons > *:last-child {
+  margin-right: 2px;
+}
+
 #nav-buttons {
   text-align: right;
   margin-top: 10px;
