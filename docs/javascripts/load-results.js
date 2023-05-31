@@ -176,6 +176,12 @@ function writeTableFromResults(data, id = "results-content") {
   data = data.replace(/data:image[^,]+,/g, function (match) {
     return match.replace(/,/g, "!$!");
   });
+
+  // replace any commas within {} with !%$*$%! so that it doesn't get split
+  data = data.replace(/{[^}]+}/g, function (match) {
+    return match.replace(/,/g, "!%$*$%!");
+  });
+
   var allRows = data.split(/\r?\n|\r/);
   var table =
     "<table class='result-table result-table-no-links custom-scroll-bar'>";
@@ -219,6 +225,7 @@ function writeTableFromResults(data, id = "results-content") {
         );
       }
 
+
       // Here's where we collect the data for our charts.
       if (allRows[0].split(",")[rowCell] === "Model") {
         chartData.models.push(rowCells[rowCell]);
@@ -229,6 +236,9 @@ function writeTableFromResults(data, id = "results-content") {
           }
         }
       }
+
+      // replace !%$*$%! with ,
+      rowCells[rowCell] = rowCells[rowCell].replace(/!\%\$*\%\!/g, ",");
 
       if (singleRow === 0) {
         table += "<th class='result-header-cell'>";
