@@ -26,7 +26,7 @@ from ServiceProviders.MLPathProvider import MLPathProvider
 from ServiceProviders.PathProvider import PathProvider
 
 
-CLASSIFIER_INSTANCES = [GridSearchCV(RandomForestClassifier(), {"n_estimators": [10, 20, 40, 60, 80, 100, 120, 140, 200, 400, 600, 800, 1000], "criterion": ["gini", "entropy", "log_loss"]}), GridSearchCV(DecisionTreeClassifier(), {"criterion": ["gini", "entropy", "log_loss"]}), GridSearchCV(KNeighborsClassifier(), {"algorithm": ["auto", "ball_tree", "kd_tree", "brute"]})]
+CLASSIFIER_INSTANCES = [GridSearchCV(RandomForestClassifier(), {"n_estimators": [50, 100, 200], "criterion": ["gini", "entropy", "log_loss"]}), GridSearchCV(DecisionTreeClassifier(), {"criterion": ["gini", "entropy", "log_loss"]}), GridSearchCV(KNeighborsClassifier(), {"algorithm": ["auto", "ball_tree", "kd_tree", "brute"]})]
 
 LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsEXTTimestampsCols30attackersRandOffset100To200xN106y41d01to30m04y2021WithGridSearchEstimators"
 
