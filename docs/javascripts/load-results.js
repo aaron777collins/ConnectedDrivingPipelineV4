@@ -238,7 +238,7 @@ function writeTableFromResults(data, id = "results-content") {
       }
 
       // replace !%$*$%! with ,
-      rowCells[rowCell] = rowCells[rowCell].replace(/!\%\$*\%\!/g, ",");
+      rowCells[rowCell] = rowCells[rowCell].replace(/!\%\$\*\$\%\!/g, ",");
 
       if (singleRow === 0) {
         table += "<th class='result-header-cell'>";
