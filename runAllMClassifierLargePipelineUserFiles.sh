@@ -3,6 +3,9 @@
 # and ending with .py
 files=$(ls MClassifierLargePipelineUser*.py)
 
+# removing .py from the file names
+files=$(echo $files | sed 's/.py//g')
+
 # getting the username of the user by asking
 echo "Please enter your username:"
 read username
