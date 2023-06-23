@@ -35,8 +35,8 @@ LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos1000mDistRandSplit80Perce
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
-               "train_accuracy", "train_precision", "train_recall", "train_f1",
-               "test_accuracy", "test_precision", "test_recall", "test_f1"]
+               "train_accuracy", "train_precision", "train_recall", "train_f1", "train_specificity",
+               "test_accuracy", "test_precision", "test_recall", "test_f1", "test_specificity"]
 
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
@@ -231,11 +231,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDistRandSplit80PercentTrai
             mcp.logger.log("Precision: ", train_result[1])
             mcp.logger.log("Recall: ", train_result[2])
             mcp.logger.log("F1: ", train_result[3])
+            mcp.logger.log("Specificity: ", train_result[4])
             mcp.logger.log("Test Set Results:")
             mcp.logger.log("Accuracy: ", result[0])
             mcp.logger.log("Precision: ", result[1])
             mcp.logger.log("Recall: ", result[2])
             mcp.logger.log("F1: ", result[3])
+            mcp.logger.log("Specificity: ", result[4])
             # printing the elapsed training and prediction time
             mcp.logger.log("Elapsed Training Time: ",
                            mclassifier.elapsed_train_time)
@@ -264,10 +266,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos1000mDistRandSplit80PercentTrai
                 "train_precision": train_result[1],
                 "train_recall": train_result[2],
                 "train_f1": train_result[3],
+                "train_specificity": train_result[4],
                 "test_accuracy": result[0],
                 "test_precision": result[1],
                 "test_recall": result[2],
-                "test_f1": result[3]}
+                "test_f1": result[3],
+                "test_specificity": result[4]
+                }
             self.write_entire_row(csvrowdata)
 
         # calculating confusion matrices and storing them

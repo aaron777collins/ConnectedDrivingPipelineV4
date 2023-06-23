@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import matplotlib.pyplot as plt
 import os
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
+from Helpers.ExtraMetrics import specificity
 from Helpers.ImageWriter import ImageWriter
 from Logger.Logger import Logger
 from ServiceProviders.IMLContextProvider import IMLContextProvider
@@ -76,7 +77,8 @@ class MDataClassifier:
         precision = precision_score(self.test_Y, self.predicted_results)
         recall = recall_score(self.test_Y, self.predicted_results)
         f1 = f1_score(self.test_Y, self.predicted_results)
-        return accuracy, precision, recall, f1
+        sp = specificity(self.test_Y, self.predicted_results)
+        return accuracy, precision, recall, f1, sp
 
     def get_train_results(self):
         # calculate the accuracy, precision, recall, and f1 score
@@ -84,7 +86,8 @@ class MDataClassifier:
         precision = precision_score(self.train_Y, self.predicted_train_results)
         recall = recall_score(self.train_Y, self.predicted_train_results)
         f1 = f1_score(self.train_Y, self.predicted_train_results)
-        return accuracy, precision, recall, f1
+        sp = specificity(self.train_Y, self.predicted_train_results)
+        return accuracy, precision, recall, f1, sp
 
     def get_confusion_matrix(self) -> list[list[float]]:
         return confusion_matrix(self.test_Y, self.predicted_results, normalize='all')

@@ -33,8 +33,8 @@ LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80Perce
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
-               "train_accuracy", "train_precision", "train_recall", "train_f1",
-               "test_accuracy", "test_precision", "test_recall", "test_f1"]
+               "train_accuracy", "train_precision", "train_recall", "train_f1", "train_specificity",
+               "test_accuracy", "test_precision", "test_recall", "test_f1", "test_specificity"]
 
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
@@ -262,10 +262,12 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
                 "train_precision": train_result[1],
                 "train_recall": train_result[2],
                 "train_f1": train_result[3],
+                "train_specificity": train_result[4],
                 "test_accuracy": result[0],
                 "test_precision": result[1],
                 "test_recall": result[2],
-                "test_f1": result[3]}
+                "test_f1": result[3],
+                "test_specificity": result[4]}
             self.write_entire_row(csvrowdata)
 
         # calculating confusion matrices and storing them

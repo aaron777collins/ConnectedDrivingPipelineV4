@@ -36,8 +36,8 @@ LOG_NAME = "MClassifierLargePipelineUserNoXYOffsetPosNoMaxDistMapCreatorEnlarged
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
-               "train_accuracy", "train_precision", "train_recall", "train_f1",
-               "test_accuracy", "test_precision", "test_recall", "test_f1"]
+               "train_accuracy", "train_precision", "train_recall", "train_f1", "train_specificity",
+               "test_accuracy", "test_precision", "test_recall", "test_f1", "test_specificity"]
 
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
