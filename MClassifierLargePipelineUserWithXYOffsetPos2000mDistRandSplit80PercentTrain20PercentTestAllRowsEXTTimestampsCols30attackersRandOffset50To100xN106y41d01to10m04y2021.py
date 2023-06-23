@@ -79,7 +79,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         y_pos = 41.5430216
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80ktrain-20ktest-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to10mm04yyyy2021", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80ptrain-20ptest-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to10mm04yyyy2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -143,7 +143,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-RandSplit80ktrain-20ktest-2000mdist-x{x_pos_str}y{y_pos_str}dd01to10mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-RandSplit80ptrain-20ptest-2000mdist-x{x_pos_str}y{y_pos_str}dd01to10mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
