@@ -191,10 +191,12 @@ function writeTableFromResults(data, id = "results-content") {
     "train_precision",
     "train_recall",
     "train_f1",
+    "train_specificity",
     "test_accuracy",
     "test_precision",
     "test_recall",
     "test_f1",
+    "test_specificity",
   ];
 
   let chartData = {
