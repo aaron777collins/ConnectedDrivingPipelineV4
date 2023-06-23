@@ -17,4 +17,4 @@ else
     DEPENDENCY=""
 fi
 
-/bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 $FILE 1 0 0 10 128 $DEPENDENCY
+/bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 $FILE 7 0 0 10 128 $DEPENDENCY
