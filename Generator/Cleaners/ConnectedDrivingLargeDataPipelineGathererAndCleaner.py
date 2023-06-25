@@ -32,7 +32,7 @@ class ConnectedDrivingLargeDataPipelineGathererAndCleaner:
 
     def getNRows(self, n):
         # read from combined data
-        return self.dc.getNumRows(n)
+        return self.dc.getNRows(n)
 
     def getNumOfRows(self):
         return self.dc.getNumOfRows()
