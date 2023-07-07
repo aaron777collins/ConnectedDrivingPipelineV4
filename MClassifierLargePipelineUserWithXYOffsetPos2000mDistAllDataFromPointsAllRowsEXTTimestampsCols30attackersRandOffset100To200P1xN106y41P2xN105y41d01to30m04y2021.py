@@ -29,7 +29,7 @@ from ServiceProviders.PathProvider import PathProvider
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistAllDataFromPointsAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Train_Sample_Size", "Total_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -39,7 +39,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021:
+class MClassifierLargePipelineUserWithXYOffsetPos2000mDistAllDataFromPointsAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021:
 
     def __init__(self):
 
@@ -78,7 +78,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         y_pos = 41.5430216
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80ptrain-20ptest-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to30mm04yyyy2021", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-AllDataFromPoints-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to30mm04yyyy2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -142,7 +142,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
             "ConnectedDrivingAttacker.SEED": 42,
             "ConnectedDrivingCleaner.isXYCoords": True,
             "ConnectedDrivingAttacker.attack_ratio": 0.3,
-            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-RandSplit80ptrain-20ptest-2000mdist-x{x_pos_str}y{y_pos_str}dd01to30mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
+            "ConnectedDrivingCleaner.cleanParams": f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-AllDataFromPoints-2000mdist-x{x_pos_str}y{y_pos_str}dd01to30mm04yyyy2021", # makes cached data have info on if/if not we use timestamps for uniqueness
 
         }
         )
@@ -199,12 +199,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         self.generatorContextProvider.add("ConnectedDrivingCleaner.x_pos", -105.1159611)
         self.generatorContextProvider.add("ConnectedDrivingCleaner.y_pos", 41.0982327)
 
-
         x_pos = -105.1159611
         y_pos = 41.0982327
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
-        generatorPathProviderModel=f"{self.initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80ptrain-20ptest-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to30mm04yyyy2021"
+        generatorPathProviderModel=f"{self.initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-AllDataFromPoints-2000mdist-x{x_pos_str}y{y_pos_str}-dd01to30mm04yyyy2021"
+
+        self.generatorContextProvider.add("ConnectedDrivingCleaner.cleanParams", f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-AllDataFromPoints-2000mdist-x{x_pos_str}y{y_pos_str}dd01to30mm04yyyy2021") # makes cached data have info on if/if not we use timestamps for uniqueness)
 
         self._generatorPathProvider.model = generatorPathProviderModel
         self._mlPathProvider.model = self._mlPathProvider.model + "-2"
@@ -215,11 +216,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         testData: DataFrame = mcdldpgac2.getAllRows()
 
         train = trainData
-        # getting the num rows in train and calculating 20% of that
-        num_rows_for_test_split = train.shape[0]
-
-        # taking the num_rows_for_test_split amount of rows from testData in a random fashion
-        test = testData.sample(n=num_rows_for_test_split, random_state=seed)
+        test = testData
 
 
         # cleaning/adding attackers to the data
@@ -307,5 +304,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistAllDataFromPointsAllRowsEXTTimestampsCols30attackersRandOffset100To200P1xN106y41P2xN105y41d01to30m04y2021()
     mcplu.run()
