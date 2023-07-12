@@ -3,7 +3,7 @@ from Decorators.FileCache import FileCache
 from ServiceProviders.DictProvider import DictProvider
 from ServiceProviders.PathProvider import PathProvider
 from Test.ITest import ITest
-
+import hashlib
 
 class TestFileCache(ITest):
 
@@ -32,8 +32,8 @@ class TestFileCache(ITest):
 
         # assert that the cache correctly stores a file at the cache location
         # i.e. that the cache is actually being used
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.txt"))
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.txt"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_2'.encode()).hexdigest()}.txt"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_3'.encode()).hexdigest()}.txt"))
 
         # test that FileCache correctly caches the output of a function
         assert(self.some_other_func(1, 2) == 3)
@@ -48,16 +48,16 @@ class TestFileCache(ITest):
 
         # assert that the cache correctly stores a file at the cache location
         # i.e. that the cache is actually being used
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/_some_other_func_1_2.txt"))
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/_some_other_func_1_3.txt"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('_some_other_func_1_2'.encode()).hexdigest()}.txt"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('_some_other_func_1_3'.encode()).hexdigest()}.txt"))
 
     def cleanup(self):
         # remove the cache files
         try:
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.txt")
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.txt")
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/_some_other_func_1_2.txt")
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/_some_other_func_1_3.txt")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_2'.encode()).hexdigest()}.txt")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_3'.encode()).hexdigest()}.txt")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('_some_other_func_1_2'.encode()).hexdigest()}.txt")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('_some_other_func_1_3'.encode()).hexdigest()}.txt")
 
         except FileNotFoundError:
             pass

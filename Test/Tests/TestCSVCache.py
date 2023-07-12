@@ -1,3 +1,4 @@
+import hashlib
 import os
 from Decorators.CSVCache import CSVCache
 from ServiceProviders.DictProvider import DictProvider
@@ -32,14 +33,14 @@ class TestCSVCache(ITest):
         assert(self.some_function(1, 3).equals(pd.DataFrame({'a': [1], 'b': [3]})))
 
         # check that the cache correctly stores a file at the cache location
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.csv"))
-        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.csv"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_2'.encode()).hexdigest()}.csv"))
+        assert(os.path.exists(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_3'.encode()).hexdigest()}.csv"))
 
     def cleanup(self):
         # remove the cache files
         try:
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_2.csv")
-            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/some_function_1_3.csv")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_2'.encode()).hexdigest()}.csv")
+            os.remove(f"cache/{PathProvider.DEFAULT_MODEL_NAME}/{hashlib.md5('some_function_1_3'.encode()).hexdigest()}.csv")
         except FileNotFoundError:
             pass
 
