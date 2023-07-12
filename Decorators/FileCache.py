@@ -6,6 +6,8 @@ import functools
 from ServiceProviders.PathProvider import PathProvider
 
 import os
+import hashlib
+
 
 # decorator to cache the return of a function in a file
 # KWARGS:
@@ -62,6 +64,8 @@ def FileCache(fn):
 
             for cache_variable in cache_variables if len(cache_variables) > 0 else []:
                 file_name += "_" + str(cache_variable)
+
+            file_name = hashlib.md5(file_name.encode()).hexdigest()
 
             cache_path = PathProvider().getPathWithModelName("cache_path", lambda name: f"cache/{name}/")
             # create the file path
