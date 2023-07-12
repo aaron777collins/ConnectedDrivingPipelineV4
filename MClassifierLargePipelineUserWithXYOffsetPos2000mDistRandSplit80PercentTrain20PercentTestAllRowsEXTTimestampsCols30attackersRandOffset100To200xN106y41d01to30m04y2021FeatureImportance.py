@@ -299,7 +299,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         ax.set_title("Feature importances using permutation on full model")
         ax.set_ylabel("Mean accuracy decrease")
         fig.tight_layout()
-        figSavePath = self._mlPathProvider.get("MDataClassifier.plot_feature_importance_path") + "feature_importance.png"
+        figSavePath = self._mlPathProvider.getPathWithModelName("MDataClassifier.plot_feature_importance_path") + "feature_importance.png"
         plt.savefig(figSavePath)
         # read image and embed it
         csvWriter = self._contextprovider.get("MClassifierPipeline.csvWriter")
