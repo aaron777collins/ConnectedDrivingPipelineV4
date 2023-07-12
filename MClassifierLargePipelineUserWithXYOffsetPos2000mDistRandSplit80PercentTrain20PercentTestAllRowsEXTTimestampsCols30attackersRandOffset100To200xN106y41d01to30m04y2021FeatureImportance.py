@@ -288,7 +288,9 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
             mclassifierRF.classifier, mclassifierRF.test_X, mclassifierRF.test_Y, n_repeats=10, random_state=42, n_jobs=2
         )
 
-        featureNames = self.MLContextProvider.get("MConnectedDrivingDataCleaner.columns")
+        featureNames: list[str] = self.MLContextProvider.get("MConnectedDrivingDataCleaner.columns")
+        # remove 'isAttacker' from feature names
+        featureNames.remove("isAttacker")
 
         forest_importances = Series(result.importances_mean, index=featureNames)
 
