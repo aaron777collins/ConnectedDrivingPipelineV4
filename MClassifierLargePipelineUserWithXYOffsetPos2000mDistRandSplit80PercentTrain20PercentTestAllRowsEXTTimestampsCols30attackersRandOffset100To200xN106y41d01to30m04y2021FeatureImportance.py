@@ -303,7 +303,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         figSavePath = self._mlPathProvider.getPathWithModelName("MDataClassifier.plot_feature_importance_path") + "feature_importance.png"
         plt.savefig(figSavePath)
         # read image and embed it
-        csvWriter = self._contextprovider.get("MClassifierPipeline.csvWriter")
+        csvWriter = self.MLContextProvider.get("MClassifierPipeline.csvWriter")
         imageWriter = ImageWriter(csvWriter)
         imageWriter.writeRow(["Feature Importance"])
         imageWriter.writeImageAtEndOfRow(["Random Forest"], imageWriter.readImageAsBase64Array(figSavePath))
