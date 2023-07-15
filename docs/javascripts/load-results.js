@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", function () {
   resultsNavigation = new Pagination("nav-buttons", 1, pageSize, 1);
   inProgressJobsNavigation = new Pagination("in-progress-jobs-nav-buttons", 1, pageSize, 1);
 
+  $(document).on('click', '.chart-button', function() {
+    var chartId = $(this).data('chart');
+    $('#container-' + chartId).toggle();
+  });
+
   loadAllResults();
 });
 
@@ -353,8 +358,13 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
       data.splice(firstEmptyLabel, data.length - firstEmptyLabel);
     }
 
-    // Create the canvas element
-    $("#" + divID).append("<canvas id='" + canvasId + "'></canvas>");
+    // Create the button for showing the chart and a div to contain the chart.
+    $("#" + divID).append("<button class='chart-button' data-chart='" + canvasId + "'>" + chartTitle + "</button>");
+    $("#" + divID).append("<div class='chart-container' id='container-" + canvasId + "' style='display: none;'><canvas id='" + canvasId + "'></canvas></div>");
+
+
+    // // Create the canvas element
+    // $("#" + divID).append("<canvas id='" + canvasId + "'></canvas>");
     var ctx = document.getElementById(canvasId).getContext("2d");
 
     // Generate random color for the chart
@@ -399,6 +409,7 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
       },
     });
   }
+
 }
 
 function writeTableFromResultsWithLinks(data) {
