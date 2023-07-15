@@ -359,9 +359,11 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
     }
 
     // Create the button for showing the chart and a div to contain the chart.
-    $("#" + divID).append("<button class='chart-button' data-chart='" + canvasId + "'>" + chartTitle + "</button>");
-    $("#" + divID).append("<div class='chart-container' id='container-" + canvasId + "' style='display: none;'><canvas id='" + canvasId + "'></canvas></div>");
-
+    var chartDiv = document.createElement('div');
+    chartDiv.className = 'chart';
+    chartDiv.innerHTML = `<button class="toggleButton" onclick="toggleChart(this, '${canvasId}')">${chartTitle} ▼</button>
+                          <div id="${canvasId}" style="display:none"></div>`;
+    document.getElementById(divID).appendChild(chartDiv);
 
     // // Create the canvas element
     // $("#" + divID).append("<canvas id='" + canvasId + "'></canvas>");
@@ -410,6 +412,17 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
     });
   }
 
+}
+
+function toggleChart(button, canvasId) {
+  var chart = document.getElementById(canvasId);
+  if(chart.style.display == 'none') {
+    chart.style.display = 'block';
+    button.innerHTML = button.innerHTML.replace('▼', '▲');
+  } else {
+    chart.style.display = 'none';
+    button.innerHTML = button.innerHTML.replace('▲', '▼');
+  }
 }
 
 function writeTableFromResultsWithLinks(data) {
