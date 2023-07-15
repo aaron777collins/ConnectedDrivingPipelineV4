@@ -364,10 +364,13 @@ function createChart(divID, canvasId, chartTitle, labels, data) {
     // $("#" + divID).append("<div class='chart-container' id='container-" + canvasId + "' style='display: none;'><canvas id='" + canvasId + "'></canvas></div>");
 
 
+    // Create the button for showing the chart and a div to contain the chart.
     var chartDiv = document.createElement('div');
     chartDiv.className = 'chart';
     chartDiv.innerHTML = `<button class="toggleButton" onclick="toggleChart(this, '${divID}-${canvasId}')">${chartTitle} ▼</button>
-                          <div id="${divID}-${canvasId}" style="display:none"></div>`;
+                          <div id="${divID}-${canvasId}" style="display:none">
+                            <canvas id="${canvasId}"></canvas>
+                          </div>`;
     document.getElementById(divID).appendChild(chartDiv);
 
     // // Create the canvas element
