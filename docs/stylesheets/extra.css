@@ -256,3 +256,9 @@
   color: var(--md-fg-color);
 }
 
+.toggleButton {
+  /* capitalize first letter */
+  text-transform: capitalize;
+  /* make the text pop as its a text only button */
+  /* font-weight: bold; */
+}
