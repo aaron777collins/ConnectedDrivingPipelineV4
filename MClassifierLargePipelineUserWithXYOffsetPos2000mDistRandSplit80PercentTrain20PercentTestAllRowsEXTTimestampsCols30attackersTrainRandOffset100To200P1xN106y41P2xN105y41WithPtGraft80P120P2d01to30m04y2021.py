@@ -1,5 +1,5 @@
 import os
-from pandas import DataFrame
+from pandas import DataFrame, concat
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
@@ -233,8 +233,8 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         # mixing the train with a random 20% split of the test data
         test80, test20 = train_test_split(test, test_size=0.2, random_state=seed)
 
-        # combining the train and test data
-        train = train.append(test20) # train is now 80% train and 20% test
+        # adding the 20% test data to the train data
+        train = concat([train, test20])
 
         test = test80 # test is now 80% of the original test data
 
