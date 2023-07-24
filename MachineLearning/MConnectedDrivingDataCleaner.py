@@ -43,8 +43,10 @@ class MConnectedDrivingDataCleaner:
         # clean the data
         self.logger.log("Cleaning data...")
         self.cleaned_data = self.data[self.columns]
-        # convert the coreData_id from hexadecimal to decimal
-        self.cleaned_data["coreData_id"] = self.cleaned_data["coreData_id"].map(lambda x: convert_large_hex_str_to_hex(x))
+        # check if coreData_id is a column or if it was removed at some point
+        if "coreData_id" in self.cleaned_data.columns:
+            # convert the coreData_id from hexadecimal to decimal
+            self.cleaned_data["coreData_id"] = self.cleaned_data["coreData_id"].map(lambda x: convert_large_hex_str_to_hex(x))
         return self.cleaned_data
 
     def get_cleaned_data(self):
