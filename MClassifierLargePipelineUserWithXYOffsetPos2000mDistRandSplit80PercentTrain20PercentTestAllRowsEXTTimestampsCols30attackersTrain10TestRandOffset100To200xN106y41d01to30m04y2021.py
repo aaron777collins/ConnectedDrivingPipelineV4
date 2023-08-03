@@ -1,3 +1,4 @@
+import copy
 import os
 from pandas import DataFrame
 from sklearn.ensemble import RandomForestClassifier
@@ -189,14 +190,17 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         mcdldpgac1 = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
         # data: DataFrame = mcdldpgac.getAllRows()
-        trainData: DataFrame = mcdldpgac1.getAllRows()
+        combineddata: DataFrame = mcdldpgac1.getAllRows()
+        # Splitting the data into train and test sets
+        trainData, testData = train_test_split(combineddata, test_size=0.2)
         train = trainData
 
         # # splitting into train and test sets
         # seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
 
-         # cleaning/adding attackers to the data
-        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        # saving the train provider
+        trainGeneratorContextProvider = copy.deepcopy(self.generatorContextProvider.getAll())
+        trainGeneratorPathProvider = copy.deepcopy(self._generatorPathProvider.getAll())
 
         # # now getting new dataset from xN105 and y41 (actual coords)
         # # are x=-105.1159611 and y=41.0982327
@@ -216,20 +220,37 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         self.generatorContextProvider.add("ConnectedDrivingCleaner.cleanParams", f"clean_data_with_timestamps-within_rangeXY_and_date_range-WithXYCoords-RandSplit80PercentTrain20PercentTest-10attackertest-2000mdist-x{x_pos_str}y{y_pos_str}dd01to30mm04yyyy2021") # makes cached data have info on if/if not we use timestamps for uniqueness)
 
         self._generatorPathProvider.model = generatorPathProviderModel
-        self._mlPathProvider.model = self._mlPathProvider.model + "-2"
+        # changing the ml part isn't required since they include a suffix for overlapping parts
+        # self._mlPathProvider.model = self._mlPathProvider.model + "-2"
 
-        mcdldpgac2 = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
+        testGeneratorContextProvider = copy.deepcopy(self.generatorContextProvider.getAll())
+        testGeneratorPathProvider = copy.deepcopy(self._generatorPathProvider.getAll())
 
-        # data: DataFrame = mcdldpgac.getAllRows()
-        testData: DataFrame = mcdldpgac2.getAllRows()
+        # mcdldpgac2 = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
+        # # data: DataFrame = mcdldpgac.getAllRows()
+        # testData: DataFrame = mcdldpgac2.getAllRows()
+
+        # from split earlier
         test = testData
+
+
+        # setting to train providers
+        self.generatorContextProvider.set(trainGeneratorContextProvider)
+        self._generatorPathProvider.set(trainGeneratorPathProvider)
+
+        # cleaning/adding attackers to the data
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+
+        # setting to test providers
+        self.generatorContextProvider.set(testGeneratorContextProvider)
+        self._generatorPathProvider.set(testGeneratorPathProvider)
 
         test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
 
 
 
-        # Cleaning it for the malicious data detection
+        # Cleaning it for the malicious data detection (the ML part includes a suffix which doesn't require changing back and forth)
         mdcleaner_train = MConnectedDrivingDataCleaner(train, "train")
         mdcleaner_test = MConnectedDrivingDataCleaner(test, "test")
         m_train = mdcleaner_train.clean_data().get_cleaned_data()

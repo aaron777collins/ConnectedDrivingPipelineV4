@@ -199,13 +199,12 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         # temp save the generatorContextProvider dict into a variable
         # so we can swap back after we get the test data
         trainGeneratorContextProviderDict = copy.deepcopy(self.generatorContextProvider.getAll())
+        trainGeneratorPathProvider = copy.deepcopy(self._generatorPathProvider.getAll())
 
         # # now getting new dataset from xN105 and y41 (actual coords)
         # # are x=-105.1159611 and y=41.0982327
         self.generatorContextProvider.add("ConnectedDrivingCleaner.x_pos", -105.1159611)
         self.generatorContextProvider.add("ConnectedDrivingCleaner.y_pos", 41.0982327)
-        # setting attack ratio to 0.1 for test
-        self.generatorContextProvider.add("ConnectedDrivingAttacker.attack_ratio", 0.1)
 
         x_pos = -105.1159611
         y_pos = 41.0982327
@@ -229,6 +228,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
         # deep copy test data generatorContextProvider dict
         testGeneratorContextProviderDict = copy.deepcopy(self.generatorContextProvider.getAll())
+        testGeneratorPathProvider = copy.deepcopy(self._generatorPathProvider.getAll())
 
         # mixing the train with a random 20% split of the test data
         test80, test20 = train_test_split(test, test_size=0.2, random_state=seed)
@@ -240,12 +240,14 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
         # swapping back to the train generatorContextProvider dict
         self.generatorContextProvider.set(trainGeneratorContextProviderDict)
+        self._generatorPathProvider.set(trainGeneratorPathProvider)
 
         # cleaning/adding attackers to the data
         train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
 
         # swapping back to the test generatorContextProvider dict
         self.generatorContextProvider.set(testGeneratorContextProviderDict)
+        self._generatorPathProvider.set(testGeneratorPathProvider)
 
         test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
 
