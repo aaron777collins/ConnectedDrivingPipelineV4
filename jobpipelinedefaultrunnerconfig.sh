@@ -8,6 +8,8 @@ if [ "$#" -lt 2 ]; then
 fi
 
 USERNAME=$1
+# shift to get rid of the username
+shift
 
 # Making list of files from param 2 to N (with an optional -d <DEPENDENCY> at the end) to loop through, possibly depending on the dependency specified
 # and then chaining dependencies together (previous file depends on the next file)
@@ -19,22 +21,36 @@ FILES=()
 
 DEPENDENCY=""
 
-# loop through each file and add it to the list
-for ((i = 2; i <= $#; i++))
-do
-    # echo "Looping through file $i"
-    # echo "${!i}"
-    if [ "${!i}" == "-d" ]; then
-        # echo "Found -d"
-        # echo "${!i}"
-        # echo "${!i+1}"
-        DEPENDENCY="${!i+1}"
-        # echo "Dependency is $DEPENDENCY"
-        break
-    else
-        FILES+=("${!i}")
-    fi
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -d)
+            DEPENDENCY="$2"
+            shift 2  # Remove -d and its argument
+            ;;
+        *)
+            FILES+=("$1")
+            shift  # Remove this argument
+            ;;
+    esac
 done
+
+# # loop through each file and add it to the list
+# for ((i = 2; i <= $#; i++))
+# do
+#     # echo "Looping through file $i"
+#     # echo "${!i}"
+#     if [ "${!i}" == "-d" ]; then
+#         # echo "Found -d"
+#         # echo "${!i}"
+#         # echo "${!i+1}"
+#         DEPENDENCY="${!((i+1))}"
+#         # echo "Dependency is $DEPENDENCY"
+#         break
+#     else
+#         FILES+=("${!i}")
+#     fi
+# done
 
 # loop through each file and run the pipeline
 # but make sure to put the first dependency as DEPENDENCY (if specified)
@@ -49,7 +65,11 @@ done
 # and then we chain the dependencies together
 
 echo "Running pipeline for user $USERNAME"
-echo "with files: ${FILES[@]}"
+# format the files list
+# to have newlines between each file
+# and then print it out
+echo "with files:"
+printf '%s\n' "${FILES[@]}"
 echo "with dependency: $DEPENDENCY"
 echo ""
 
