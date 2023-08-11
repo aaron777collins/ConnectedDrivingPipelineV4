@@ -1,9 +1,39 @@
 #!/bin/bash
 
+# Black        0;30     Dark Gray     1;30
+# Red          0;31     Light Red     1;31
+# Green        0;32     Light Green   1;32
+# Brown/Orange 0;33     Yellow        1;33
+# Blue         0;34     Light Blue    1;34
+# Purple       0;35     Light Purple  1;35
+# Cyan         0;36     Light Cyan    1;36
+# Light Gray   0;37     White         1;37
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+
+
+NO_NEW_LINE="-nnl"
+
+# function to print green
+function printColor {
+    # format: <text> <color> [no newline? if -nnl then no newline, otherwise if nothing then newline]
+    if [ "$#" -eq 3 ]; then
+        if [ "$3" == $NO_NEW_LINE ]; then
+            echo -ne "$2$1${NC}"
+        fi
+    else
+        echo -e "$2$1${NC}"
+    fi
+}
+
 
 if [ "$#" -lt 2 ]; then
-    echo "Illegal number of parameters"
-    echo "Usage: jobpipelinedefaultrunnerconfig.sh <USERNAME> <FILE> <FILE2> ... <FILEN> [OPTIONAL: -d '<DEPENDENCY>']"
+    printColor "Illegal number of parameters" $RED
+    printColor "Usage: jobpipelinedefaultrunnerconfig.sh <USERNAME> <FILE> <FILE2> ... <FILEN> [OPTIONAL: -d '<DEPENDENCY>']" $YELLOW
     exit 1
 fi
 
@@ -64,13 +94,18 @@ done
 # but then after that, we pull the dependencies from the results of running the pipeline using grep
 # and then we chain the dependencies together
 
-echo "Running pipeline for user $USERNAME"
+printColor "Running pipeline for user " $CYAN $NO_NEW_LINE
+printColor "$USERNAME" $YELLOW
 # format the files list
 # to have newlines between each file
 # and then print it out
-echo "with files:"
-printf '%s\n' "${FILES[@]}"
-echo "with dependency: $DEPENDENCY"
+printColor "with files:" $CYAN
+echo -ne "$YELLOW"
+printf '\n%s\n' "${FILES[@]}"
+echo -ne "$NC"
+if [ ! -z "$DEPENDENCY" ]; then
+    printColor "with dependency $DEPENDENCY" $GREEN
+fi
 echo ""
 
 usedDependencies=()
@@ -87,9 +122,9 @@ fi
 for ((i = 0; i < ${#FILES[@]}; i++))
 do
     if [ ! -z "$DEPENDENCY" ]; then
-        echo "Running pipeline for file ${FILES[$i]} with dependency $newDependency"
+        printColor "Running pipeline for the file '$NC${FILES[$i]}$CYAN' with dependency $newDependency" $CYAN
     else
-        echo "Running pipeline for file ${FILES[$i]}"
+        printColor "Running pipeline for the file '$NC${FILES[$i]}$CYAN'" $CYAN
     fi
     # Store output from running the pipeline
     OUTPUT=$(/bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 ${FILES[$i]} 7 0 0 10 256 $newDependency)
@@ -102,10 +137,10 @@ do
     # so we want to use regex to extract the job ID
 
     newDependency=$(echo $OUTPUT | grep -oP '(?<=Submitted batch job )\d+') # this is the new dependency
-    echo "New dependency is $newDependency"
+    printColor "New dependency is $newDependency" $GREEN
     echo ""
 done
 
-echo "Finished running pipeline"
+printColor "Finished running pipeline" $CYAN
 
 # /bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 $FILE 7 0 0 10 256 $DEPENDENCY
