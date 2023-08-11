@@ -74,6 +74,9 @@ do
     # Store output from running the pipeline
     OUTPUT=$(/bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 ${FILES[$i]} 7 0 0 10 256 $newDependency)
 
+    # echo output from running the pipeline
+    echo "$OUTPUT"
+
     # Parse out the job ID from the output
     # follows the form: "Submitted batch job 39734196"
     # so we want to use regex to extract the job ID
@@ -83,6 +86,6 @@ do
     echo ""
 done
 
-echo "Finished running pipeline
+echo "Finished running pipeline"
 
 # /bin/bash runUserPipeline.sh $USERNAME projects/def-arunita/$USERNAME/ConnectedDrivingPipelineV4 $FILE 7 0 0 10 256 $DEPENDENCY
