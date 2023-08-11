@@ -35,10 +35,11 @@ class StandardPositionalOffsetAttacker(ConnectedDrivingAttacker):
 
         # we are going to use the service provider to store the ID with its respective direction and distance
         # this way we can make sure every car is giving its own constant attack but in a random direction
-        lookupDictStr = f"ConnectedDrivingAttacker[{'-'.join([
+        configStr = '-'.join([
             self.__class__.__name__, min_dist, max_dist, self.isXYCoords, self.attack_ratio, self.SEED,
             clean_params, self.id, 'add_attacks_positional_offset_const_per_id_with_random_direction', additionalID
-        ])}].add_attacks_positional_offset_const_per_id_with_random_direction_DICT"
+        ])
+        lookupDictStr = f"ConnectedDrivingAttacker[{configStr}].add_attacks_positional_offset_const_per_id_with_random_direction_DICT"
         lookupDict = self._generatorContextProvider.get(lookupDictStr, dict())
 
         self.data = self.data.apply(lambda row: self.positional_offset_const_attack_per_id_with_random_direction(row, min_dist, max_dist, lookupDict), axis=1)
