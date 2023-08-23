@@ -30,7 +30,7 @@ import copy
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Original_Train_Sample_Size", "Total_Original_Test_Sample_Size", "Total_New_Train_Sample_Size", "Total_New_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -40,7 +40,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021:
+class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021:
 
     def __init__(self):
 
@@ -252,13 +252,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         self._generatorPathProvider.set(trainGeneratorPathProvider)
 
         # cleaning/adding attackers to the data
-        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
 
         # swapping back to the test generatorContextProvider dict
         self.generatorContextProvider.set(testGeneratorContextProviderDict)
         self._generatorPathProvider.set(testGeneratorPathProvider)
 
-        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
 
 
 
@@ -343,5 +343,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41WithPtGraft80P120P2d01to30m04y2021()
     mcplu.run()
