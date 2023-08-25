@@ -30,7 +30,7 @@ import copy
 CLASSIFIER_INSTANCES = [RandomForestClassifier(
 ), DecisionTreeClassifier(), KNeighborsClassifier()]
 
-LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41With2SeparatePoints80P120P2d01to30m04y2021"
+LOG_NAME = "MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41With2SeparatePointsd01to30m04y2021"
 
 CSV_COLUMNS = ["Model", "Total_Train_Time",
                "Total_Original_Train_Sample_Size", "Total_Original_Test_Sample_Size", "Total_New_Train_Sample_Size", "Total_New_Test_Sample_Size", "Train_Time_Per_Sample", "Prediction_Train_Set_Time_Per_Sample", "Prediction_Test_Set_Time_Per_Sample",
@@ -40,7 +40,7 @@ CSV_COLUMNS = ["Model", "Total_Train_Time",
 CSV_FORMAT = {CSV_COLUMNS[i]: i for i in range(len(CSV_COLUMNS))}
 
 
-class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41With2SeparatePoints80P120P2d01to30m04y2021:
+class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41With2SeparatePointsd01to30m04y2021:
 
     def __init__(self):
 
@@ -79,7 +79,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         y_pos = 41.5430216
         x_pos_str = MathHelper.convertNumToTitleStr(x_pos)
         y_pos_str = MathHelper.convertNumToTitleStr(y_pos)
-        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80PercentTrain20PercentTest-30attackertrain-2000mdist-x{x_pos_str}y{y_pos_str}-WithPtGraft80P120P2-dd01to30mm04yyyy2021", contexts={
+        self._generatorPathProvider = GeneratorPathProvider(model=f"{initialGathererModelName}-CCDDWithTimestampsAndWithXYCoords-RandSplit80PercentTrain20PercentTest-30attackertrain-2000mdist-x{x_pos_str}y{y_pos_str}-With2SeparatePoints-dd01to30mm04yyyy2021", contexts={
             "ConnectedDrivingLargeDataCleaner.cleanedfilespath": lambda model:  f"data/classifierdata/splitfiles/cleaned/{model}/",
             "ConnectedDrivingLargeDataCleaner.combinedcleandatapath": lambda model: f"data/classifierdata/splitfiles/combinedcleaned/{model}/combinedcleaned",
         }
@@ -244,7 +244,7 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
         # test = test80 # test is now 80% of the original test data
 
-        # Removed the pt graft so the points are disjoint again
+        # Removed the pt s so the points are disjoint again
 
         newTrainRows = len(train.index)
         newTestRows = len(test.index)
@@ -254,13 +254,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         self._generatorPathProvider.set(trainGeneratorPathProvider)
 
         # cleaning/adding attackers to the data
-        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
 
         # swapping back to the test generatorContextProvider dict
         self.generatorContextProvider.set(testGeneratorContextProviderDict)
         self._generatorPathProvider.set(testGeneratorPathProvider)
 
-        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=100, max_dist=200).get_data()
+        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=50, max_dist=100).get_data()
 
 
 
@@ -345,5 +345,5 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
 
 if __name__ == "__main__":
-    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset100To200P1xN106y41P2xN105y41With2SeparatePoints80P120P2d01to30m04y2021()
+    mcplu = MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVHeadingSpeedCols30attackersTrainRandOffset50To100P1xN106y41P2xN105y41With2SeparatePointsd01to30m04y2021()
     mcplu.run()
