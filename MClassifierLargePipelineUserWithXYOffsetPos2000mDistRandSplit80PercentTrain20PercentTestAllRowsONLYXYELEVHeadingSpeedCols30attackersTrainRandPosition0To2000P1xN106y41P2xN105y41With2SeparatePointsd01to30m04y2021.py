@@ -255,13 +255,13 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
         self._generatorPathProvider.set(trainGeneratorPathProvider)
 
         # cleaning/adding attackers to the data
-        train = StandardPositionFromOriginAttacker(train, "train").add_attackers().positional_override_rand_attack(min_dist=0, max_dist=2000).get_data()
+        train = StandardPositionFromOriginAttacker(train, "train").add_attackers().add_attacks_positional_override_rand(min_dist=0, max_dist=2000).get_data()
 
         # swapping back to the test generatorContextProvider dict
         self.generatorContextProvider.set(testGeneratorContextProviderDict)
         self._generatorPathProvider.set(testGeneratorPathProvider)
 
-        test = StandardPositionFromOriginAttacker(test, "test").add_attackers().positional_override_rand_attack(min_dist=0, max_dist=2000).get_data()
+        test = StandardPositionFromOriginAttacker(test, "test").add_attackers().add_attacks_positional_override_rand(min_dist=0, max_dist=2000).get_data()
 
 
 
