@@ -182,3 +182,55 @@ class StandardPositionalOffsetAttacker(ConnectedDrivingAttacker):
             row[self.pos_long_col] = newLong
 
         return row
+
+    def add_attacks_positional_swap_rand(self):
+        clean_params = self._generatorContextProvider.get("ConnectedDrivingCleaner.cleanParams")
+        # the function name is already part of the cache_variables, so we don't need to add it here
+
+        # get "ConnectedDrivingCleaner.x_pos" and "ConnectedDrivingCleaner.y_pos" from the service provider
+        # and store them in the class variables
+        self.x_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
+        self.y_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
+
+        self._add_attacks_positional_swap_rand(cache_variables=[
+            self.__class__.__name__, self.isXYCoords, self.attack_ratio, self.SEED,
+            clean_params, self.id, self.x_col_origin, self.y_col_origin
+        ]
+        )
+
+        return self
+
+    @CSVCache
+    def _add_attacks_positional_swap_rand(self, cache_variables=[
+            "REPLACE_ME_WITH_ALL_VARIABLES_THAT_CHANGE_THE_OUTPUT_OF_THIS_FUNCTION"
+        ]
+    ) -> pd.DataFrame:
+        # similar to the const attack, but the distance and direction is random
+
+        # copy the current data as a deep copy
+        copydata = self.data.copy(deep=True)
+
+        self.data = self.data.apply(lambda row: self.positional_swap_rand_attack(row, copydata), axis=1)
+
+        return self.data
+
+    def positional_swap_rand_attack(self, row, copydata):
+        # checking if the row is not an attacker
+        if row["isAttacker"] == 0:
+            return row # if not an attacker, return the row as is
+
+        if self.isXYCoords:
+            # copy X,Y and ELEV from the copydata at a random index
+            random_index = random.randint(0, len(copydata.index)-1)
+            row[self.x_col] = copydata.iloc[random_index][self.x_col]
+            row[self.y_col] = copydata.iloc[random_index][self.y_col]
+            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
+
+        else:
+            # copy LAT,LONG and ELEV from the copydata at a random index
+            random_index = random.randint(0, len(copydata.index)-1)
+            row[self.pos_lat_col] = copydata.iloc[random_index][self.pos_lat_col]
+            row[self.pos_long_col] = copydata.iloc[random_index][self.pos_long_col]
+            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
+
+        return row
