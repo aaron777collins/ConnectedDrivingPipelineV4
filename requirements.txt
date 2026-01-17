@@ -8,4 +8,6 @@ geopy
 tensorflow
 geographiclib
 mkdocs-material
+pyspark>=3.3.0
+py4j
 
