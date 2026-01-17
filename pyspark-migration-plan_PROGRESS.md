@@ -156,7 +156,7 @@ IN_PROGRESS
 ### Phase 1: Foundation & Infrastructure
 
 - [x] Task 1.1: Add PySpark to requirements.txt (pyspark>=3.3.0, py4j)
-- [ ] Task 1.2: Create SparkSession management utility (`Helpers/SparkSessionManager.py`)
+- [x] Task 1.2: Create SparkSession management utility (`Helpers/SparkSessionManager.py`)
 - [ ] Task 1.3: Create Spark configuration templates for local/cluster modes
 - [ ] Task 1.4: Define BSM raw data schema (`Schemas/BSMRawSchema.py` - 19 columns with StructType)
 - [ ] Task 1.5: Define processed data schema (`Schemas/BSMProcessedSchema.py` - 18 ML feature columns)
@@ -419,7 +419,11 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
-- **Task 1.1:** Added PySpark dependencies to requirements.txt
-  - Added `pyspark>=3.3.0` for the Spark framework
-  - Added `py4j` for Python-Java bridge (required by PySpark)
-  - Dependencies are ready for installation
+- **Task 1.2:** Created SparkSession management utility (`Helpers/SparkSessionManager.py`)
+  - Implemented singleton pattern for SparkSession lifecycle management
+  - Added `get_session()` method with configurable Spark settings
+  - Implemented `get_local_session()` for local testing with configurable cores
+  - Implemented `get_cluster_session()` for cluster deployment with memory/executor config
+  - Included default optimizations: adaptive execution, Arrow support, Snappy compression
+  - Added `stop_session()` for proper cleanup
+  - Tested successfully with PySpark 4.1.1
