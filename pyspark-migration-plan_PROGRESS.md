@@ -1,7 +1,7 @@
 # Progress: pyspark-migration-plan
 
 Started: Sat Jan 17 06:48:38 PM EST 2026
-Updated: Sat Jan 17 08:26:59 PM EST 2026 (Task 3.7 completed: UDF Registry System)
+Updated: Sat Jan 17 08:34:37 PM EST 2026 (Task 3.8 completed: Unit tests for all UDFs)
 
 ## Status
 
@@ -211,7 +211,7 @@ IN_PROGRESS
 - [x] Task 3.5: Implement `hex_to_decimal_udf` (coreData_id conversion)
 - [x] Task 3.6: Implement `direction_and_dist_to_xy_udf` (attack offset calculation)
 - [x] Task 3.7: Create UDF registry system for centralized management
-- [ ] Task 3.8: Write unit tests for all UDFs
+- [x] Task 3.8: Write unit tests for all UDFs
 - [ ] Task 3.9: Benchmark regular UDF vs pandas UDF performance
 - [ ] Task 3.10: Test UDF serialization and error handling
 - [ ] Task 3.11: Migrate datetime parsing to native Spark SQL functions (to_timestamp, month, day, etc.)
@@ -455,11 +455,165 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
 
 ## Completed This Iteration
 
-**Current Iteration: Task 3.7 - UDF Registry System**
+**Current Iteration: Task 3.8 - Unit tests for all UDFs**
 
-- **Task 3.7:** Created UDF registry system for centralized management (see detailed notes at line 954+)
+- **Task 3.8:** Created comprehensive unit tests for all geospatial UDFs
+  - Created `Test/test_geospatial_udfs.py` (643 lines):
+    - **26 test cases across 6 test classes** - All passing (26/26, 100% success rate)
+    - TestPointToTupleUDF (4 tests):
+      - Basic WKT POINT to tuple conversion
+      - Null input handling with explicit schema
+      - Invalid format handling (malformed points, empty strings)
+      - Equivalence with DataConverter.point_to_tuple()
+    - TestPointToXUDF (4 tests):
+      - Longitude extraction from WKT POINT
+      - Null input handling
+      - Invalid format handling
+      - Boundary values testing (-180 to 180 degrees)
+    - TestPointToYUDF (4 tests):
+      - Latitude extraction from WKT POINT
+      - Null input handling
+      - Invalid format handling
+      - Boundary values testing (-90 to 90 degrees)
+    - TestGeodesicDistanceUDF (5 tests):
+      - Basic geodesic distance calculation (Wyoming coordinates)
+      - Zero distance (identical points)
+      - Null inputs handling (all combinations)
+      - Long distance calculation (~145 km)
+      - Equivalence with MathHelper.dist_between_two_points()
+    - TestXYDistanceUDF (6 tests):
+      - Basic Euclidean distance (3-4-5 triangle)
+      - Zero distance (identical points)
+      - Null inputs handling (all combinations)
+      - Negative coordinates
+      - Large distance calculations
+      - Equivalence with MathHelper.dist_between_two_pointsXY()
+    - TestGeospatialUDFsIntegration (3 tests):
+      - Point parsing and distance calculation pipeline
+      - Realistic BSM data processing pipeline
+      - Large dataset performance (1000 points)
+  - Key testing features:
+    - Comprehensive null/None value handling ✓
+    - Invalid input validation ✓
+    - Boundary value testing ✓
+    - Equivalence with existing pandas/MathHelper implementations ✓
+    - Integration testing with realistic BSM data ✓
+    - Performance testing with 1000+ points ✓
+  - All UDFs now have complete test coverage:
+    - point_to_tuple_udf ✓
+    - point_to_x_udf ✓
+    - point_to_y_udf ✓
+    - geodesic_distance_udf ✓
+    - xy_distance_udf ✓
+    - hex_to_decimal_udf ✓ (tested in test_conversion_udfs.py)
+    - direction_and_dist_to_xy_udf ✓ (tested in test_conversion_udfs.py)
+  - Total test suite: 26 geospatial + 10 conversion + 23 registry = **59 UDF tests**
+  - All tests passing with 100% success rate
 
 ## Previously Completed
+
+- **Task 3.7:** Created UDF registry system for centralized management
+  - Implemented `Helpers/SparkUDFs/UDFRegistry.py` (297 lines):
+    - **UDFRegistry class** - Singleton pattern for centralized UDF management
+    - **UDFCategory enum** - Categorize UDFs (GEOSPATIAL, CONVERSION, TEMPORAL, ATTACK, UTILITY)
+    - **UDFMetadata dataclass** - Store metadata for each UDF (description, input/output types, examples, version)
+    - Core registry methods:
+      - `register()` - Register a UDF with full metadata
+      - `get()` - Retrieve UDF by name
+      - `get_metadata()` - Get UDF metadata
+      - `list_all()` - List all registered UDF names (sorted)
+      - `list_by_category()` - List UDFs in specific category
+      - `exists()` - Check if UDF is registered
+      - `count()` - Get total number of registered UDFs
+      - `generate_documentation()` - Auto-generate markdown documentation
+    - Singleton pattern prevents duplicate instances
+    - Comprehensive error handling with helpful messages
+  - Implemented `Helpers/SparkUDFs/RegisterUDFs.py` (167 lines):
+    - `initialize_udf_registry()` - Auto-register all existing UDFs
+    - Registers all 7 UDFs with complete metadata:
+      - Geospatial: point_to_tuple, point_to_x, point_to_y, geodesic_distance, xy_distance
+      - Conversion: hex_to_decimal, direction_and_dist_to_xy
+    - Each UDF includes: description, input/output types, usage example, version
+    - Idempotent initialization (safe to call multiple times)
+    - Optional auto-initialization on module import
+  - Updated `Helpers/SparkUDFs/__init__.py` (60 lines):
+    - Added UDFRegistry exports (UDFRegistry, UDFCategory, UDFMetadata, get_registry)
+    - Added initialize_udf_registry export
+    - Enhanced module docstring with usage patterns
+    - Maintains backward compatibility (direct imports still work)
+  - Created comprehensive test suite `Test/test_udf_registry.py` (351 lines):
+    - **23 test cases across 8 test classes** - All passing (23/23, 100% success rate)
+    - TestUDFRegistryBasics (4 tests):
+      - Singleton pattern validation
+      - Direct instantiation prevention
+      - Convenience function testing
+      - Empty registry behavior
+    - TestUDFRegistration (3 tests):
+      - Simple UDF registration
+      - Full metadata registration
+      - Duplicate registration prevention
+    - TestUDFRetrieval (5 tests):
+      - Get existing UDF
+      - Get non-existent UDF error handling
+      - Get metadata for existing/non-existent UDFs
+      - Exists check
+    - TestUDFListing (3 tests):
+      - List all UDFs (alphabetically sorted)
+      - List by category
+      - Get all categories
+    - TestAutoRegistration (4 tests):
+      - Initialize registry
+      - Idempotent initialization
+      - Verify registered UDF categories
+      - Validate registered UDF metadata
+    - TestUDFRegistryIntegration (2 tests):
+      - Use registry UDF in DataFrame operations
+      - List all geospatial UDFs
+    - TestUDFDocumentation (2 tests):
+      - Generate documentation
+      - Metadata serialization to dict
+  - Created documentation `Helpers/SparkUDFs/README_UDF_REGISTRY.md` (528 lines):
+    - Complete UDF Registry System documentation
+    - Quick start guide with code examples
+    - Architecture overview (components, flow diagrams)
+    - Table of all registered UDFs (geospatial, conversion)
+    - Usage patterns comparison (direct import vs registry-based vs hybrid)
+    - Guide for adding new UDFs to the registry
+    - API reference for all registry methods
+    - Best practices and recommendations
+    - Testing instructions
+    - Future enhancement ideas
+  - Created example script `Helpers/SparkUDFs/example_registry_usage.py` (224 lines):
+    - 6 comprehensive examples demonstrating registry usage:
+      - Example 1: Basic registry usage
+      - Example 2: List UDFs by category
+      - Example 3: Get UDF metadata
+      - Example 4: Use registry UDF in DataFrame operations
+      - Example 5: Generate UDF documentation
+      - Example 6: Check UDF existence
+    - Includes PySpark DataFrame integration examples
+    - Ready-to-run demonstration script
+  - Key features implemented:
+    - Centralized UDF management ✓
+    - Singleton pattern for consistency ✓
+    - Category-based organization ✓
+    - Complete metadata tracking ✓
+    - Documentation auto-generation ✓
+    - Backward compatibility maintained ✓
+    - 100% test coverage (23/23 tests passing) ✓
+  - Registry statistics:
+    - 7 UDFs registered (5 geospatial, 2 conversion)
+    - 2 categories in use (GEOSPATIAL, CONVERSION)
+    - 100% of existing UDFs registered with metadata
+  - Files created:
+    - `Helpers/SparkUDFs/UDFRegistry.py` (297 lines)
+    - `Helpers/SparkUDFs/RegisterUDFs.py` (167 lines)
+    - `Helpers/SparkUDFs/README_UDF_REGISTRY.md` (528 lines)
+    - `Helpers/SparkUDFs/example_registry_usage.py` (224 lines)
+    - `Test/test_udf_registry.py` (351 lines)
+    - Updated `Helpers/SparkUDFs/__init__.py` (60 lines)
+  - Total: ~1,627 lines of code + documentation + tests
+  - Ready for use in all future PySpark components
 
 - **Task 2.8:** Created SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
   - Implemented complete PySpark-based data cleaning for Connected Driving BSM datasets
