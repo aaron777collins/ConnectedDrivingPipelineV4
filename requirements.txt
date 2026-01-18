@@ -1,5 +1,5 @@
 # ConnectedDrivingPipelineV4 Dependencies
-# Python 3.8+ required
+# Python 3.10+ required
 
 # ==========================================
 # Core Data Processing & Analysis

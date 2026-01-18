@@ -1,0 +1,222 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     TEST FAILURE ROOT CAUSE MAP                              ║
+║                          (27 Failing Tests)                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+                            ┌─────────────────────────┐
+                            │   ROOT CAUSE #1         │
+                            │ CacheManager._log()     │
+                            │ Parameter Name Bug      │
+                            │ Line 112                │
+                            │ SEVERITY: CRITICAL      │
+                            └────────┬────────────────┘
+                                     │
+                   ┌─────────────────┼─────────────────┐
+                   │                 │                 │
+        ┌──────────▼──────────┐     │    ┌────────────▼────────────┐
+        │ Direct Failures     │     │    │ Cascading Failures      │
+        │ (CacheManager)      │     │    │ (DataGatherer/Cleaner)  │
+        │                     │     │    │                         │
+        │ 15 Tests FAIL       │     │    │ 10 Tests FAIL           │
+        └──────────────────────┘     │    └─────────────────────────┘
+                                     │
+                   ┌─────────────────┼──────────────────┐
+                   │                 │                  │
+        ┌──────────▼─────────┐  ┌───▼──────┐  ┌────────▼────────┐
+        │TestCacheManager    │  │TestFile  │  │TestCacheHit    │
+        │ 10 tests FAIL      │  │CacheIntegr│ │RateTarget      │
+        │                    │  │ 2 tests F│ │ 2 tests FAIL    │
+        ├────────────────────┤  └──────────┘  └─────────────────┘
+        │ test_singleton     │
+        │ test_record_hit    │  All fail at same place:
+        │ test_record_miss   │  CacheManager.__init__()
+        │ test_hit_rate_calc │    → _load_metadata()
+        │ test_hit_rate_zero │      → _log(message, level=...)
+        │ test_get_stats     │         └─> self._log(..., elevation=level)
+        │ test_metadata      │            ERROR: unexpected kwarg 'elevation'
+        │ test_cache_size    │
+        │ test_lru_ordering  │
+        │ test_generate_rept │
+        └────────────────────┘
+
+        ┌──────────────────────────────────────────────────────┐
+        │ CASCADING FAILURE CHAIN                              │
+        │                                                      │
+        │ Test calls DataGatherer()                            │
+        │   → @FileCache decorator                            │
+        │     → FileCache.wrapper()                           │
+        │       → CacheManager.get_instance()                 │
+        │         → CacheManager.__init__()                   │
+        │           → _load_metadata()                        │
+        │             → _log(message, level=...)              │
+        │               → self._log(..., elevation=level)     │
+        │                 ✗ TypeError: unexpected keyword arg │
+        └──────────────────────────────────────────────────────┘
+
+Backwards Compatibility Tests (10 FAIL):
+┌────────────────────────────────────┐
+│ TestDataGathererBackwardsCompat    │ 5 tests
+│ TestCleanerBackwardsCompat         │ 3 tests
+│ TestLargeDataCleanerBackwardsCompat│ 2 tests
+│ TestStatisticalEquivalence         │ 2 tests
+│ TestEndToEndBackwardsCompat        │ 2 tests
+└────────────────────────────────────┘
+  ↓ (All depend on FileCache)
+  ↓
+┌────────────────────────────────────┐
+│ CacheManager Bug #1                │
+└────────────────────────────────────┘
+
+
+                    ┌──────────────────────────┐
+                    │   ROOT CAUSE #2          │
+                    │ Missing Test Fixture     │
+                    │ conftest.py              │
+                    │ SEVERITY: MEDIUM         │
+                    └────────┬─────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ 1 Test ERROR    │
+                    │                 │
+                    │ TestPassByRef   │
+                    │::test_func_to_add│
+                    │_to_dict         │
+                    │                 │
+                    │ Error Message:  │
+                    │ fixture 'someDict│
+                    │' not found      │
+                    └─────────────────┘
+
+
+                    ┌──────────────────────────┐
+                    │   ROOT CAUSE #3          │
+                    │ Indentation Error        │
+                    │ validate_dask_...py      │
+                    │ SEVERITY: LOW            │
+                    └────────┬─────────────────┘
+                             │
+                    ┌────────▼────────────────┐
+                    │ 1 Coverage Warning      │
+                    │ (Not a test failure)    │
+                    │                         │
+                    │ File cannot be parsed   │
+                    │ by coverage tool        │
+                    │                         │
+                    │ IndentationError line164│
+                    └─────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           FAILURE STATISTICS                                 ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  Total Test Count:        840 tests                                          ║
+║  Currently Running:       34 tests (in scope of this analysis)               ║
+║                                                                              ║
+║  Passing Tests:           7 tests  (20.6%)                                   ║
+║  Failing Tests:           26 tests (76.5%)                                   ║
+║  Error Tests:             1 test   (2.9%)                                    ║
+║                                                                              ║
+║  Caused by Bug #1:        25 tests (92.6% of failures)                       ║
+║  Caused by Bug #2:        1 test   (3.7% of failures)                        ║
+║  Caused by Bug #3:        0 tests  (0.0% - warning only)                     ║
+║                                                                              ║
+║  Lines to Fix:            3 locations                                        ║
+║  Total Code Changes:      ~10 lines (3 removed, 4 added, 3 modified)         ║
+║  Estimated Fix Time:      5 minutes                                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        AFTER FIXES (EXPECTED)                                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  Passing Tests:           34 tests (100%)                                    ║
+║  Failing Tests:           0 tests  (0%)                                      ║
+║  Error Tests:             0 tests  (0%)                                      ║
+║                                                                              ║
+║  ✓ All CacheManager tests pass                                              ║
+║  ✓ All backwards compatibility tests pass                                   ║
+║  ✓ All cache hit rate tests pass                                            ║
+║  ✓ TestPassByRef passes with fixture                                        ║
+║  ✓ Coverage tool can parse all files                                        ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+DEPENDENCY GRAPH OF FAILURES:
+
+    Fix #1 (CacheManager line 112)
+         │
+         ├─→ Fixes TestCacheManager (10 tests)
+         │
+         ├─→ Fixes TestFileCacheIntegration (2 tests)
+         │
+         ├─→ Fixes TestCacheHitRateTarget (2 tests)
+         │
+         └─→ Fixes Backwards Compatibility Tests (10 tests)
+              ├─ TestDataGathererBackwardsCompat (5)
+              ├─ TestCleanerBackwardsCompat (3)
+              ├─ TestLargeDataCleanerBackwardsCompat (2)
+              ├─ TestStatisticalEquivalence (2)
+              └─ TestEndToEndBackwardsCompat (2)
+
+    Fix #2 (conftest.py add fixture)
+         │
+         └─→ Fixes TestPassByRef (1 test)
+
+    Fix #3 (validate_dask_... indentation)
+         │
+         └─→ Removes coverage warning (not a test failure)
+
+
+EXECUTION FLOW (CURRENT - BROKEN):
+
+Test Start → Setup Providers → Create DataGatherer
+           ↓
+     FileCache decorator applied
+           ↓
+     FileCache.wrapper() called
+           ↓
+     CacheManager.get_instance()
+           ↓
+     CacheManager.__init__()
+           ↓
+     self._load_metadata()
+           ↓
+     self._log(msg, level=INFO)
+           ↓
+     self._log(msg, elevation=INFO)  ← BUG! Wrong parameter name
+           ↓
+     TypeError: unexpected keyword argument 'elevation'
+           ↓
+     TEST FAILS ✗
+
+
+EXECUTION FLOW (AFTER FIX):
+
+Test Start → Setup Providers → Create DataGatherer
+           ↓
+     FileCache decorator applied
+           ↓
+     FileCache.wrapper() called
+           ↓
+     CacheManager.get_instance()
+           ↓
+     CacheManager.__init__()
+           ↓
+     self._load_metadata()
+           ↓
+     self._log(msg, level=INFO)
+           ↓
+     self.logger.log(msg, elevation=INFO)  ← FIXED! Calls logger method
+           ↓
+     Logger.log() executes successfully
+           ↓
+     CacheManager initialized
+           ↓
+     Test proceeds normally
+           ↓
+     TEST PASSES ✓
+
