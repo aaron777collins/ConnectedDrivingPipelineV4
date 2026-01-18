@@ -736,12 +736,12 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         """
         Apply positional offset attack with per-ID lookup to pandas DataFrame.
 
-        This method ensures all rows with the same attacker ID end up at the SAME final position.
+        This method ensures all rows with the same attacker ID get the SAME offset applied.
         Strategy:
-        1. For each attacker ID, calculate mean of original positions
-        2. Generate random direction/distance once per ID
-        3. Apply offset to mean position
-        4. Assign same final position to all rows of that ID
+        1. For each attacker ID, generate random direction/distance once
+        2. Store that direction/distance in a lookup dictionary
+        3. Apply the same offset to EACH row's original position
+        4. All rows of the same ID get shifted by the same offset vector
 
         Args:
             df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
@@ -753,7 +753,7 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
         Note:
             Uses SEED for reproducible randomness.
-            All rows with same attacker ID will have identical final position.
+            All rows with same attacker ID will have the same offset applied to their positions.
         """
         # Set random seed for reproducibility
         random.seed(self.SEED)
@@ -762,48 +762,51 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         attacker_mask = df_pandas['isAttacker'] == 1
         attacker_ids = df_pandas[attacker_mask]['coreData_id'].unique()
 
-        # Create lookup for final positions per ID
-        position_lookup = {}
+        # Create lookup for direction/distance per ID
+        direction_distance_lookup = {}
 
+        # Generate random direction/distance for each attacker ID
         for vehicle_id in attacker_ids:
-            # Get all rows for this attacker ID
-            id_mask = (df_pandas['coreData_id'] == vehicle_id) & attacker_mask
-            id_rows = df_pandas[id_mask]
+            direction_distance_lookup[vehicle_id] = {
+                "direction": random.randint(0, 360),
+                "distance": random.randint(min_dist, max_dist)
+            }
 
-            # Calculate mean position of all rows for this ID
-            if self.isXYCoords:
-                mean_x = id_rows[self.x_col].mean()
-                mean_y = id_rows[self.y_col].mean()
-            else:
-                mean_x = id_rows[self.pos_lat_col].mean()
-                mean_y = id_rows[self.pos_long_col].mean()
-
-            # Generate random direction and distance for this ID
-            direction_angle = random.randint(0, 360)
-            distance_meters = random.randint(min_dist, max_dist)
-
-            # Calculate final position from mean position
-            if self.isXYCoords:
-                final_x, final_y = MathHelper.direction_and_dist_to_XY(
-                    mean_x, mean_y, direction_angle, distance_meters
-                )
-                position_lookup[vehicle_id] = {self.x_col: final_x, self.y_col: final_y}
-            else:
-                final_lat, final_lon = MathHelper.direction_and_dist_to_lat_long_offset(
-                    mean_x, mean_y, direction_angle, distance_meters
-                )
-                position_lookup[vehicle_id] = {self.pos_lat_col: final_lat, self.pos_long_col: final_lon}
-
-        # Apply final positions to all attacker rows
+        # Apply offset to each attacker row using the per-ID direction/distance
         df_result = df_pandas.copy()
-        for vehicle_id, final_pos in position_lookup.items():
-            id_mask = (df_result['coreData_id'] == vehicle_id) & attacker_mask
-            for col, value in final_pos.items():
-                df_result.loc[id_mask, col] = value
+
+        for vehicle_id, params in direction_distance_lookup.items():
+            direction_angle = params["direction"]
+            distance_meters = params["distance"]
+
+            # Get mask for this vehicle's attacker rows
+            id_mask = (df_result['coreData_id'] == vehicle_id) & (df_result['isAttacker'] == 1)
+
+            # Apply offset to each row's original position
+            if self.isXYCoords:
+                # Apply XY offset to each row
+                for idx in df_result[id_mask].index:
+                    orig_x = df_result.loc[idx, self.x_col]
+                    orig_y = df_result.loc[idx, self.y_col]
+                    new_x, new_y = MathHelper.direction_and_dist_to_XY(
+                        orig_x, orig_y, direction_angle, distance_meters
+                    )
+                    df_result.loc[idx, self.x_col] = new_x
+                    df_result.loc[idx, self.y_col] = new_y
+            else:
+                # Apply lat/lon offset to each row
+                for idx in df_result[id_mask].index:
+                    orig_lat = df_result.loc[idx, self.pos_lat_col]
+                    orig_lon = df_result.loc[idx, self.pos_long_col]
+                    new_lat, new_lon = MathHelper.direction_and_dist_to_lat_long_offset(
+                        orig_lat, orig_lon, direction_angle, distance_meters
+                    )
+                    df_result.loc[idx, self.pos_lat_col] = new_lat
+                    df_result.loc[idx, self.pos_long_col] = new_lon
 
         # Log results
         n_attackers = attacker_mask.sum()
-        n_unique_ids = len(position_lookup)
+        n_unique_ids = len(direction_distance_lookup)
         self.logger.log(
             f"Applied offset to {n_attackers} attacker rows "
             f"({n_unique_ids} unique vehicle IDs)"

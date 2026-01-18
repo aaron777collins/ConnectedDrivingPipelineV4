@@ -1,26 +1,78 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 41: DaskCleanWithTimestamps coverage increased to 78.72% - 41/58 tasks done, 71%)
+Last Updated: 2026-01-18 (Task 42: Fixed failing test - bug in positional_offset_const_per_id implementation - 42/58 tasks done, 72%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 41/58 (71%)**
+- **Tasks Completed: 42/58 (72%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
-- **Phase 6 (Testing):** ⏳ IN PROGRESS (8/10 tasks)
+- **Phase 6 (Testing):** ⏳ IN PROGRESS (9/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
 
 ---
 
 ## Completed This Iteration
+
+### Task 42: Fix failing test (positional_offset_const_per_id) ✅ COMPLETE
+
+**Issue Found:**
+- Test `TestPositionalOffsetConstPerID::test_same_id_gets_same_offset` was failing
+- DaskConnectedDrivingAttacker.py:735-815 had incorrect implementation
+
+**Root Cause:**
+The `_apply_pandas_positional_offset_const_per_id_with_random_direction` method was:
+1. Calculating the **mean position** of all rows for each vehicle ID
+2. Applying offset to that mean position
+3. Setting **all rows to the same final position**
+
+This contradicted the expected behavior (and the pandas implementation) which should:
+1. Generate a random direction/distance **once per vehicle ID**
+2. Apply that **same offset** to **each row's original position**
+3. Result: all rows of the same ID have the same offset (dx, dy), but different final positions
+
+**Files Modified:**
+1. `Generator/Attackers/DaskConnectedDrivingAttacker.py` (lines 735-815)
+   - Fixed `_apply_pandas_positional_offset_const_per_id_with_random_direction()` to apply offset to each row's original position
+   - Changed from "same final position per ID" to "same offset per ID"
+   - Now matches pandas StandardPositionalOffsetAttacker implementation (lines 56-88)
+
+2. `Test/test_dask_backwards_compatibility.py` (lines 142-174)
+   - Fixed `test_positional_offset_const_per_id_consistency()` test
+   - Updated test to check for same **offset** rather than same **position**
+   - Test was written based on the buggy implementation
+
+**Test Results:**
+- ✅ All 54 tests in `test_dask_attackers.py` passing (100%)
+- ✅ All 14 tests in `test_dask_backwards_compatibility.py` passing (100%)
+- ✅ Previously failing test now passes: `test_same_id_gets_same_offset`
+- ✅ No regressions introduced
+
+**Validation:**
+```bash
+pytest Test/test_dask_attackers.py -v --no-cov
+# Result: 54/54 passed
+
+pytest Test/test_dask_backwards_compatibility.py -v --no-cov
+# Result: 14/14 passed
+```
+
+**Impact:**
+- Critical bug fix ensuring correct attack simulation behavior
+- Dask implementation now matches pandas StandardPositionalOffsetAttacker
+- All attacker tests passing, ready for Task 43 (HTML coverage report generation)
+
+---
+
+## Previous Iterations
 
 ### Task 41: Increased test coverage for DaskCleanWithTimestamps ✅ COMPLETE (PARTIAL)
 
@@ -2432,7 +2484,7 @@ Based on comprehensive codebase exploration and git history analysis:
 #### Test Execution & Validation
 - [x] Task 40: Run full test suite with pytest -v --cov **COMPLETE** (182 tests, 181 passing, 55.09% coverage on Dask components)
 - [x] Task 41: Ensure ≥70% code coverage on all Dask components **PARTIALLY COMPLETE** (DaskCleanWithTimestamps: 78.72%, 6 components still need work)
-- [ ] Task 42: Fix any failing tests or compatibility issues
+- [x] Task 42: Fix any failing tests or compatibility issues **COMPLETE**
 - [ ] Task 43: Generate HTML coverage report
 
 **Dependencies:** Tasks 26-30 (all implementations complete)

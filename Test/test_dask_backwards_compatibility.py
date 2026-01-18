@@ -140,26 +140,38 @@ class TestDaskAttackerImplementations:
         assert len(attackers) > 0, "No attackers found"
 
     def test_positional_offset_const_per_id_consistency(self, sample_bsm_data, setup_context_provider):
-        """Validate positional_offset_const_per_id maintains per-ID consistency."""
-        dask_df = dd.from_pandas(sample_bsm_data.copy(), npartitions=2)
-        result = (DaskConnectedDrivingAttacker(data=dask_df)
-                  .add_attackers()
-                  .add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=25, max_dist=250)
-                  .data.compute())
+        """Validate positional_offset_const_per_id applies same offset to all rows of same ID."""
+        original = sample_bsm_data.copy()
+        dask_df = dd.from_pandas(original, npartitions=2)
 
-        attackers = result[result.isAttacker == 1]
+        # First add attackers, then apply attack
+        attacker_obj = DaskConnectedDrivingAttacker(data=dask_df)
+        attacker_obj.add_attackers()
+        original_with_attackers = attacker_obj.data.compute()
 
-        # For each attacker ID, all rows should have same position (rtol for geodesic variations)
-        for attacker_id in attackers.coreData_id.unique():
-            id_rows = attackers[attackers.coreData_id == attacker_id]
-            x_values = id_rows.x_pos.values
-            y_values = id_rows.y_pos.values
+        # Apply the positional offset attack
+        attacker_obj.add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=25, max_dist=250)
+        result = attacker_obj.data.compute()
 
-            # All rows with same ID should have same position
-            assert np.allclose(x_values, x_values[0], rtol=1e-4), \
-                f"Inconsistent x_pos for ID {attacker_id}"
-            assert np.allclose(y_values, y_values[0], rtol=1e-4), \
-                f"Inconsistent y_pos for ID {attacker_id}"
+        # For each attacker ID, all rows should have the SAME OFFSET applied (not same final position)
+        for attacker_id in result[result['isAttacker'] == 1]['coreData_id'].unique():
+            original_id_rows = original_with_attackers[original_with_attackers['coreData_id'] == attacker_id].reset_index(drop=True)
+            result_id_rows = result[result['coreData_id'] == attacker_id].reset_index(drop=True)
+
+            # Calculate offsets for each row of this ID
+            offsets = []
+            for i in range(len(original_id_rows)):
+                dx = result_id_rows.iloc[i]['x_pos'] - original_id_rows.iloc[i]['x_pos']
+                dy = result_id_rows.iloc[i]['y_pos'] - original_id_rows.iloc[i]['y_pos']
+                offsets.append((dx, dy))
+
+            # All offsets should be identical (same offset applied to each row)
+            first_offset = offsets[0]
+            for offset in offsets[1:]:
+                assert np.allclose(offset[0], first_offset[0], rtol=1e-4), \
+                    f"Inconsistent x_offset for ID {attacker_id}"
+                assert np.allclose(offset[1], first_offset[1], rtol=1e-4), \
+                    f"Inconsistent y_offset for ID {attacker_id}"
 
     def test_positional_override_const_all_same_position(self, sample_bsm_data, setup_context_provider):
         """Validate positional_override_const places all attackers at same position."""
