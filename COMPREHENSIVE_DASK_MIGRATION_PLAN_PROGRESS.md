@@ -11,6 +11,40 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/MachineLearning/DaskMConnectedDrivingDataCleaner.py` (154 lines)
+- Dask implementation of ML data cleaner for preparing BSM data for model training
+- Migrated from pandas `MConnectedDrivingDataCleaner.py`
+
+**Key Features:**
+- Selects feature columns specified in ML configuration
+- Converts hexadecimal `coreData_id` to decimal using `hex_to_decimal` UDF
+- Uses `DaskParquetCache` decorator for efficient caching
+- Maintains lazy evaluation (returns Dask DataFrame)
+- Compatible with sklearn (after compute())
+- Follows same interface as pandas version
+
+**Testing:**
+- Created `Test/test_dask_ml_connected_driving_data_cleaner.py` with 12 comprehensive tests
+- All tests passing (12/12, 100% pass rate)
+- Tests cover: hex conversion (basic, decimal points, large values, None handling), column selection, empty DataFrames, lazy evaluation, partition preservation, sklearn compatibility, multiple hex columns, column preservation
+
+**Files Created:**
+1. `/tmp/original-repo/MachineLearning/DaskMConnectedDrivingDataCleaner.py` (NEW - 154 lines)
+2. `/tmp/original-repo/Test/test_dask_ml_connected_driving_data_cleaner.py` (NEW - 285 lines)
+
+**Validation:**
+- All 12 tests pass with pytest
+- Hex conversion UDF tested thoroughly (handles edge cases: decimal points, None, large values)
+- Column selection pattern validated
+- Ready for use in ML pipelines with sklearn classifiers
+
+---
+
+## Previous Iterations
+
 ### Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py
 
 **Implementation Summary:**
@@ -481,7 +515,7 @@ Based on comprehensive codebase exploration and git history analysis:
 - [x] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering from origin, 11 tests passing)
 - [x] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day, 14 tests passing)
 - [x] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range, 13 tests passing) **COMPLETE**
-- [ ] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion) **CRITICAL**
+- [x] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion, 12 tests passing) **COMPLETE**
 
 #### Testing
 - [ ] Task 12: Create test_dask_cleaners.py with golden dataset validation
