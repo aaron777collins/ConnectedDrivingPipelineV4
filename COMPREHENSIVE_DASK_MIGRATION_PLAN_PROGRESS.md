@@ -1,26 +1,123 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 35: DaskDataGatherer tests created - 35/58 tasks done, 60%)
+Last Updated: 2026-01-18 (Task 36: Performance benchmarks created - 36/58 tasks done, 62%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 35/58 (60%)**
+- **Tasks Completed: 36/58 (62%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
-- **Phase 6 (Testing):** ⏳ IN PROGRESS (2/10 tasks)
+- **Phase 6 (Testing):** ⏳ IN PROGRESS (3/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
 
 ---
 
 ## Completed This Iteration
+
+### Task 36: Create test_dask_benchmark.py (performance vs pandas) ✅ COMPLETE
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Test/test_dask_benchmark.py` (596 lines, 16 benchmark tests)
+- Comprehensive performance benchmarking suite comparing Dask vs pandas implementations
+- **Test Collection:** 16 tests across 5 test classes, all marked with @pytest.mark.benchmark and @pytest.mark.slow
+
+**Benchmark Coverage:**
+
+1. **TestDataGathererBenchmark (2 tests):**
+   - CSV reading benchmark (1K, 10K rows)
+   - Compares pd.read_csv() vs dd.read_csv().compute()
+
+2. **TestCleanerBenchmark (4 tests):**
+   - clean_data() operation (1K, 10K rows)
+   - clean_data_with_timestamps() operation (1K, 10K rows)
+   - Compares ConnectedDrivingCleaner vs DaskConnectedDrivingCleaner
+
+3. **TestAttackerBenchmark (6 tests):**
+   - add_attackers() - deterministic selection (1K, 10K rows)
+   - add_attacks_positional_offset_const() - constant offset (1K, 10K rows)
+   - add_attacks_positional_offset_rand() - random offset (1K, 10K rows)
+   - Compares StandardPositionalOffsetAttacker vs DaskConnectedDrivingAttacker
+
+4. **TestMLCleanerBenchmark (2 tests):**
+   - ML data preparation (1K, 10K rows)
+   - Compares MConnectedDrivingDataCleaner vs DaskMConnectedDrivingDataCleaner
+
+5. **TestLargeDatasetBenchmark (2 tests - SKIPPED):**
+   - Large dataset benchmarks (100K, 1M rows)
+   - Marked with @pytest.mark.skip for normal runs (very slow)
+
+**Benchmark Metrics:**
+- Execution time (seconds)
+- Throughput (rows/second)
+- Time per row (milliseconds)
+- Speedup (pandas/Dask ratio)
+
+**Dataset Sizes:**
+- Small: 1,000 rows (100 unique vehicle IDs)
+- Medium: 10,000 rows (1,000 unique vehicle IDs)
+- Large: 100,000 rows (10,000 unique IDs) - skipped
+- Extra Large: 1,000,000 rows (50,000 unique IDs) - skipped
+
+**Helper Functions:**
+- `generate_test_data()` - Creates realistic BSM datasets with proper structure
+- `calculate_metrics()` - Computes execution time, throughput, time per row
+- `print_benchmark_results()` - Formatted output comparing pandas vs Dask
+
+**Test Patterns:**
+- All tests marked with `@pytest.mark.benchmark` and `@pytest.mark.slow`
+- Parametrized tests for multiple dataset sizes
+- Provider setup fixtures for cleaners/attackers (GeneratorContextProvider, MLContextProvider)
+- Realistic test data generation with proper BSM schema
+
+**Expected Results:**
+- Dask slower than pandas for <10K rows (overhead from parallelization)
+- Dask competitive with pandas at 10K-100K rows
+- Dask faster than pandas at >100K rows (parallelization benefits kick in)
+
+**Files Created:**
+- `Test/test_dask_benchmark.py` (NEW - 596 lines, 16 tests)
+
+**Usage:**
+```bash
+# Run all benchmarks
+pytest Test/test_dask_benchmark.py -v -s -m benchmark
+
+# Run specific benchmark class
+pytest Test/test_dask_benchmark.py::TestCleanerBenchmark -v -s
+
+# Run with specific dataset size
+pytest Test/test_dask_benchmark.py::TestCleanerBenchmark::test_clean_data_benchmark[1000-100] -v -s
+```
+
+**Impact:**
+- Provides quantitative performance comparison between Dask and pandas implementations
+- Establishes baseline metrics for optimization work (Phase 7)
+- Documents expected performance characteristics across dataset sizes
+- Can be used for regression testing after optimization changes
+
+**Next Steps:**
+- Task 37: Extend all cleaner tests with edge cases (empty DataFrames, null values)
+- Task 38: Extend all attacker tests with boundary conditions
+- Phase 7: Use benchmark results to identify optimization opportunities
+
+**Validation:**
+- ✅ 16 tests collected successfully
+- ✅ All imports resolve correctly
+- ✅ Follows existing benchmark patterns from test_udf_benchmark.py
+- ✅ Consistent with backwards compatibility test patterns
+- Task 36 complete ✅
+
+---
+
+## Previous Iterations
 
 ### Task 35: Create test_dask_data_gatherer.py (CSV reading, partitioning) ✅ COMPLETE
 
@@ -1885,7 +1982,7 @@ Based on comprehensive codebase exploration and git history analysis:
 #### Test Suite Creation
 - [x] Task 34: Create test_dask_backwards_compatibility.py (pandas vs Dask equivalence) **COMPLETE** (14/14 tests passing)
 - [x] Task 35: Create test_dask_data_gatherer.py (CSV reading, partitioning) **COMPLETE** (13/23 tests passing, 56%)
-- [ ] Task 36: Create test_dask_benchmark.py (performance vs pandas)
+- [x] Task 36: Create test_dask_benchmark.py (performance vs pandas)
 - [ ] Task 37: Extend all cleaner tests with edge cases (empty DataFrames, null values)
 - [ ] Task 38: Extend all attacker tests with boundary conditions (0% attackers, 100% attackers)
 - [ ] Task 39: Create integration tests for full pipeline end-to-end
