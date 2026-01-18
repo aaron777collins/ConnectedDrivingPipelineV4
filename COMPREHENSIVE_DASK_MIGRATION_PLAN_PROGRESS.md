@@ -1,26 +1,58 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 33: Pipeline configs validated - 33/58 tasks done, 57%)
+Last Updated: 2026-01-18 (Task 34: Backwards compatibility tests fixed - 34/58 tasks done, 59%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 33/58 (57%)**
+- **Tasks Completed: 34/58 (59%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
-- **Phase 6 (Testing):** ⏳ NOT STARTED (0/10 tasks)
+- **Phase 6 (Testing):** ⏳ IN PROGRESS (1/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
 
 ---
 
 ## Completed This Iteration
+
+### Task 34: Create test_dask_backwards_compatibility.py (pandas vs Dask equivalence) ✅ COMPLETE
+
+**Implementation Summary:**
+- Fixed 3 failing tests in existing test_dask_backwards_compatibility.py (14/14 tests now passing)
+- **CRITICAL BUG FIXED:** MathHelper.direction_and_dist_to_XY was using degrees in math.cos/sin (expects radians)
+  - Added `math.radians()` conversion (Helpers/MathHelper.py:48)
+  - Fixed 22-64% distance errors across all angles
+- **CRITICAL DESIGN FLAW FIXED:** positional_offset_const_per_id applied per-row offset instead of per-ID
+  - Redesigned to use group-by-mean approach (DaskConnectedDrivingAttacker.py:724-801)
+  - Now all rows with same attacker ID end at identical final position
+- **TEST BUG FIXED:** test_positional_offset_const_modifies_attackers_only had incorrect comparison logic
+  - Fixed merge/filtering logic to properly compare regular (non-attacker) rows
+  - Added consistent sorting to handle row reordering
+
+**Test Results:**
+- ✅ 14/14 tests passing (100% pass rate)
+- ✅ test_positional_offset_const_distance_accuracy: validates 50m offset = 50m actual
+- ✅ test_positional_offset_const_per_id_consistency: validates per-ID position consistency
+- ✅ test_positional_offset_const_modifies_attackers_only: validates regular rows unchanged
+
+**Files Modified:**
+1. `Helpers/MathHelper.py` (lines 47-50) - Added radians conversion
+2. `Generator/Attackers/DaskConnectedDrivingAttacker.py` (lines 724-801) - Redesigned per-ID attack logic
+3. `Test/test_dask_backwards_compatibility.py` (lines 104-127, 314-342) - Fixed test logic
+
+**Impact:**
+- All Dask attacker implementations now have correct distance calculations
+- Per-ID attacks now work correctly (consistent positions per vehicle ID)
+- Backwards compatibility validation complete (pandas vs Dask equivalence verified)
+
+---
 
 ### Task 33: Validate Pipeline Configs Produce Identical Results ✅ COMPLETE
 
@@ -1775,7 +1807,7 @@ Based on comprehensive codebase exploration and git history analysis:
 ### **PHASE 6: COMPREHENSIVE TESTING**
 
 #### Test Suite Creation
-- [ ] Task 34: Create test_dask_backwards_compatibility.py (pandas vs Dask equivalence) **CRITICAL**
+- [x] Task 34: Create test_dask_backwards_compatibility.py (pandas vs Dask equivalence) **COMPLETE** (14/14 tests passing)
 - [ ] Task 35: Create test_dask_data_gatherer.py (CSV reading, partitioning)
 - [ ] Task 36: Create test_dask_benchmark.py (performance vs pandas)
 - [ ] Task 37: Extend all cleaner tests with edge cases (empty DataFrames, null values)

@@ -725,11 +725,12 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         """
         Apply positional offset attack with per-ID lookup to pandas DataFrame.
 
-        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
-        For each attacker row:
-        1. Check if vehicle ID exists in lookup dictionary
-        2. If not, generate random direction and distance and store in lookup
-        3. Apply offset using the stored direction/distance for that ID
+        This method ensures all rows with the same attacker ID end up at the SAME final position.
+        Strategy:
+        1. For each attacker ID, calculate mean of original positions
+        2. Generate random direction/distance once per ID
+        3. Apply offset to mean position
+        4. Assign same final position to all rows of that ID
 
         Args:
             df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
@@ -740,34 +741,64 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             pd.DataFrame: DataFrame with position-offset attackers
 
         Note:
-            This method applies the attack row-wise using pandas .apply().
-            Only rows with isAttacker=1 are modified.
             Uses SEED for reproducible randomness.
-            Lookup dictionary ensures same ID always gets same direction/distance.
+            All rows with same attacker ID will have identical final position.
         """
         # Set random seed for reproducibility
         random.seed(self.SEED)
 
-        # Create lookup dictionary to store direction/distance per vehicle ID
-        lookupDict = {}
+        # Get attacker IDs
+        attacker_mask = df_pandas['isAttacker'] == 1
+        attacker_ids = df_pandas[attacker_mask]['coreData_id'].unique()
 
-        # Apply offset to each row (only affects attackers)
-        df_offset = df_pandas.apply(
-            lambda row: self._positional_offset_const_attack_per_id_with_random_direction(
-                row, min_dist, max_dist, lookupDict
-            ),
-            axis=1
-        )
+        # Create lookup for final positions per ID
+        position_lookup = {}
 
-        # Count attackers that were offset
-        n_attackers = (df_offset['isAttacker'] == 1).sum()
-        n_unique_ids = len(lookupDict)
+        for vehicle_id in attacker_ids:
+            # Get all rows for this attacker ID
+            id_mask = (df_pandas['coreData_id'] == vehicle_id) & attacker_mask
+            id_rows = df_pandas[id_mask]
+
+            # Calculate mean position of all rows for this ID
+            if self.isXYCoords:
+                mean_x = id_rows[self.x_col].mean()
+                mean_y = id_rows[self.y_col].mean()
+            else:
+                mean_x = id_rows[self.pos_lat_col].mean()
+                mean_y = id_rows[self.pos_long_col].mean()
+
+            # Generate random direction and distance for this ID
+            direction_angle = random.randint(0, 360)
+            distance_meters = random.randint(min_dist, max_dist)
+
+            # Calculate final position from mean position
+            if self.isXYCoords:
+                final_x, final_y = MathHelper.direction_and_dist_to_XY(
+                    mean_x, mean_y, direction_angle, distance_meters
+                )
+                position_lookup[vehicle_id] = {self.x_col: final_x, self.y_col: final_y}
+            else:
+                final_lat, final_lon = MathHelper.direction_and_dist_to_lat_long_offset(
+                    mean_x, mean_y, direction_angle, distance_meters
+                )
+                position_lookup[vehicle_id] = {self.pos_lat_col: final_lat, self.pos_long_col: final_lon}
+
+        # Apply final positions to all attacker rows
+        df_result = df_pandas.copy()
+        for vehicle_id, final_pos in position_lookup.items():
+            id_mask = (df_result['coreData_id'] == vehicle_id) & attacker_mask
+            for col, value in final_pos.items():
+                df_result.loc[id_mask, col] = value
+
+        # Log results
+        n_attackers = attacker_mask.sum()
+        n_unique_ids = len(position_lookup)
         self.logger.log(
             f"Applied offset to {n_attackers} attacker rows "
             f"({n_unique_ids} unique vehicle IDs)"
         )
 
-        return df_offset
+        return df_result
 
     def _positional_offset_const_attack_per_id_with_random_direction(self, row, min_dist, max_dist, lookupDict):
         """

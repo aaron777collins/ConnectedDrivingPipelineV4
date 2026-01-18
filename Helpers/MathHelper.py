@@ -44,8 +44,10 @@ class MathHelper:
         newAngle = theta + direction_angle
 
         # calculating new x and y
-        x = x + distance_meters * math.cos(newAngle)
-        y = y + distance_meters * math.sin(newAngle)
+        # Convert angle from degrees to radians for math.cos/sin
+        newAngle_rad = math.radians(newAngle)
+        x = x + distance_meters * math.cos(newAngle_rad)
+        y = y + distance_meters * math.sin(newAngle_rad)
 
         return (x, y)
 

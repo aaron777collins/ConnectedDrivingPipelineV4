@@ -111,16 +111,20 @@ class TestDaskAttackerImplementations:
                   .add_attacks_positional_offset_const(direction_angle=45, distance_meters=50)
                   .data.compute())
 
-        # Get regular (non-attacker) rows - merge with original to preserve alignment
-        regulars = result[result.isAttacker == 0][["coreData_id", "x_pos", "y_pos"]].sort_values("coreData_id").reset_index(drop=True)
-        original_regulars = original_data.merge(
-            regulars[["coreData_id"]], on="coreData_id"
-        )[["coreData_id", "x_pos", "y_pos"]].sort_values("coreData_id").reset_index(drop=True)
+        # Get regular (non-attacker) IDs
+        regular_ids = result[result.isAttacker == 0]["coreData_id"].unique()
+
+        # Get regular rows from result and original
+        # Sort by all columns to ensure consistent ordering
+        regulars = result[result.coreData_id.isin(regular_ids)][["coreData_id", "x_pos", "y_pos"]].sort_values(["coreData_id", "x_pos", "y_pos"]).reset_index(drop=True)
+        original_regulars = original_data[original_data.coreData_id.isin(regular_ids)][["coreData_id", "x_pos", "y_pos"]].sort_values(["coreData_id", "x_pos", "y_pos"]).reset_index(drop=True)
 
         # Validate regulars unchanged (positions should match original)
+        # Note: Dask may convert string columns to ArrowStringDtype, so ignore dtype differences
         pd.testing.assert_frame_equal(
             regulars,
-            original_regulars
+            original_regulars,
+            check_dtype=False
         )
 
     def test_positional_offset_rand_executes(self, sample_bsm_data, setup_context_provider):
@@ -323,13 +327,13 @@ class TestNumericalAccuracy:
                   .add_attacks_positional_offset_const(direction_angle=0, distance_meters=distance_meters)
                   .data.compute())
 
-        # Get attacker rows
-        attackers = result[result.isAttacker == 1]
-        original_attackers = original_data[original_data.coreData_id.isin(attackers.coreData_id.values)]
+        # Get attacker rows - must preserve original index for alignment
+        attackers = result[result.isAttacker == 1].sort_index()
 
-        # Calculate actual offsets
-        for idx, attacker_row in attackers.iterrows():
-            original_row = original_attackers[original_attackers.coreData_id == attacker_row.coreData_id].iloc[0]
+        # For each attacker row, compare with same-index row from original data
+        for idx in attackers.index:
+            attacker_row = attackers.loc[idx]
+            original_row = original_data.loc[idx]
 
             # Calculate distance moved
             dx = attacker_row.x_pos - original_row.x_pos
