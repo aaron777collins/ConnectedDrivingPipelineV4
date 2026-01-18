@@ -554,7 +554,7 @@ pip install -r requirements.txt --force-reinstall
 python validate_dask_setup.py
 ```
 
-For more detailed troubleshooting, see the [Troubleshooting Guide](docs/troubleshooting.md).
+For more detailed troubleshooting, see the [Troubleshooting Guide](docs/Troubleshooting_Guide.md).
 
 ## Advanced Usage
 
