@@ -974,3 +974,164 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             row[self.pos_long_col] = newLong
 
         return row
+
+    def add_attacks_positional_override_rand(self, min_dist=25, max_dist=250):
+        """
+        Add random positional override attack using compute-then-daskify strategy.
+
+        This method overrides attacker positions to random absolute positions from origin by:
+        1. Computing Dask DataFrame to pandas
+        2. Applying pandas positional override attack with random direction/distance
+        3. Converting result back to Dask DataFrame
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - Sets position to random absolute position from origin (0,0) or center point
+        - For XY coordinates: position = (0,0) + random_direction/random_distance
+        - For lat/lon: position = (center_lat, center_lon) + random_direction/random_distance
+        - Each row gets a DIFFERENT random direction (0-360°) and distance (min_dist to max_dist)
+        - Uses MathHelper for accurate position calculations
+        - Supports both XY coordinates and lat/lon coordinates
+
+        Args:
+            min_dist (int/float): Minimum distance from origin in meters
+                Default: 25m
+            max_dist (int/float): Maximum distance from origin in meters
+                Default: 250m
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the attack
+            operation. Memory usage peaks at ~2x data size (original + result).
+            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
+
+            Unlike positional_offset_rand which adds to current position,
+            this method OVERRIDES to random absolute position from origin.
+
+            Each attacker row gets a different random direction and distance.
+            Use SEED for reproducibility across runs.
+
+        Examples:
+            # Override to random positions between 25-250m from origin
+            attacker.add_attacks_positional_override_rand()
+
+            # Override to random positions between 50-100m from origin
+            attacker.add_attacks_positional_override_rand(min_dist=50, max_dist=100)
+
+            # Override to random positions between 0-2000m from origin
+            attacker.add_attacks_positional_override_rand(min_dist=0, max_dist=2000)
+        """
+        self.logger.log(
+            f"Starting positional override rand attack: "
+            f"random distance {min_dist}m to {max_dist}m from origin"
+        )
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for positional override...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas positional override attack with randomness
+        self.logger.log("Applying random positional override attack to pandas DataFrame...")
+        df_override = self._apply_pandas_positional_override_rand(df_pandas, min_dist, max_dist)
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_override, npartitions=n_partitions)
+
+        self.logger.log("Positional override rand attack complete")
+        return self
+
+    def _apply_pandas_positional_override_rand(self, df_pandas, min_dist, max_dist):
+        """
+        Apply random positional override attack to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionFromOriginAttacker.
+        For each attacker row:
+        1. Generate random direction (0-360°) and distance (min_dist to max_dist)
+        2. Calculate absolute position from origin based on random direction and distance
+        3. Replace attacker's position with the absolute position
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+            min_dist (int/float): Minimum distance from origin in meters
+            max_dist (int/float): Maximum distance from origin in meters
+
+        Returns:
+            pd.DataFrame: DataFrame with position-overridden attackers
+
+        Note:
+            This method applies the attack row-wise using pandas .apply().
+            Only rows with isAttacker=1 are modified.
+            Each row gets a different random direction and distance.
+        """
+        # Set random seed for reproducibility
+        random.seed(self.SEED)
+
+        # Apply override to each row (only affects attackers)
+        df_override = df_pandas.apply(
+            lambda row: self._positional_override_rand_attack(row, min_dist, max_dist),
+            axis=1
+        )
+
+        # Count attackers that were overridden
+        n_attackers = (df_override['isAttacker'] == 1).sum()
+        self.logger.log(f"Overrode position for {n_attackers} attackers with random positions")
+
+        return df_override
+
+    def _positional_override_rand_attack(self, row, min_dist, max_dist):
+        """
+        Override position to random absolute position from origin for a single attacker row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            min_dist (int/float): Minimum distance from origin in meters
+            max_dist (int/float): Maximum distance from origin in meters
+
+        Returns:
+            pd.Series: Row with position override (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionFromOriginAttacker.positional_override_rand_attack
+            to ensure 100% compatibility with pandas version.
+
+            For XY: calculates position from origin (0, 0)
+            For lat/lon: calculates position from center point (x_pos, y_pos) from context
+
+            Each call generates a new random direction (0-360°) and distance (min_dist to max_dist).
+        """
+        # Only override positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Generate random direction and distance
+        rand_direction = random.randint(0, 360)
+        rand_distance = random.randint(min_dist, max_dist)
+
+        # Calculate absolute position from origin based on coordinate system
+        if self.isXYCoords:
+            # XY coordinate system: calculate from origin (0, 0)
+            newX, newY = MathHelper.direction_and_dist_to_XY(
+                0, 0,  # Origin point
+                rand_direction,
+                rand_distance
+            )
+            row[self.x_col] = newX
+            row[self.y_col] = newY
+        else:
+            # Lat/Lon coordinate system: calculate from center point
+            x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos", 0.0)
+            y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos", 0.0)
+            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
+                y_pos, x_pos,  # Center point (lat, lon order)
+                rand_direction,
+                rand_distance
+            )
+            row[self.pos_lat_col] = newLat
+            row[self.pos_long_col] = newLong
+
+        return row

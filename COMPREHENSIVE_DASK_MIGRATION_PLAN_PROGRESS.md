@@ -11,6 +11,68 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 16: Implement positional_override_rand() in DaskConnectedDrivingAttacker.py
+
+**Implementation Summary:**
+- Added 3 new methods to DaskConnectedDrivingAttacker.py (1137 lines total, +161 new lines)
+- Implements random positional override attack: overrides attacker positions to random absolute positions from origin
+- Each attacker row gets a DIFFERENT random direction (0-360°) and distance (min_dist to max_dist)
+- Unlike "offset_rand" which adds to current position, "override_rand" sets absolute position from origin (0,0) or center point
+- For XY: calculates position from origin (0, 0)
+- For lat/lon: calculates position from center point (defaults to 0.0, 0.0 in tests)
+
+**Key Features:**
+- Uses compute-then-daskify strategy (computes to pandas, applies attack, converts back to Dask)
+- Each attacker row gets a unique random position (direction + distance from origin)
+- Supports both XY coordinates and lat/lon coordinates
+- Uses SEED for reproducible randomness across runs
+- Memory-safe for 15-20M rows (peak usage ~12-32GB)
+
+**Methods Added:**
+1. `add_attacks_positional_override_rand(min_dist=25, max_dist=250)` - Public API
+2. `_apply_pandas_positional_override_rand(df_pandas, min_dist, max_dist)` - Pandas attack logic
+3. `_positional_override_rand_attack(row, min_dist, max_dist)` - Per-row attack
+
+**Testing:**
+- Created `Test/test_dask_attacker_override_rand.py` with 11 comprehensive tests
+- All 11 tests passing (100% pass rate)
+- Tests cover: basic execution, attacker-only modification, each-row-different-position, distance range validation, reproducibility with SEED, custom distance ranges, method chaining, column preservation, lazy evaluation, empty DataFrames, origin-based positioning
+
+**Test Coverage:**
+1. **Basic Functionality (3 tests)**:
+   - Attack executes without errors
+   - Only attackers are modified (regulars unchanged)
+   - Each attacker row gets a different random position
+
+2. **Randomness & Distance Validation (3 tests)**:
+   - Override distances within specified range (geodesic calculation)
+   - Reproducibility with same SEED
+   - Custom distance range (10-20m)
+
+3. **Data Integrity (5 tests)**:
+   - Method chaining support
+   - Preserves other columns unchanged
+   - Lazy evaluation preserved (returns Dask DataFrame)
+   - Empty DataFrame handling
+   - Position override from origin (0,0) validated with geodesic calculations
+
+**Validation:**
+- All 11 tests pass with pytest
+- Confirms each attacker row gets different random position
+- Validates override distances within specified range using WGS84 geodesic distance
+- Confirms reproducibility with same SEED value
+- Ready for use in pipelines requiring random absolute position override attacks
+
+**Files Created:**
+1. `/tmp/original-repo/Test/test_dask_attacker_override_rand.py` (NEW - 394 lines)
+
+**Files Modified:**
+1. `/tmp/original-repo/Generator/Attackers/DaskConnectedDrivingAttacker.py` (1137 lines, +161 new)
+
+---
+
+## Previous Iterations
+
 ### Task 15: Implement positional_override_const() in DaskConnectedDrivingAttacker.py
 
 **Implementation Summary:**
@@ -774,9 +836,10 @@ Based on comprehensive codebase exploration and git history analysis:
   - Reference: StandardPositionFromOriginAttacker.py lines 21-66
   - Implementation: 3 new methods (+147 lines), 11 tests (100% passing)
 
-- [ ] Task 16: Implement positional_override_rand() in DaskConnectedDrivingAttacker.py
+- [x] Task 16: Implement positional_override_rand() in DaskConnectedDrivingAttacker.py **COMPLETE**
   - Simple: Random absolute positions within radius
   - Reference: StandardPositionFromOriginAttacker.py lines 68-113
+  - Implementation: 3 new methods (+161 lines), 11 tests (100% passing)
 
 #### Testing
 - [ ] Task 17: Create test_dask_attackers.py with all 8 attack method tests
