@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 import os
+from typing import Optional, Dict, Any
 
 
 class SparkSessionManager:
@@ -131,3 +132,66 @@ class SparkSessionManager:
             cluster_config["spark.executor.instances"] = str(num_executors)
 
         return cls.get_session(app_name, cluster_config)
+
+    @classmethod
+    def get_session_from_config_file(cls, preset: str = 'local',
+                                     custom_path: Optional[str] = None,
+                                     overrides: Optional[Dict[str, Any]] = None):
+        """
+        Get a SparkSession configured from a YAML configuration file.
+
+        This method integrates with SparkConfigLoader to load configuration
+        from YAML templates in configs/spark/ directory.
+
+        Args:
+            preset (str): Configuration preset name ('local', 'cluster', 'large-dataset')
+            custom_path (str): Optional custom path to YAML configuration file
+            overrides (dict): Optional configuration overrides to apply
+
+        Returns:
+            SparkSession: Spark session configured from YAML file
+
+        Example:
+            # Load local configuration
+            spark = SparkSessionManager.get_session_from_config_file('local')
+
+            # Load cluster configuration with overrides
+            spark = SparkSessionManager.get_session_from_config_file(
+                'cluster',
+                overrides={'executor_memory': '64g'}
+            )
+
+            # Load custom configuration file
+            spark = SparkSessionManager.get_session_from_config_file(
+                custom_path='/path/to/custom-config.yml'
+            )
+        """
+        try:
+            from Helpers.SparkConfigLoader import SparkConfigLoader
+        except ImportError:
+            raise ImportError(
+                "SparkConfigLoader not found. "
+                "Ensure SparkConfigLoader.py is in the Helpers directory."
+            )
+
+        # Load configuration from YAML
+        config = SparkConfigLoader.load_config(preset, custom_path)
+
+        # Apply overrides if provided
+        if overrides:
+            config = SparkConfigLoader.merge_configs(config, overrides)
+
+        # Convert to Spark conf format
+        spark_conf = SparkConfigLoader.convert_to_spark_conf(config)
+
+        # Get app name and log level from config
+        app_name = config.get('app_name', 'ConnectedDrivingPipeline')
+        log_level = config.get('log_level', 'WARN')
+
+        # Create session
+        spark = cls.get_session(app_name, spark_conf)
+
+        # Set log level
+        spark.sparkContext.setLogLevel(log_level)
+
+        return spark

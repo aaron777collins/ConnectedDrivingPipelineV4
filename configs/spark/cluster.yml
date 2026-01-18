@@ -1,0 +1,86 @@
+# Spark Configuration for Compute Canada Cluster
+# Use this configuration for production workloads on HPC clusters
+
+spark_config:
+  # Application Settings
+  app_name: "ConnectedDrivingPipeline-Cluster"
+
+  # Master Configuration
+  master: "yarn"  # Use YARN for resource management (change to spark://HOST:PORT for standalone)
+
+  # Memory Configuration
+  driver_memory: "16g"
+  executor_memory: "32g"
+
+  # Execution Configuration
+  executor_cores: 4
+  cores_max: 32  # Maximum cores across all executors
+
+  # Shuffle and Partition Settings
+  sql_shuffle_partitions: 200  # Default for large datasets
+
+  # Adaptive Query Execution
+  sql_adaptive_enabled: true
+  sql_adaptive_coalesce_partitions_enabled: true
+  sql_adaptive_skewJoin_enabled: true
+
+  # Arrow Integration (pandas interop)
+  sql_execution_arrow_pyspark_enabled: true
+  sql_execution_arrow_pyspark_fallback_enabled: true
+
+  # Compression
+  sql_parquet_compression_codec: "snappy"
+
+  # Memory Management
+  memory_fraction: 0.6
+  memory_storage_fraction: 0.5
+  memory_offHeap_enabled: false
+
+  # Dynamic Allocation (recommended for cluster)
+  dynamicAllocation_enabled: true
+  dynamicAllocation_minExecutors: 1
+  dynamicAllocation_maxExecutors: 10
+  dynamicAllocation_initialExecutors: 2
+
+  # Shuffle Service (required for dynamic allocation on YARN)
+  shuffle_service_enabled: true
+
+  # Network
+  network_timeout: 300s
+  executor_heartbeatInterval: 30s
+
+  # Broadcast
+  sql_autoBroadcastJoinThreshold: 52428800  # 50MB
+
+  # Speculation (retry slow tasks)
+  speculation: true
+  speculation_multiplier: 1.5
+
+  # External Shuffle Service
+  shuffle_service_port: 7337
+
+  # UI and Logging
+  ui_port: 4040
+  ui_retainedJobs: 1000
+  ui_retainedStages: 1000
+  eventLog_enabled: true
+  eventLog_dir: "/tmp/spark-events"
+  log_level: "INFO"
+
+  # Serialization
+  serializer: "org.apache.spark.serializer.KryoSerializer"
+  kryoserializer_buffer_max: "512m"
+
+  # Cluster-Specific Optimizations
+  locality_wait: 3s
+
+  # Python Worker Configuration
+  python_worker_memory: "2g"
+
+comments:
+  - "This configuration is optimized for Compute Canada cluster deployment"
+  - "Adjust executor_memory and executor_cores based on available cluster resources"
+  - "Dynamic allocation recommended for multi-user environments"
+  - "Increase sql_shuffle_partitions for datasets > 10M rows"
+  - "Suitable for datasets of 1M-100M+ rows"
+  - "Set eventLog_dir to cluster-specific path for Spark History Server"

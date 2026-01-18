@@ -1,0 +1,55 @@
+# Spark Configuration for Local Development
+# Use this configuration for testing on a local machine
+
+spark_config:
+  # Application Settings
+  app_name: "ConnectedDrivingPipeline-Local"
+
+  # Master Configuration
+  master: "local[*]"  # Use all available cores (change to local[4] for specific core count)
+
+  # Memory Configuration
+  driver_memory: "4g"
+  executor_memory: "4g"
+
+  # Execution Configuration
+  executor_cores: 2
+
+  # Shuffle and Partition Settings
+  sql_shuffle_partitions: 8  # Reduced for local mode
+
+  # Adaptive Query Execution
+  sql_adaptive_enabled: true
+  sql_adaptive_coalesce_partitions_enabled: true
+
+  # Arrow Integration (pandas interop)
+  sql_execution_arrow_pyspark_enabled: true
+  sql_execution_arrow_pyspark_fallback_enabled: true
+
+  # Compression
+  sql_parquet_compression_codec: "snappy"
+
+  # Memory Management
+  memory_fraction: 0.6
+  memory_storage_fraction: 0.5
+
+  # UI and Logging
+  ui_port: 4040
+  ui_showConsoleProgress: true
+  log_level: "WARN"
+
+  # Local-Specific Optimizations
+  local_dir: "/tmp/spark-temp"
+
+  # Dynamic Allocation (disabled for local)
+  dynamicAllocation_enabled: false
+
+  # Broadcast
+  sql_autoBroadcastJoinThreshold: 10485760  # 10MB
+
+comments:
+  - "This configuration is optimized for local development and testing"
+  - "Adjust master to local[N] to use N specific cores"
+  - "Driver and executor memory set conservatively for laptops/workstations"
+  - "Reduced shuffle partitions (8) for faster local testing"
+  - "Suitable for datasets up to 100k-1M rows"

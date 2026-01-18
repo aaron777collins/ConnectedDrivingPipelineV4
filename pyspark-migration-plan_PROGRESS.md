@@ -157,7 +157,7 @@ IN_PROGRESS
 
 - [x] Task 1.1: Add PySpark to requirements.txt (pyspark>=3.3.0, py4j)
 - [x] Task 1.2: Create SparkSession management utility (`Helpers/SparkSessionManager.py`)
-- [ ] Task 1.3: Create Spark configuration templates for local/cluster modes
+- [x] Task 1.3: Create Spark configuration templates for local/cluster modes
 - [ ] Task 1.4: Define BSM raw data schema (`Schemas/BSMRawSchema.py` - 19 columns with StructType)
 - [ ] Task 1.5: Define processed data schema (`Schemas/BSMProcessedSchema.py` - 18 ML feature columns)
 - [ ] Task 1.6: Implement schema validation utility (`Schemas/SchemaValidator.py`)
@@ -419,11 +419,27 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
-- **Task 1.2:** Created SparkSession management utility (`Helpers/SparkSessionManager.py`)
-  - Implemented singleton pattern for SparkSession lifecycle management
-  - Added `get_session()` method with configurable Spark settings
-  - Implemented `get_local_session()` for local testing with configurable cores
-  - Implemented `get_cluster_session()` for cluster deployment with memory/executor config
-  - Included default optimizations: adaptive execution, Arrow support, Snappy compression
-  - Added `stop_session()` for proper cleanup
-  - Tested successfully with PySpark 4.1.1
+- **Task 1.3:** Created Spark configuration templates for local/cluster modes
+  - Created `configs/spark/` directory structure
+  - Implemented `local.yml` configuration template for local development
+    - Uses local[*] master, 4GB memory, 8 shuffle partitions
+    - Optimized for datasets up to 100k-1M rows
+  - Implemented `cluster.yml` configuration template for Compute Canada clusters
+    - YARN resource management, 16GB driver/32GB executor memory
+    - Dynamic allocation (1-10 executors), 200 shuffle partitions
+    - Suitable for 1M-100M rows
+  - Implemented `large-dataset.yml` configuration for massive datasets (100M+ rows)
+    - High memory (32GB driver/64GB executor), 400 shuffle partitions
+    - Dynamic allocation (5-50 executors), off-heap memory enabled
+    - Kryo serialization for performance
+  - Created `SparkConfigLoader` utility (`Helpers/SparkConfigLoader.py`)
+    - YAML configuration file loader with preset support
+    - Automatic conversion from short-form to Spark conf format
+    - Configuration merging and override capabilities
+  - Enhanced `SparkSessionManager` with `get_session_from_config_file()` method
+    - Integrates with SparkConfigLoader for YAML-based configuration
+    - Supports preset loading and custom overrides
+  - Added PyYAML to requirements.txt
+  - Created comprehensive README with usage examples and troubleshooting guide
+  - Created example usage script (`configs/spark/example_usage.py`)
+  - Tested all configurations successfully

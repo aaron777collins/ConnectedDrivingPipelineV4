@@ -1,0 +1,107 @@
+# Spark Configuration for Large Datasets (100M+ rows)
+# Use this configuration for processing massive Wyoming CV Pilot BSM datasets
+
+spark_config:
+  # Application Settings
+  app_name: "ConnectedDrivingPipeline-LargeDataset"
+
+  # Master Configuration
+  master: "yarn"  # YARN for cluster resource management
+
+  # Memory Configuration (scaled up)
+  driver_memory: "32g"
+  executor_memory: "64g"
+
+  # Execution Configuration
+  executor_cores: 5
+  cores_max: 100  # Use more cores for large datasets
+
+  # Shuffle and Partition Settings (critical for large datasets)
+  sql_shuffle_partitions: 400  # Higher for large shuffles
+  default_parallelism: 400
+
+  # Adaptive Query Execution (essential for performance)
+  sql_adaptive_enabled: true
+  sql_adaptive_coalesce_partitions_enabled: true
+  sql_adaptive_skewJoin_enabled: true
+  sql_adaptive_skewJoin_skewedPartitionFactor: 5
+  sql_adaptive_skewJoin_skewedPartitionThresholdInBytes: 256MB
+  sql_adaptive_advisoryPartitionSizeInBytes: 128MB
+
+  # Arrow Integration
+  sql_execution_arrow_pyspark_enabled: true
+  sql_execution_arrow_pyspark_fallback_enabled: true
+  sql_execution_arrow_maxRecordsPerBatch: 10000
+
+  # Compression (balance between speed and size)
+  sql_parquet_compression_codec: "snappy"
+  io_compression_codec: "snappy"
+
+  # Memory Management (optimized for large data)
+  memory_fraction: 0.7
+  memory_storage_fraction: 0.3  # Less storage, more execution memory
+  memory_offHeap_enabled: true
+  memory_offHeap_size: "16g"
+
+  # Dynamic Allocation (scale with workload)
+  dynamicAllocation_enabled: true
+  dynamicAllocation_minExecutors: 5
+  dynamicAllocation_maxExecutors: 50
+  dynamicAllocation_initialExecutors: 10
+  dynamicAllocation_executorIdleTimeout: 60s
+
+  # Shuffle Service
+  shuffle_service_enabled: true
+  shuffle_file_buffer: 1m
+  shuffle_unsafe_file_output_buffer: 5m
+
+  # Network (longer timeouts for large shuffles)
+  network_timeout: 600s
+  executor_heartbeatInterval: 60s
+
+  # Broadcast (larger threshold for lookup tables)
+  sql_autoBroadcastJoinThreshold: 104857600  # 100MB
+
+  # Speculation
+  speculation: true
+  speculation_multiplier: 2.0
+  speculation_quantile: 0.75
+
+  # UI and Logging
+  ui_port: 4040
+  ui_retainedJobs: 100
+  ui_retainedStages: 100
+  eventLog_enabled: true
+  eventLog_dir: "/tmp/spark-events"
+  log_level: "WARN"  # Reduce logging overhead
+
+  # Serialization (Kryo for performance)
+  serializer: "org.apache.spark.serializer.KryoSerializer"
+  kryoserializer_buffer_max: "1024m"
+
+  # Python Worker Configuration
+  python_worker_memory: "4g"
+  python_worker_reuse: true
+
+  # File Output
+  sql_files_maxPartitionBytes: 134217728  # 128MB per partition
+
+  # Caching
+  storage_memoryMapThreshold: 2m
+
+  # Locality (reduce for large shuffles)
+  locality_wait: 1s
+
+  # SQL Optimizations
+  sql_files_maxRecordsPerFile: 0  # No limit
+  sql_optimizer_maxIterations: 100
+
+comments:
+  - "This configuration is optimized for very large datasets (100M+ rows)"
+  - "Requires significant cluster resources (500GB+ total memory recommended)"
+  - "Off-heap memory enabled to reduce GC pressure"
+  - "Higher shuffle partitions (400) to distribute load"
+  - "Dynamic allocation scales from 5 to 50 executors based on workload"
+  - "Kryo serialization for faster object serialization"
+  - "Larger broadcast threshold (100MB) for attacker ID lookup tables"
+  - "Adjust dynamicAllocation_maxExecutors based on cluster size"
