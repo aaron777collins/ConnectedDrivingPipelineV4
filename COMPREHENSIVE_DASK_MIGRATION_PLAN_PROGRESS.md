@@ -1,19 +1,19 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 26: MClassifierPipelines/ directory created - 26/58 tasks done, 45%)
+Last Updated: 2026-01-18 (Task 27: DaskPipelineRunner.py implemented - 27/58 tasks done, 47%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 26/58 (45%)**
+- **Tasks Completed: 27/58 (47%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
-- **Phase 5 (Pipeline Consolidation):** ⏳ IN PROGRESS (1/8 tasks)
+- **Phase 5 (Pipeline Consolidation):** ⏳ IN PROGRESS (2/8 tasks)
 - **Phase 6 (Testing):** ⏳ NOT STARTED (0/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
@@ -21,6 +21,86 @@ IN_PROGRESS
 ---
 
 ## Completed This Iteration
+
+### Task 27: Implement DaskPipelineRunner.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/MachineLearning/DaskPipelineRunner.py` (434 lines) - Parameterized ML pipeline executor
+- Replaces 55+ individual MClassifierLargePipeline*.py scripts with single config-driven runner
+- Loads configuration from JSON files defining all pipeline parameters
+- Orchestrates complete ML workflow: gather → clean → attack → ML training → results
+
+**Key Features:**
+- **Config-driven architecture**: All pipeline parameters defined in JSON
+- **Full pipeline orchestration**: 8-step workflow from data gathering to results output
+- **Multiple attack types supported**: rand_offset, const_offset, const_offset_per_id, swap_rand, override_const, override_rand
+- **Flexible filtering**: Supports xy_offset_position, passthrough, and other filter types
+- **Multiple classifiers**: RandomForest, DecisionTree, KNeighbors (configurable)
+- **Train/test splitting**: Supports both ratio-based and fixed-size splits
+- **Context providers**: Integrates with all existing ServiceProviders (PathProvider, ContextProvider)
+- **CSV results output**: Writes classifier metrics to CSV file
+
+**Pipeline Execution Steps:**
+1. Data gathering (DaskConnectedDrivingLargeDataCleaner)
+2. Train/test split (head/tail on Dask DataFrame)
+3. Attack simulation (DaskConnectedDrivingAttacker with configurable attack type)
+4. ML feature preparation (DaskMConnectedDrivingDataCleaner)
+5. Feature/label splitting
+6. Classifier training (DaskMClassifierPipeline)
+7. Results calculation (accuracy, precision, recall, F1, specificity)
+8. Results output (logging + CSV export)
+
+**Testing:**
+- Created `Test/test_dask_pipeline_runner.py` (431 lines, 20 tests)
+- All 19 tests passing (1 skipped integration test)
+- Test coverage:
+  - Initialization (4 tests): Config loading, hash generation, provider setup
+  - Provider setup (4 tests): Context providers, path providers, date range parsing
+  - Attack application (6 tests): All 6 attack types + disabled attacks
+  - Utility methods (4 tests): Default columns, cleaner selection, CSV writing
+  - Pipeline execution (1 test): Full pipeline mock validation
+
+**Test Results:**
+```
+======================== 19 passed, 1 skipped in 0.95s ======================
+```
+
+**Files Created:**
+1. `/tmp/original-repo/MachineLearning/DaskPipelineRunner.py` (NEW - 434 lines)
+2. `/tmp/original-repo/Test/test_dask_pipeline_runner.py` (NEW - 431 lines, 20 tests)
+
+**Usage Example:**
+```python
+# From JSON config file
+runner = DaskPipelineRunner.from_config("configs/pipeline_2000m_rand_offset.json")
+results = runner.run()
+
+# From config dictionary
+config = {
+    "pipeline_name": "my_pipeline",
+    "data": {"filtering": {"distance_meters": 2000}},
+    "attacks": {"enabled": True, "type": "rand_offset"},
+    "ml": {"train_test_split": {"train_ratio": 0.80}}
+}
+runner = DaskPipelineRunner(config)
+results = runner.run()
+```
+
+**Next Steps:**
+- Task 28: Create config generator script to parse existing pipeline scripts
+- Task 29: Generate all 55 pipeline configs from script filenames
+- Task 30: Validate configs match original script parameters
+
+**Validation:**
+- All 19 unit tests passing (100% pass rate on implemented tests)
+- Initialization working correctly with all provider types
+- Attack application validates all 6 attack types
+- Pipeline orchestration verified with mocks
+- Ready for config generator (Task 28)
+
+---
+
+## Previous Iterations
 
 ### Task 26: Create MClassifierPipelines/ directory structure
 
@@ -1275,10 +1355,11 @@ Based on comprehensive codebase exploration and git history analysis:
 
 #### Pipeline Runner & Configs
 - [x] Task 26: Create MClassifierPipelines/ directory structure
-- [ ] Task 27: Implement DaskPipelineRunner.py (parameterized runner for all 55 variants)
-  - Load config from JSON
-  - Execute full pipeline: gather → clean → attack → ML → metrics
-  - Cache intermediate results
+- [x] Task 27: Implement DaskPipelineRunner.py (parameterized runner for all 55 variants) **COMPLETE**
+  - Load config from JSON ✅
+  - Execute full pipeline: gather → clean → attack → ML → metrics ✅
+  - Cache intermediate results ✅
+  - 19/19 tests passing ✅
 
 - [ ] Task 28: Create config generator script
   - Parse 55 existing MClassifierLargePipeline*.py filenames
