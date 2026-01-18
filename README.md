@@ -464,6 +464,21 @@ python your_pipeline_script.py
 
 ## Testing
 
+### CI/CD Pipeline
+
+The project includes automated testing via GitHub Actions. Every push and pull request triggers:
+- Unit tests across Python 3.8, 3.9, 3.10, 3.11
+- Code quality checks (flake8, black, isort)
+- Integration and slow tests
+- Docker build validation
+- Coverage reporting (70% minimum threshold)
+
+**CI Status:**
+- Tests run automatically on push to `main`, `master`, or `develop` branches
+- Pull requests are tested before merge
+- Coverage reports are archived as artifacts for 30 days
+- See [CI_CD.md](CI_CD.md) for complete CI/CD documentation
+
 ### Run All Tests
 
 ```bash
