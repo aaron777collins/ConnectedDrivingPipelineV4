@@ -164,27 +164,27 @@ class DaskCleanWithTimestamps(DaskConnectedDrivingCleaner):
             Returns:
                 pd.DataFrame: Partition with new temporal feature columns
             """
-            # Extract month (1-12)
-            partition['month'] = partition['metadata_generatedAt'].dt.month
+            # Extract month (1-12) - cast to int64 for compatibility
+            partition['month'] = partition['metadata_generatedAt'].dt.month.astype('int64')
 
-            # Extract day of month (1-31)
-            partition['day'] = partition['metadata_generatedAt'].dt.day
+            # Extract day of month (1-31) - cast to int64 for compatibility
+            partition['day'] = partition['metadata_generatedAt'].dt.day.astype('int64')
 
-            # Extract year (YYYY)
-            partition['year'] = partition['metadata_generatedAt'].dt.year
+            # Extract year (YYYY) - cast to int64 for compatibility
+            partition['year'] = partition['metadata_generatedAt'].dt.year.astype('int64')
 
-            # Extract hour (0-23)
-            partition['hour'] = partition['metadata_generatedAt'].dt.hour
+            # Extract hour (0-23) - cast to int64 for compatibility
+            partition['hour'] = partition['metadata_generatedAt'].dt.hour.astype('int64')
 
-            # Extract minute (0-59)
-            partition['minute'] = partition['metadata_generatedAt'].dt.minute
+            # Extract minute (0-59) - cast to int64 for compatibility
+            partition['minute'] = partition['metadata_generatedAt'].dt.minute.astype('int64')
 
-            # Extract second (0-59)
-            partition['second'] = partition['metadata_generatedAt'].dt.second
+            # Extract second (0-59) - cast to int64 for compatibility
+            partition['second'] = partition['metadata_generatedAt'].dt.second.astype('int64')
 
             # Extract AM/PM indicator (0 for AM, 1 for PM)
             # Hour < 12 means AM (0), hour >= 12 means PM (1)
-            partition['pm'] = (partition['metadata_generatedAt'].dt.hour >= 12).astype(int)
+            partition['pm'] = (partition['metadata_generatedAt'].dt.hour >= 12).astype('int64')
 
             return partition
 
