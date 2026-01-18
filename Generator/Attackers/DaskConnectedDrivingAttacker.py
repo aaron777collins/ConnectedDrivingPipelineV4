@@ -828,3 +828,149 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             row[self.pos_long_col] = newLong
 
         return row
+
+    def add_attacks_positional_override_const(self, direction_angle=45, distance_meters=50):
+        """
+        Add constant positional override attack using compute-then-daskify strategy.
+
+        This method overrides attacker positions to absolute positions from origin by:
+        1. Computing Dask DataFrame to pandas
+        2. Applying pandas positional override attack (reuses existing logic)
+        3. Converting result back to Dask DataFrame
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - Sets position to absolute position from origin (0,0) or center point
+        - For XY coordinates: position = (0,0) + direction_angle/distance_meters
+        - For lat/lon: position = (center_lat, center_lon) + direction_angle/distance_meters
+        - Uses MathHelper for accurate position calculations
+        - Supports both XY coordinates and lat/lon coordinates
+
+        Args:
+            direction_angle (int/float): Direction in degrees (0° = North, positive = clockwise)
+                Default: 45° (northeast)
+            distance_meters (int/float): Distance from origin in meters
+                Default: 50m
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the attack
+            operation. Memory usage peaks at ~2x data size (original + result).
+            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
+
+            Unlike positional_offset_const which adds to current position,
+            this method OVERRIDES to absolute position from origin.
+
+        Examples:
+            # Override to 50m from origin at 45° (northeast)
+            attacker.add_attacks_positional_override_const()
+
+            # Override to 100m from origin due north
+            attacker.add_attacks_positional_override_const(direction_angle=0, distance_meters=100)
+
+            # Override to 200m from origin due east
+            attacker.add_attacks_positional_override_const(direction_angle=90, distance_meters=200)
+        """
+        self.logger.log(
+            f"Starting positional override const attack: "
+            f"direction={direction_angle}°, distance={distance_meters}m from origin"
+        )
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for positional override...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas positional override attack
+        self.logger.log("Applying positional override attack to pandas DataFrame...")
+        df_override = self._apply_pandas_positional_override_const(df_pandas, direction_angle, distance_meters)
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_override, npartitions=n_partitions)
+
+        self.logger.log("Positional override const attack complete")
+        return self
+
+    def _apply_pandas_positional_override_const(self, df_pandas, direction_angle, distance_meters):
+        """
+        Apply constant positional override attack to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionFromOriginAttacker.
+        For each attacker row:
+        1. Calculate absolute position from origin based on direction angle and distance
+        2. Replace attacker's position with the absolute position
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
+            distance_meters (int/float): Distance from origin in meters
+
+        Returns:
+            pd.DataFrame: DataFrame with position-overridden attackers
+
+        Note:
+            This method applies the attack row-wise using pandas .apply().
+            Only rows with isAttacker=1 are modified.
+        """
+        # Apply override to each row (only affects attackers)
+        df_override = df_pandas.apply(
+            lambda row: self._positional_override_const_attack(row, direction_angle, distance_meters),
+            axis=1
+        )
+
+        # Count attackers that were overridden
+        n_attackers = (df_override['isAttacker'] == 1).sum()
+        self.logger.log(f"Overrode position for {n_attackers} attackers")
+
+        return df_override
+
+    def _positional_override_const_attack(self, row, direction_angle, distance_meters):
+        """
+        Override position to absolute position from origin for a single attacker row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
+            distance_meters (int/float): Distance from origin in meters
+
+        Returns:
+            pd.Series: Row with position override (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionFromOriginAttacker.positional_override_const_attack
+            to ensure 100% compatibility with pandas version.
+
+            For XY: calculates position from origin (0, 0)
+            For lat/lon: calculates position from center point (x_pos, y_pos) from context
+        """
+        # Only override positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Calculate absolute position from origin based on coordinate system
+        if self.isXYCoords:
+            # XY coordinate system: calculate from origin (0, 0)
+            newX, newY = MathHelper.direction_and_dist_to_XY(
+                0, 0,  # Origin point
+                direction_angle,
+                distance_meters
+            )
+            row[self.x_col] = newX
+            row[self.y_col] = newY
+        else:
+            # Lat/Lon coordinate system: calculate from center point
+            x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos", 0.0)
+            y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos", 0.0)
+            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
+                y_pos, x_pos,  # Center point (lat, lon order)
+                direction_angle,
+                distance_meters
+            )
+            row[self.pos_lat_col] = newLat
+            row[self.pos_long_col] = newLong
+
+        return row

@@ -11,6 +11,65 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 15: Implement positional_override_const() in DaskConnectedDrivingAttacker.py
+
+**Implementation Summary:**
+- Added 3 new methods to DaskConnectedDrivingAttacker.py (977 lines total, +147 new lines)
+- Implements constant positional override attack: overrides attacker positions to absolute positions from origin
+- Unlike "offset" which adds to current position, "override" sets absolute position from origin (0,0) or center point
+- For XY: calculates position from origin (0, 0)
+- For lat/lon: calculates position from center point (defaults to 0.0, 0.0 in tests)
+
+**Key Features:**
+- Uses compute-then-daskify strategy (computes to pandas, applies attack, converts back to Dask)
+- All attackers moved to same absolute position (direction_angle + distance_meters from origin)
+- Supports both XY coordinates and lat/lon coordinates
+- Memory-safe for 15-20M rows (peak usage ~12-32GB)
+
+**Methods Added:**
+1. `add_attacks_positional_override_const(direction_angle=45, distance_meters=50)` - Public API
+2. `_apply_pandas_positional_override_const(df_pandas, direction_angle, distance_meters)` - Pandas attack logic
+3. `_positional_override_const_attack(row, direction_angle, distance_meters)` - Per-row attack
+
+**Testing:**
+- Created `Test/test_dask_attacker_override_const.py` with 11 comprehensive tests
+- All 11 tests passing (100% pass rate)
+- Tests cover: basic execution, attacker-only modification, all-attackers-same-position, different angles, custom distances, method chaining, column preservation, lazy evaluation, empty DataFrames, reproducibility, origin-based positioning
+
+**Test Coverage:**
+1. **Basic Functionality (3 tests)**:
+   - Attack executes without errors
+   - Only attackers are modified (regulars unchanged)
+   - All attackers moved to same absolute position
+
+2. **Configuration (3 tests)**:
+   - Different angles produce different positions
+   - Custom distance ranges work correctly
+   - Reproducibility across multiple runs
+
+3. **Data Integrity (5 tests)**:
+   - Method chaining support
+   - Preserves other columns unchanged
+   - Lazy evaluation preserved (returns Dask DataFrame)
+   - Empty DataFrame handling
+   - Position override from origin (0,0) validated with geodesic calculations
+
+**Validation:**
+- All 11 tests pass with pytest
+- Confirms all attackers moved to same absolute position
+- Validates override positions calculated from origin using WGS84 geodesic
+- Ready for use in pipelines requiring absolute position override attacks
+
+**Files Created:**
+1. `/tmp/original-repo/Test/test_dask_attacker_override_const.py` (NEW - 342 lines)
+
+**Files Modified:**
+1. `/tmp/original-repo/Generator/Attackers/DaskConnectedDrivingAttacker.py` (977 lines, +147 new)
+
+---
+
+## Previous Iterations
+
 ### Task 14: Implement positional_offset_const_per_id_with_random_direction() in DaskConnectedDrivingAttacker.py
 
 **Implementation Summary:**
@@ -710,9 +769,10 @@ Based on comprehensive codebase exploration and git history analysis:
   - Strategy: Compute attackers, build per-ID lookups, apply with consistency
   - Implementation: 3 new methods (+176 lines), 11 tests (100% passing)
 
-- [ ] Task 15: Implement positional_override_const() in DaskConnectedDrivingAttacker.py
+- [x] Task 15: Implement positional_override_const() in DaskConnectedDrivingAttacker.py **COMPLETE**
   - Simple: Similar to offset_const but uses absolute positions from origin
   - Reference: StandardPositionFromOriginAttacker.py lines 21-66
+  - Implementation: 3 new methods (+147 lines), 11 tests (100% passing)
 
 - [ ] Task 16: Implement positional_override_rand() in DaskConnectedDrivingAttacker.py
   - Simple: Random absolute positions within radius
