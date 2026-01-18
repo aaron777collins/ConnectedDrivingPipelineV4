@@ -11,6 +11,43 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXYAndDateRange.py` (213 lines)
+- Combined spatial (Euclidean distance) and temporal (date range) filtering
+- Inherits from DaskConnectedDrivingLargeDataCleaner following established pattern
+
+**Key Features:**
+- Filters BSM data by BOTH Euclidean distance from origin (0, 0) AND date range (start_date to end_date, inclusive)
+- Uses `filter_within_xy_range_and_date_range()` module-level function with `map_partitions` for efficiency
+- Combines spatial and temporal filters in a single partition operation for maximum efficiency
+- Deterministic tokenization (avoids lambda serialization issues)
+- Maintains lazy evaluation (no compute() calls)
+- Leverages `xy_distance` UDF from DaskUDFs/GeospatialFunctions.py
+- Supports date range filtering across days, months, and years
+- Uses pandas datetime conversion for accurate date comparison
+
+**Testing:**
+- Created `Test/test_dask_cleaner_with_filter_within_range_xy_and_date_range.py` with 13 comprehensive tests
+- All tests passing (13/13, 100% pass rate)
+- Tests cover: combined spatial-temporal filtering, spatial-only filtering, temporal-only filtering, single-day ranges, multi-month ranges, multi-year ranges, schema preservation, empty DataFrames, lazy evaluation, partition preservation, boundary date handling, all-match and no-match scenarios
+
+**Files Created:**
+1. `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXYAndDateRange.py` (NEW - 213 lines)
+2. `/tmp/original-repo/Test/test_dask_cleaner_with_filter_within_range_xy_and_date_range.py` (NEW - 611 lines)
+
+**Validation:**
+- All 13 tests pass with pytest
+- Confirms combined spatial-temporal filtering works correctly for date ranges
+- Validates independent spatial and temporal filter functionality
+- Validates date range inclusivity (start and end dates are both included)
+- Ready for use in pipelines requiring date-range-specific spatial filtering
+
+---
+
+## Previous Iterations
+
 ### Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py
 
 **Implementation Summary:**
@@ -442,9 +479,9 @@ Based on comprehensive codebase exploration and git history analysis:
 - [x] Task 6: Implement DaskCleanerWithPassthroughFilter.py (trivial - identity function, 5 tests passing)
 - [x] Task 7: Implement DaskCleanerWithFilterWithinRange.py (geodesic distance filtering, 9 tests passing)
 - [x] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering from origin, 11 tests passing)
-- [x] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day, 14 tests passing) **COMPLETE**
-- [ ] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range) **CRITICAL**
-- [ ] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion)
+- [x] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day, 14 tests passing)
+- [x] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range, 13 tests passing) **COMPLETE**
+- [ ] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion) **CRITICAL**
 
 #### Testing
 - [ ] Task 12: Create test_dask_cleaners.py with golden dataset validation
