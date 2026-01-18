@@ -158,8 +158,8 @@ IN_PROGRESS
 - [x] Task 1.1: Add PySpark to requirements.txt (pyspark>=3.3.0, py4j)
 - [x] Task 1.2: Create SparkSession management utility (`Helpers/SparkSessionManager.py`)
 - [x] Task 1.3: Create Spark configuration templates for local/cluster modes
-- [ ] Task 1.4: Define BSM raw data schema (`Schemas/BSMRawSchema.py` - 19 columns with StructType)
-- [ ] Task 1.5: Define processed data schema (`Schemas/BSMProcessedSchema.py` - 18 ML feature columns)
+- [x] Task 1.4: Define BSM raw data schema (`Schemas/BSMRawSchema.py` - 19 columns with StructType)
+- [x] Task 1.5: Define processed data schema (`Schemas/BSMProcessedSchema.py` - 18 ML feature columns)
 - [ ] Task 1.6: Implement schema validation utility (`Schemas/SchemaValidator.py`)
 - [ ] Task 1.7: Migrate test framework from custom ITest to pytest
 - [ ] Task 1.8: Create PySpark test fixtures (`Test/Fixtures/SparkFixtures.py`)
@@ -418,6 +418,25 @@ IN_PROGRESS
 - All 71 pipeline scripts updated and tested
 
 ## Completed This Iteration
+
+- **Task 1.4 & 1.5:** Defined BSM raw and processed data schemas
+  - Created `Schemas/` directory with `__init__.py` package structure
+  - Implemented `BSMRawSchema.py` with complete 19-column schema
+    - 8 metadata fields (generatedAt, recordType, serialId fields, receivedAt)
+    - 11 coreData fields (id, position lat/long, accuracy, elevation, speed, heading, etc.)
+    - Configurable timestamp type (StringType by default, TimestampType optional)
+    - Helper functions: `get_bsm_raw_column_names()`, `get_metadata_columns()`, `get_coredata_columns()`
+    - Constants for timestamp format and WKT POINT regex pattern
+    - Comprehensive docstrings with column descriptions and usage examples
+  - Implemented `BSMProcessedSchema.py` with complete 18-column schema
+    - 8 retained coreData fields (id converted to decimal, secMark, accuracy fields, elevation, accelYaw, speed, heading)
+    - 2 computed position columns (x_pos, y_pos from WKT POINT parsing)
+    - 7 temporal features (month, day, year, hour, minute, second, pm from metadata_generatedAt)
+    - 1 target variable (isAttacker for ML training)
+    - Helper functions: `get_bsm_processed_column_names()`, `get_feature_columns()`, `get_ml_feature_columns()`
+    - ML feature set configurations matching actual pipeline variants (all_features, xy_elev, xy_elev_heading_speed, position_only, temporal_only)
+  - Both schemas tested and validated with example scripts
+  - Schemas match actual codebase column usage patterns from 71 pipeline files
 
 - **Task 1.3:** Created Spark configuration templates for local/cluster modes
   - Created `configs/spark/` directory structure
