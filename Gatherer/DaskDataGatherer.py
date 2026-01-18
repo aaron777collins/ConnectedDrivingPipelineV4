@@ -136,7 +136,7 @@ class DaskDataGatherer(IDataGatherer):
         return self.data
 
     @DaskParquetCache
-    def _gather_data(self, full_file_cache_path="REPLACE_ME"):
+    def _gather_data(self, full_file_cache_path="REPLACE_ME") -> dd.DataFrame:
         """
         Internal method to read CSV data using Dask with type validation.
         Results are cached as Parquet files via DaskParquetCache decorator.
