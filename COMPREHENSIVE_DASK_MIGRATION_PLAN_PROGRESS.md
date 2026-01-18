@@ -1,26 +1,109 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 39: Integration test coverage verified - 39/58 tasks done, 67%)
+Last Updated: 2026-01-18 (Task 40: Full test suite with coverage completed - 40/58 tasks done, 69%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 39/58 (67%)**
+- **Tasks Completed: 40/58 (69%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
-- **Phase 6 (Testing):** ⏳ IN PROGRESS (6/10 tasks)
+- **Phase 6 (Testing):** ⏳ IN PROGRESS (7/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
 
 ---
 
 ## Completed This Iteration
+
+### Task 40: Run full test suite with pytest -v --cov ✅ COMPLETE
+
+**Implementation Summary:**
+- Executed full test suite for Dask components with coverage tracking
+- Generated comprehensive coverage reports (HTML + terminal)
+- **Tests Run:** 182 Dask-specific tests (excluding slow memory/benchmark tests)
+- **Test Results:** 181/182 tests passing (99.45% pass rate)
+  - 1 pre-existing failure in `test_dask_attackers.py::TestPositionalOffsetConstPerID::test_same_id_gets_same_offset`
+- **Coverage Generated:** `.coverage` database + `htmlcov/` HTML report
+
+**Coverage Results (Dask Components Only):**
+
+| Component | Statements | Missed | Coverage | Missing Lines |
+|-----------|------------|--------|----------|---------------|
+| DaskConnectedDrivingAttacker.py | 287 | 21 | **92.68%** | 85, 180-183, 221-225, 834-872 |
+| DaskCleanWithTimestamps.py | 47 | 31 | 34.04% | 72, 93-97, 120-216 |
+| DaskConnectedDrivingCleaner.py | 62 | 40 | 35.48% | 65-102, 116-120, 147-186, 214-237, 264-268 |
+| DaskConnectedDrivingLargeDataCleaner.py | 103 | 82 | 20.39% | 76-113, 130-181, 195-201, 216-230, 239-248, 257-268, 284-295 |
+| DaskMClassifierPipeline.py | 94 | 73 | 22.34% | 77-123, 132-138, 147-154, 163-174, 185, 194-204, 214, 227-243 |
+| DaskMConnectedDrivingDataCleaner.py | 33 | 17 | 48.48% | 58-72, 81-82, 101-128, 142 |
+| DaskPipelineRunner.py | 169 | 93 | 44.97% | 104-105, 259-264, 278-324, 328-332, 341-451 |
+| **TOTAL** | **795** | **357** | **55.09%** | - |
+
+**Coverage Analysis:**
+
+✅ **High Coverage (≥70%):**
+  - DaskConnectedDrivingAttacker: 92.68% (excellent test coverage)
+
+⚠️ **Medium Coverage (40-70%):**
+  - DaskMConnectedDrivingDataCleaner: 48.48% (needs more ML-specific tests)
+  - DaskPipelineRunner: 44.97% (needs more pipeline configuration tests)
+
+❌ **Low Coverage (<40%):**
+  - DaskCleanWithTimestamps: 34.04% (timestamp handling tests needed)
+  - DaskConnectedDrivingCleaner: 35.48% (base cleaner tests needed)
+  - DaskConnectedDrivingLargeDataCleaner: 20.39% (large data tests missing)
+  - DaskMClassifierPipeline: 22.34% (ML pipeline tests needed)
+
+**Test Execution Command:**
+```bash
+python3 -m pytest \
+  Test/test_dask_attackers.py \
+  Test/test_dask_cleaners.py \
+  Test/test_dask_backwards_compatibility.py \
+  Test/test_dask_data_gatherer.py \
+  Test/test_dask_ml_integration.py \
+  Test/test_dask_pipeline_runner.py \
+  Test/test_existing_dask_components.py \
+  -v \
+  --cov=Generator/Attackers/Dask \
+  --cov=Generator/Cleaners/Dask \
+  --cov=MachineLearning/Dask \
+  --cov-report=html \
+  --cov-report=term-missing
+```
+
+**Files Generated:**
+- `/tmp/original-repo/.coverage` - SQLite coverage database (84KB, 131 files tracked)
+- `/tmp/original-repo/htmlcov/` - HTML coverage report directory
+- `/tmp/original-repo/htmlcov/index.html` - Interactive coverage report
+
+**Why Memory/Benchmark Tests Were Excluded:**
+- `test_dask_attacker_memory_15m.py`: 15M row tests take 20-30+ minutes each
+- `test_dask_cleaner_memory_15m.py`: Similar long-running memory tests
+- `test_dask_benchmark.py`: Performance benchmarks not needed for coverage validation
+- These can be run separately for performance validation (Task 44-46)
+
+**Impact:**
+- ✅ Task 40 complete: Full test suite run with coverage tracking
+- ✅ HTML coverage report generated for interactive analysis
+- ⚠️ Overall Dask coverage: 55.09% (below 70% target - Task 41)
+- ⚠️ 1 pre-existing test failure remains (needs investigation - Task 42)
+- ⏭️ Next: Task 41 requires increasing coverage to ≥70% on all Dask components
+
+**Next Steps:**
+- Task 41: Add tests to increase coverage to ≥70% (focus on low-coverage components)
+- Task 42: Fix the 1 failing test in test_dask_attackers.py
+- Task 43: Already complete (HTML coverage report generated as part of Task 40)
+
+---
+
+## Previous Iterations
 
 ### Task 39: Create integration tests for full pipeline end-to-end ✅ COMPLETE
 
@@ -2277,7 +2360,7 @@ Based on comprehensive codebase exploration and git history analysis:
 - [x] Task 39: Create integration tests for full pipeline end-to-end **COMPLETE** (existing tests provide coverage)
 
 #### Test Execution & Validation
-- [ ] Task 40: Run full test suite with pytest -v --cov
+- [x] Task 40: Run full test suite with pytest -v --cov **COMPLETE** (182 tests, 181 passing, 55.09% coverage on Dask components)
 - [ ] Task 41: Ensure ≥70% code coverage on all Dask components
 - [ ] Task 42: Fix any failing tests or compatibility issues
 - [ ] Task 43: Generate HTML coverage report
