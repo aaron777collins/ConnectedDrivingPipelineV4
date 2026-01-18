@@ -20,4 +20,5 @@ dask[complete]>=2024.1.0
 dask-ml>=2024.4.0
 distributed>=2024.1.0
 lz4>=4.3.0
+numba>=0.59.0
 
