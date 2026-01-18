@@ -4,13 +4,15 @@ Benchmark Test Suite: Dask vs Pandas Performance Comparison
 This module implements:
 - Task 36: Create test_dask_benchmark.py (performance vs pandas)
 - Task 44: Benchmark all cleaners (pandas vs Dask) on 1M, 5M, 10M rows
+- Task 45: Benchmark all attacks on 5M, 10M, 15M rows
 
 Tests compare Dask vs pandas implementations across:
 1. Data gathering operations (CSV reading, caching)
 2. Cleaner operations (data cleaning, timestamp handling)
 3. Large-scale cleaner benchmarks (all 3 core cleaners on 1M-10M rows) - Task 44
 4. Attacker operations (all 8 attack methods)
-5. ML preparation operations
+5. Large-scale attacker benchmarks (all 7 attack methods on 5M-15M rows) - Task 45
+6. ML preparation operations
 
 Metrics:
 - Execution time (seconds)
@@ -661,6 +663,377 @@ class TestLargeScaleCleanerBenchmark:
 
         # Validation
         assert len(result) > 0
+        assert elapsed_time > 0
+
+
+# ============================================================================
+# BENCHMARK: ALL ATTACKERS AT LARGE SCALE (Task 45)
+# ============================================================================
+
+@pytest.mark.benchmark
+@pytest.mark.slow
+class TestLargeScaleAttackerBenchmark:
+    """
+    Benchmark all attack methods on large datasets: 5M, 10M, 15M rows (Task 45).
+
+    This test class benchmarks all 8 DaskConnectedDrivingAttacker methods at large scale:
+    1. add_attackers() - Select attacker IDs
+    2. add_attacks_positional_swap_rand() - Random positional swap
+    3. add_attacks_positional_offset_const() - Constant offset
+    4. add_attacks_positional_offset_rand() - Random offset
+    5. add_attacks_positional_offset_const_per_id_with_random_direction() - Per-ID offset
+    6. add_attacks_positional_override_const() - Override with constant direction
+    7. add_attacks_positional_override_rand() - Override with random offset
+
+    Focus: Dask scalability for attack operations at 5M, 10M, 15M row scales.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_providers(self):
+        """Setup context providers for attackers."""
+        GeneratorContextProvider(contexts={
+            "ConnectedDrivingCleaner.x_pos": -106.0831353,
+            "ConnectedDrivingCleaner.y_pos": 41.5430216,
+            "ConnectedDrivingAttacker.SEED": 42,
+            "ConnectedDrivingAttacker.attack_ratio": 0.3,
+            "ConnectedDrivingCleaner.isXYCoords": True,
+        })
+        yield
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_add_attackers_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attackers() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: add_attackers() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Benchmark Dask attacker with dynamic partitioning
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)  # 1 partition per 100K rows
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Attack ratio: 0.3 (30%)")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+
+        start_time = time.time()
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+        n_attackers = result["isAttacker"].sum()
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"  - Attackers selected: {n_attackers:,} ({n_attackers/len(result)*100:.1f}%)")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert "isAttacker" in result.columns
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_swap_rand_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_swap_rand() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: positional_swap_rand() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_swap_rand()
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_offset_const_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_offset_const() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: positional_offset_const() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Offset distance: 50.0 meters")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_offset_const(50.0)
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_offset_rand_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_offset_rand() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: positional_offset_rand() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Offset range: 50.0 - 100.0 meters")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_offset_rand(50.0, 100.0)
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_offset_const_per_id_with_random_direction_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_offset_const_per_id_with_random_direction() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: offset_const_per_id_random_dir() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Offset distance: 50.0 meters (per-ID with random direction)")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_offset_const_per_id_with_random_direction(50.0)
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_override_const_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_override_const() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: positional_override_const() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Override distance: 50.0 meters")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_override_const(50.0)
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
+        assert elapsed_time > 0
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (5000000, 250000),   # 5M rows
+        (10000000, 500000),  # 10M rows
+        (15000000, 750000),  # 15M rows
+    ])
+    def test_positional_override_rand_scaling(self, n_rows, n_vehicles):
+        """Benchmark add_attacks_positional_override_rand() at large scale."""
+        print(f"\n{'='*80}")
+        print(f"Task 45: positional_override_rand() Scaling Benchmark ({n_rows:,} rows)")
+        print(f"{'='*80}")
+
+        df = generate_test_data(n_rows, n_vehicles)
+
+        # Setup: Add attackers first
+        client = DaskSessionManager.get_client()
+        npartitions = max(10, n_rows // 100000)
+
+        print(f"Configuration:")
+        print(f"  - Rows: {n_rows:,}")
+        print(f"  - Unique vehicles: {n_vehicles:,}")
+        print(f"  - Partitions: {npartitions}")
+        print(f"  - Override range: 50.0 - 100.0 meters")
+
+        dask_df = dd.from_pandas(df, npartitions=npartitions)
+        dask_attacker = DaskConnectedDrivingAttacker(data=dask_df)
+        dask_attacker.add_attackers()
+
+        # Benchmark attack operation
+        start_time = time.time()
+        dask_attacker.add_attacks_positional_override_rand(50.0, 100.0)
+        result = dask_attacker.data.compute()
+        elapsed_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / elapsed_time
+        time_per_row_ms = (elapsed_time / n_rows) * 1000
+
+        print(f"\nResults:")
+        print(f"  - Execution time: {elapsed_time:.2f} seconds")
+        print(f"  - Throughput: {throughput:,.0f} rows/second")
+        print(f"  - Time per row: {time_per_row_ms:.4f} ms")
+        print(f"  - Result rows: {len(result):,}")
+        print(f"{'='*80}\n")
+
+        # Validation
+        assert len(result) == n_rows
         assert elapsed_time > 0
 
 
