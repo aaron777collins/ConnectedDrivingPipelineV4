@@ -49,7 +49,7 @@ class DaskSessionManager:
 
     @classmethod
     def get_cluster(cls,
-                   n_workers: int = 6,
+                   n_workers: int = 5,
                    threads_per_worker: int = 1,
                    memory_limit: str = '8GB',
                    config_path: Optional[str] = None,
@@ -58,9 +58,9 @@ class DaskSessionManager:
         Get or create Dask LocalCluster (singleton).
 
         Args:
-            n_workers: Number of worker processes (default: 6 for 64GB system)
+            n_workers: Number of worker processes (default: 5 for 64GB system, leaves 24GB for OS/kernel)
             threads_per_worker: Threads per worker (default: 1 to avoid GIL contention)
-            memory_limit: Memory limit per worker (default: 8GB = 6 workers × 8GB = 48GB total)
+            memory_limit: Memory limit per worker (default: 8GB = 5 workers × 8GB = 40GB total)
             config_path: Path to custom Dask config YAML file (optional)
             env: Environment ('production' or 'development')
 
