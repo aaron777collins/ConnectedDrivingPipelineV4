@@ -163,8 +163,8 @@ IN_PROGRESS
 - [x] Task 1.6: Implement schema validation utility (`Schemas/SchemaValidator.py`)
 - [x] Task 1.7: Migrate test framework from custom ITest to pytest
 - [x] Task 1.8: Create PySpark test fixtures (`Test/Fixtures/SparkFixtures.py`)
-- [ ] Task 1.9: Create sample test datasets (1k, 10k, 100k rows in `Test/Data/`)
-- [ ] Task 1.10: Implement DataFrame comparison utility (`Test/Utils/DataFrameComparator.py`)
+- [x] Task 1.9: Create sample test datasets (1k, 10k, 100k rows in `Test/Data/`)
+- [x] Task 1.10: Implement DataFrame comparison utility (`Test/Utils/DataFrameComparator.py`)
 
 ### Phase 2: Core Data Operations
 
@@ -549,3 +549,73 @@ IN_PROGRESS
     - Converted integer values to float for DoubleType fields
     - Used simplified IDs to avoid IntegerType overflow
   - Fixtures now ready for use in all future PySpark tests
+
+- **Task 1.9:** Created sample test datasets (1k, 10k, 100k rows)
+  - Created `Test/Data/` directory structure with `__init__.py`
+  - Implemented `Test/Data/generate_sample_datasets.py` (172 lines):
+    - Data generator function with configurable size and random seed
+    - Realistic BSM data generation with proper temporal/spatial distributions
+    - Wyoming coordinates (41.25°N, 105.93°W) as base location
+    - Temporal progression: 1 second intervals starting April 6, 2021
+    - Spatial variation: Vehicles move gradually with GPS noise
+    - Speed distribution: Gaussian mean=20 m/s, σ=8 m/s (realistic highway speeds)
+    - Heading variation: Semi-random per vehicle with base direction
+    - Elevation: 1500m ± 100m (typical for Wyoming)
+    - Vehicle streams: 10-1000 unique vehicles depending on dataset size
+    - Follows BSMRawSchema exactly (19 columns)
+  - Generated three datasets:
+    - `sample_1k.csv`: 1,000 rows, 262 KB - Quick integration tests
+    - `sample_10k.csv`: 10,000 rows, 2.6 MB - Performance benchmarks
+    - `sample_100k.csv`: 100,000 rows, 26 MB - Scalability tests
+  - Created comprehensive `Test/Data/README.md`:
+    - Dataset characteristics and specifications
+    - Data generation parameters documented
+    - Usage examples for pandas and PySpark
+    - Golden dataset validation approach
+    - Regeneration instructions
+  - Created `Test/test_sample_datasets.py` (140 lines):
+    - 9 parametrized tests validating all three datasets
+    - Tests for pandas and PySpark loading
+    - Data quality validation (speed, heading, lat/long ranges)
+    - Temporal progression validation (sequential timestamps)
+    - Vehicle stream distribution validation
+    - All datasets verified to conform to BSMRawSchema
+  - All datasets use deterministic seed (42) for reproducibility
+
+- **Task 1.10:** Implemented DataFrame comparison utility
+  - Created `Test/Utils/` directory with `__init__.py`
+  - Implemented `Test/Utils/DataFrameComparator.py` (339 lines):
+    - **DataFrameComparator class** with comprehensive comparison methods
+    - `assert_spark_equal()`: Compare two PySpark DataFrames
+      - Supports tolerance for floating-point comparison (rtol/atol)
+      - Optional column order and row order ignoring
+      - Optional schema type checking
+      - Detailed error messages on mismatch
+    - `assert_pandas_spark_equal()`: Compare pandas vs PySpark DataFrames
+      - Critical for validating migration equivalence
+      - Converts PySpark to pandas for comparison
+      - Flexible dtype checking (off by default for cross-platform)
+      - Sorted comparison for deterministic results
+    - `assert_schema_equal()`: Verify schema matching
+      - Column name checking
+      - Data type validation
+      - Detailed mismatch reporting
+    - `assert_column_exists()`: Check single column presence
+    - `assert_columns_exist()`: Check multiple columns presence
+    - `get_column_diff()`: Get column differences between DataFrames
+      - Returns only_in_df1, only_in_df2, common, type_mismatches
+    - `print_comparison_summary()`: Print detailed comparison for debugging
+      - Row counts, column differences, type mismatches
+      - Sample data from both DataFrames
+      - Formatted output for easy reading
+  - Created `Test/test_dataframe_comparator.py` (190 lines):
+    - 11 unit tests validating all comparator methods
+    - Tests for column existence checks
+    - Tests for schema equality
+    - Tests for identical DataFrame comparison
+    - Tests for floating-point tolerance
+    - Tests for pandas vs PySpark comparison
+    - Tests for column diff utility
+    - Tests for summary printing
+    - All tests passing
+  - Utility now available for all migration validation tests
