@@ -44,8 +44,8 @@ IN_PROGRESS
 - [x] Task 32: Implement datetime parsing with native functions
 - [x] Task 33: Migrate CleanWithTimestamps
 - [x] Task 34: Test temporal feature extraction
-- [ ] Task 35: Implement train_test_split with randomSplit
-- [ ] Task 36: Validate split consistency
+- [x] Task 35: Implement train_test_split with randomSplit
+- [x] Task 36: Validate split consistency
 - [x] Task 37: Create UDF registry system
 - [x] Task 38: Implement UDF unit tests
 - [ ] Task 39: Profile UDF performance
@@ -127,9 +127,8 @@ IN_PROGRESS
 - [ ] Task 105: Deprecate pandas pipeline
 
 ## Completed This Iteration
-- Task 32: Implemented datetime parsing with native PySpark functions
-- Task 33: Migrated CleanWithTimestamps to SparkCleanWithTimestamps
-- Task 34: Created comprehensive tests for temporal feature extraction
+- Task 35: Implemented train_test_split with randomSplit
+- Task 36: Validated split consistency with comprehensive tests
 
 ## Notes
 - Tasks 1-4 were already completed in previous work (PySpark dependencies, SparkSession utility, Spark configs, and BSM schemas)
@@ -341,3 +340,30 @@ IN_PROGRESS
   - Implementation validated manually with standalone test script (100% functional)
   - Migration complete: pandas CleanWithTimestamps → SparkCleanWithTimestamps equivalent
   - Performance: Uses Catalyst-optimized native functions instead of UDFs (~10-100x faster than row-wise pandas operations)
+- Tasks 35-36: Implemented PySpark train_test_split and validation:
+  - Created Helpers/SparkTrainTestSplit.py with comprehensive train/test splitting functionality:
+    - spark_train_test_split() function: PySpark-native alternative to sklearn.model_selection.train_test_split
+    - Supports both PySpark DataFrames and lists/numpy arrays (for sklearn compatibility)
+    - Uses DataFrame.randomSplit() for distributed splitting
+    - Full API compatibility with sklearn: test_size, train_size, random_state parameters
+    - Automatic type inference for list/array inputs (int, float, string)
+    - train_test_split alias for drop-in sklearn replacement
+    - validate_split_consistency() utility: validates splits match expected proportions
+  - Created Test/test_spark_train_test_split.py with 25 comprehensive tests (all passing):
+    - TestDataFrameSplit: 5 tests for DataFrame splitting (basic, proportions, seeding, reproducibility)
+    - TestArraySplit: 6 tests for list/array splitting (integers, strings, numpy arrays, empty lists)
+    - TestSklearnCompatibility: 2 tests mimicking sklearn usage patterns (attacker selection, alias)
+    - TestValidation: 5 tests for input validation and error handling
+    - TestValidateSplitConsistency: 4 tests for split validation utility
+    - TestIntegration: 3 integration tests (attacker simulation, ML pipeline, performance on 10k rows)
+  - Key features:
+    - Deterministic splits with random_state for reproducibility
+    - Seamless integration with existing ConnectedDrivingAttacker patterns
+    - Ready for use in attack simulation (Task 46+) and ML pipelines (Task 61+)
+    - Performance: sub-second splitting for 10k rows, <40s for comprehensive test suite
+  - Usage pattern for attackers (matches existing sklearn code):
+    ```python
+    from Helpers.SparkTrainTestSplit import spark_train_test_split
+    regular, attackers = spark_train_test_split(unique_ids, test_size=0.3, random_state=42, spark=spark)
+    ```
+  - Migration complete: sklearn train_test_split → PySpark randomSplit wrapper
