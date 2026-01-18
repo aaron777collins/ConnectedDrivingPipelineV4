@@ -4,13 +4,19 @@ distributed:
   scheduler:
     allowed-failures: 3
     work-stealing: true
+    bandwidth: 100000000  # 100MB/s network bandwidth assumption
 
   worker:
     memory:
-      target: 0.60      # Start spilling at 60% (4.8GB per worker)
-      spill: 0.70       # Aggressive spill at 70% (5.6GB per worker)
-      pause: 0.80       # Pause at 80% (6.4GB per worker)
-      terminate: 0.95   # Kill worker at 95% (7.6GB per worker)
+      target: 0.50      # Start spilling at 50% (4.0GB per worker) - TASK 49: Reduced from 60% for earlier spilling
+      spill: 0.60       # Aggressive spill at 60% (4.8GB per worker) - TASK 49: Reduced from 70%
+      pause: 0.75       # Pause at 75% (6.0GB per worker) - TASK 49: Reduced from 80%
+      terminate: 0.90   # Kill worker at 90% (7.2GB per worker) - TASK 49: Reduced from 95%
+
+    # TASK 49: Enable spill-to-disk configuration
+    profile:
+      interval: 10ms
+      cycle: 1000ms
 
   client:
     heartbeat: 5s
@@ -22,3 +28,14 @@ dataframe:
 
   backend-kwargs:
     engine: pyarrow     # For Parquet I/O
+
+# TASK 49: Array chunking to reduce memory footprint
+array:
+  chunk-size: 64MiB     # Reduced from default 128MiB for lower memory usage
+
+# TASK 49: Optimize task scheduling to reduce peak memory
+optimization:
+  fuse:
+    active: true        # Enable task fusion to reduce intermediate results
+    ave-width: 2        # Conservative fusion width to avoid memory spikes
+    subgraphs: null

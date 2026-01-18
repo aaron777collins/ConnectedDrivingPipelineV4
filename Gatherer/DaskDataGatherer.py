@@ -73,7 +73,11 @@ class DaskDataGatherer(IDataGatherer):
         try:
             self.blocksize = self._generatorContextProvider.get("DataGatherer.blocksize")
         except:
-            self.blocksize = '128MB'  # Default: ~450K rows per partition
+            # TASK 49: Reduced from 128MB to 64MB to lower peak memory usage
+            # 64MB = ~225K rows/partition (vs 450K), reduces per-partition memory by ~50%
+            # At 15M rows: 67 partitions @ 64MB vs 34 partitions @ 128MB
+            # Lower partition size = better memory distribution, earlier spilling
+            self.blocksize = '64MB'  # Default: ~225K rows per partition (TASK 49: memory optimization)
 
         try:
             self.assume_missing = self._generatorContextProvider.get("DataGatherer.assume_missing")
