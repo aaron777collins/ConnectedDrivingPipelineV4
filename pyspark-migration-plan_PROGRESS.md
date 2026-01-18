@@ -174,7 +174,7 @@ IN_PROGRESS
 - [x] Task 2.4: Implement spark.read.csv with schema in SparkDataGatherer
 - [x] Task 2.5: Implement DataFrame.limit() for numrows parameter
 - [x] Task 2.6: Add Parquet write support to SparkDataGatherer
-- [ ] Task 2.7: Implement format detection utility (CSV vs Parquet auto-detection)
+- [x] Task 2.7: Implement format detection utility (CSV vs Parquet auto-detection)
 - [ ] Task 2.8: Create SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
 - [ ] Task 2.9: Migrate column selection from `df[columns]` to `df.select(*columns)`
 - [ ] Task 2.10: Migrate `.drop(columns=[...])` to `.drop('col1', 'col2')`
@@ -436,6 +436,39 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
 - Key tasks: ParquetCache decorator, SparkDataGatherer, column operations
 
 ## Completed This Iteration
+
+- **Task 2.7:** Implemented format detection utility (CSV vs Parquet auto-detection)
+  - Created `Helpers/FormatDetector.py` (305 lines):
+    - FormatDetector class with comprehensive format detection methods
+    - DataFormat enum (CSV, PARQUET, UNKNOWN) for type-safe format handling
+    - detect_format() - Auto-detect format from file path/extension
+    - is_csv_format() / is_parquet_format() - Boolean format checks
+    - convert_csv_path_to_parquet() / convert_parquet_path_to_csv() - Path conversion utilities
+    - validate_format() - Verify path matches expected format
+    - get_reader_format() - Get Spark reader format string
+    - Supports multiple extensions: CSV (.csv, .txt, .tsv), Parquet (.parquet, .pq)
+    - Handles Parquet directory detection (_SUCCESS, _metadata files)
+    - Case-insensitive extension matching
+    - Module-level convenience functions for easy importing
+  - Created comprehensive test suite `Test/test_format_detector.py` (238 lines):
+    - 48 test cases across 7 test classes
+    - TestFormatDetection: Format detection from paths, directory detection
+    - TestPathConversion: CSV↔Parquet path conversion, round-trip validation
+    - TestFormatValidation: Format validation against expected types
+    - TestReaderFormatString: Spark reader format string generation
+    - TestConvenienceFunctions: Module-level function wrappers
+    - TestDataFormatEnum: Enum value validation
+    - TestEdgeCases: Empty paths, multiple dots, no extension, case sensitivity
+    - All 48 tests passing (100% success rate)
+    - Parametrized tests for comprehensive coverage
+  - Key features implemented:
+    - Automatic format detection from file extensions ✓
+    - Bidirectional path conversion (CSV↔Parquet) ✓
+    - Parquet directory structure detection ✓
+    - Format validation against expected types ✓
+    - Spark-compatible format strings ✓
+    - Case-insensitive extension handling ✓
+  - Ready for integration with SparkDataGatherer and other I/O components
 
 - **Tasks 2.3-2.6:** Created SparkDataGatherer with full functionality
   - Implemented `Gatherer/SparkDataGatherer.py` (159 lines):
