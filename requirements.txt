@@ -10,6 +10,7 @@ geographiclib
 mkdocs-material
 pyspark>=3.3.0
 py4j
+pyarrow>=15.0.0
 pyyaml
 pytest>=7.0.0
 pytest-cov>=4.0.0
