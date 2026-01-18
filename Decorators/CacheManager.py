@@ -109,7 +109,7 @@ class CacheManager:
             level: Log level (INFO, WARNING, etc.)
         """
         if self.use_logger and self.logger:
-            self._log(message, elevation=level)
+            self.logger.log(level, message)
         # In test environments without logger, silently skip logging
         # This allows CacheManager to work without full dependency injection setup
 
