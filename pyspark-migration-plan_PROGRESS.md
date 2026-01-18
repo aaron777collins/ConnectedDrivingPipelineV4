@@ -198,7 +198,7 @@ IN_PROGRESS
 - [x] Task 2.10: Migrate `.drop(columns=[...])` to `.drop('col1', 'col2')`
 - [x] Task 2.11: Migrate `.dropna()` to `.na.drop()`
 - [x] Task 2.12: Test column operations with sample datasets
-- [ ] Task 2.13: Create SparkConnectedDrivingLargeDataCleaner
+- [x] Task 2.13: Create SparkConnectedDrivingLargeDataCleaner
 - [ ] Task 2.14: Replace file splitting with partitioning strategy
 - [ ] Task 2.15: Test large file I/O with 100k+ row datasets
 
@@ -815,3 +815,51 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
     - Includes auto-cleanup fixture to prevent test interference
   - ParquetCache now ready for use in SparkDataGatherer and other PySpark components
   - Provides Parquet-based alternative to CSVCache for distributed DataFrame caching
+
+- **Task 2.13:** Created SparkConnectedDrivingLargeDataCleaner (`Generator/Cleaners/SparkConnectedDrivingLargeDataCleaner.py`)
+  - Implemented complete PySpark replacement for ConnectedDrivingLargeDataCleaner
+  - Created `SparkConnectedDrivingLargeDataCleaner.py` (294 lines):
+    - PySpark-based large dataset cleaning using distributed processing
+    - Replaces file splitting/combining with Parquet partitioning
+    - Key architectural differences from pandas version:
+      - Uses Parquet partitions instead of individual CSV files
+      - No explicit file combining - Spark reads partitioned directories transparently
+      - clean_data() processes entire dataset in parallel (not sequential file iteration)
+      - combine_data() is a no-op (data already combined in Parquet directory)
+      - getNRows() uses DataFrame.limit() instead of pd.read_csv(nrows=n)
+    - Full dependency injection support (PathProvider, InitialGathererPathProvider, GeneratorContextProvider)
+    - Configurable cleaner class and filter function (same pattern as pandas version)
+    - Comprehensive logging and error handling
+    - Helper method _is_valid_parquet_directory() for Parquet directory validation
+  - Created comprehensive test suite `Test/test_spark_connected_driving_large_data_cleaner.py` (335 lines):
+    - 13 test cases across 5 test classes
+    - TestSparkConnectedDrivingLargeDataCleanerInitialization (2 tests):
+      - Directory creation
+      - Context configuration loading
+    - TestSparkConnectedDrivingLargeDataCleanerCleaning (3 tests):
+      - Basic data cleaning without filtering
+      - Skip cleaning if data exists
+      - Data cleaning with custom filter function
+    - TestSparkConnectedDrivingLargeDataCleanerDataAccess (4 tests):
+      - getNRows() method
+      - getNumOfRows() method
+      - getAllRows() method
+      - Error handling when data not cleaned yet
+    - TestSparkConnectedDrivingLargeDataCleanerCombineData (1 test):
+      - combine_data() is no-op for Spark
+    - TestSparkConnectedDrivingLargeDataCleanerHelpers (3 tests):
+      - _is_valid_parquet_directory() with Parquet files
+      - _is_valid_parquet_directory() with non-existent path
+      - _is_valid_parquet_directory() with empty directory
+    - Tests validated via syntax checking and import validation (pytest not available in environment)
+  - Key accomplishments:
+    - Replaces file-based batch processing with distributed DataFrame operations ✓
+    - Maintains same interface as pandas version for easy migration ✓
+    - Integrates with SparkDataGatherer and SparkConnectedDrivingCleaner ✓
+    - Supports configurable cleaning and filtering ✓
+    - Provides Parquet-based caching for efficient data access ✓
+  - Files created:
+    - `Generator/Cleaners/SparkConnectedDrivingLargeDataCleaner.py` (294 lines)
+    - `Test/test_spark_connected_driving_large_data_cleaner.py` (335 lines)
+  - Total: ~629 lines of production code + tests
+  - Ready for integration in Phase 4 (Filter Operations) and Phase 5 (Attack Simulation)
