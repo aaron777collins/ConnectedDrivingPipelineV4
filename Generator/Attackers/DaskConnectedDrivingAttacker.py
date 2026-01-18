@@ -24,6 +24,7 @@ Usage:
 """
 
 import random
+import pandas as pd
 import dask.dataframe as dd
 from dask.dataframe import DataFrame
 
@@ -231,3 +232,136 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             Returns lazy Dask DataFrame. Call .compute() to materialize.
         """
         return self.data
+
+    def add_attacks_positional_swap_rand(self):
+        """
+        Add position swap attack using compute-then-daskify strategy.
+
+        This method implements Strategy 1 from Task 46 analysis:
+        1. Compute Dask DataFrame to pandas
+        2. Apply pandas position swap attack (reuses existing logic)
+        3. Convert result back to Dask DataFrame
+
+        Strategy 1 is recommended for 15-20M rows on 64GB system because:
+        - Perfect compatibility (100% match with pandas version)
+        - Memory-safe for target dataset sizes (18-48GB peak)
+        - Reuses existing pandas attack code (zero logic changes)
+        - Simplest to implement and validate
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - For each attacker, randomly selects position from copydata
+        - Swaps x_pos, y_pos, and coreData_elevation values
+        - Uses .iloc[] for random row access (requires compute to pandas)
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the swap
+            operation. Memory usage peaks at ~3x data size:
+            - Original data (in memory)
+            - Deep copy for swapping
+            - Result DataFrame
+            For 15-20M rows, peak usage is 18-48GB (within 52GB Dask limit).
+
+        See Also:
+            TASK_46_ILOC_ANALYSIS.md for detailed strategy analysis and validation.
+        """
+        self.logger.log("Starting position swap attack using compute-then-daskify strategy")
+
+        # Get origin column names from context (for cache key compatibility)
+        self.x_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
+        self.y_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for position swap...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas position swap attack
+        self.logger.log("Applying position swap attack to pandas DataFrame...")
+        df_swapped = self._apply_pandas_position_swap_attack(df_pandas)
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_swapped, npartitions=n_partitions)
+
+        self.logger.log("Position swap attack complete")
+        return self
+
+    def _apply_pandas_position_swap_attack(self, df_pandas):
+        """
+        Apply position swap attack to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
+        For each attacker row:
+        1. Pick a random row index from the entire dataset
+        2. Copy x_pos, y_pos, and coreData_elevation from that random row
+        3. Replace attacker's position with the random position
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+
+        Returns:
+            pd.DataFrame: DataFrame with position-swapped attackers
+
+        Note:
+            This method MUST be applied to pandas DataFrame because it uses
+            .iloc[] for random row access, which is NOT supported in Dask.
+        """
+        # Create deep copy for safe random position lookup
+        copydata = df_pandas.copy(deep=True)
+        self.logger.log(f"Created deep copy of {len(copydata)} rows for position swapping")
+
+        # Set random seed for reproducibility
+        random.seed(self.SEED)
+
+        # Apply swap to each row (only affects attackers)
+        df_swapped = df_pandas.apply(
+            lambda row: self._positional_swap_rand_attack(row, copydata),
+            axis=1
+        )
+
+        # Count attackers that were swapped
+        n_attackers = (df_swapped['isAttacker'] == 1).sum()
+        self.logger.log(f"Swapped positions for {n_attackers} attackers")
+
+        return df_swapped
+
+    def _positional_swap_rand_attack(self, row, copydata):
+        """
+        Swap position for a single attacker row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            copydata (pd.DataFrame): Full dataset for random position lookup
+
+        Returns:
+            pd.Series: Row with position swapped (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionalOffsetAttacker.positional_swap_rand_attack
+            to ensure 100% compatibility with pandas version.
+        """
+        # Only swap positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Select random row index for position swap
+        random_index = random.randint(0, len(copydata.index) - 1)
+
+        # Swap based on coordinate system (XY or lat/lon)
+        if self.isXYCoords:
+            # Copy X, Y, and elevation from random row
+            row[self.x_col] = copydata.iloc[random_index][self.x_col]
+            row[self.y_col] = copydata.iloc[random_index][self.y_col]
+            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
+        else:
+            # Copy lat, lon, and elevation from random row
+            row[self.pos_lat_col] = copydata.iloc[random_index][self.pos_lat_col]
+            row[self.pos_long_col] = copydata.iloc[random_index][self.pos_long_col]
+            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
+
+        return row
