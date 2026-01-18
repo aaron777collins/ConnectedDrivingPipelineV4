@@ -113,7 +113,7 @@ Testing & Validation (Tasks 66-105)
 - [x] Task 14: Implement point_to_tuple() function
 - [x] Task 15: Implement geodesic_distance() calculation
 - [x] Task 16: Implement xy_distance() calculation
-- [ ] Task 17: Create DaskUDFRegistry for function caching
+- [x] Task 17: Create DaskUDFRegistry for function caching
 - [ ] Task 18: Implement map_partitions wrappers for UDFs
 - [ ] Task 19: Test UDF performance vs PySpark UDFs
 - [ ] Task 20: Validate UDF outputs match PySpark
@@ -224,6 +224,70 @@ Testing & Validation (Tasks 66-105)
 ---
 
 ## Completed This Iteration
+
+**Task 17: Created DaskUDFRegistry for Function Management**
+
+Implemented centralized registry system for Dask functions (adapting PySpark UDFRegistry pattern):
+
+**Files Created:**
+- `Helpers/DaskUDFs/DaskUDFRegistry.py` - Registry class with singleton pattern
+- `Helpers/DaskUDFs/RegisterDaskUDFs.py` - Auto-registration module for all 7 functions
+- `validate_dask_udf_registry.py` - Comprehensive test suite (10 test cases)
+
+**Registry Features:**
+- ✅ Singleton pattern with `get_instance()` method
+- ✅ `FunctionMetadata` dataclass (name, description, category, input/output types, example, version)
+- ✅ `FunctionCategory` enum (GEOSPATIAL, CONVERSION, TEMPORAL, ATTACK, UTILITY)
+- ✅ Methods: `register()`, `get()`, `get_metadata()`, `list_all()`, `list_by_category()`, `get_categories()`, `exists()`, `count()`, `generate_documentation()`, `is_initialized()`, `mark_initialized()`
+- ✅ Comprehensive error handling with descriptive KeyError/ValueError messages
+
+**Auto-Registration:**
+- ✅ Registers all 7 Dask functions (5 geospatial + 2 conversion)
+- ✅ Complete metadata for each function (descriptions, types, examples)
+- ✅ Idempotent initialization (safe to call multiple times)
+- ✅ Exported via `__init__.py` for easy import
+
+**Validation Results:**
+- Created `validate_dask_udf_registry.py` - 10 comprehensive tests
+- All tests passed ✓:
+  - Singleton pattern validation
+  - Function registration and retrieval
+  - Category filtering (5 geospatial, 2 conversion)
+  - Metadata retrieval and accuracy
+  - List all functions (alphabetically sorted)
+  - Function count (7 total)
+  - Documentation generation (4500 characters)
+  - Error handling (KeyError, ValueError)
+  - Function invocation (hex_to_decimal, point_to_x, geodesic_distance)
+  - Initialization flag management
+
+**Key Design Differences from PySpark UDFRegistry:**
+1. **No @udf wrappers** - Stores plain Python functions (not PySpark UDF objects)
+2. **FunctionMetadata vs UDFMetadata** - Adapted naming for clarity
+3. **FunctionCategory vs UDFCategory** - Consistent terminology
+4. **Same API surface** - Drop-in replacement pattern from PySpark UDFRegistry
+
+**Usage Examples:**
+```python
+from Helpers.DaskUDFs import initialize_dask_udf_registry, get_registry
+
+# Initialize once during app startup
+initialize_dask_udf_registry()
+
+# Retrieve functions by name
+registry = get_registry()
+hex_func = registry.get('hex_to_decimal')
+df = df.assign(id_decimal=df['id_hex'].apply(hex_func, meta=('id_decimal', 'i8')))
+
+# List by category
+geo_funcs = registry.list_by_category(FunctionCategory.GEOSPATIAL)
+# Returns: ['geodesic_distance', 'point_to_tuple', 'point_to_x', 'point_to_y', 'xy_distance']
+
+# Generate documentation
+docs = registry.generate_documentation()
+```
+
+**Previous Iterations:**
 
 **Tasks 11-16: Created Dask UDF Library with Geospatial & Conversion Functions**
 

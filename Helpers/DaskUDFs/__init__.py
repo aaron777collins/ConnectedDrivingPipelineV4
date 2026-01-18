@@ -29,6 +29,17 @@ from Helpers.DaskUDFs.ConversionFunctions import (
     direction_and_dist_to_xy
 )
 
+from Helpers.DaskUDFs.DaskUDFRegistry import (
+    DaskUDFRegistry,
+    FunctionCategory,
+    FunctionMetadata,
+    get_registry
+)
+
+from Helpers.DaskUDFs.RegisterDaskUDFs import (
+    initialize_dask_udf_registry
+)
+
 __all__ = [
     # Geospatial Functions
     'point_to_tuple',
@@ -39,4 +50,10 @@ __all__ = [
     # Conversion Functions
     'hex_to_decimal',
     'direction_and_dist_to_xy',
+    # Registry Components
+    'DaskUDFRegistry',
+    'FunctionCategory',
+    'FunctionMetadata',
+    'get_registry',
+    'initialize_dask_udf_registry',
 ]
