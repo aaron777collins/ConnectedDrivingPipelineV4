@@ -15,9 +15,9 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-# Import PySpark fixtures to make them available globally
-# These fixtures are defined in Test/Fixtures/SparkFixtures.py
-pytest_plugins = ['Test.Fixtures.SparkFixtures']
+# Import PySpark and Dask fixtures to make them available globally
+# These fixtures are defined in Test/Fixtures/SparkFixtures.py and Test/Fixtures/DaskFixtures.py
+pytest_plugins = ['Test.Fixtures.SparkFixtures', 'Test.Fixtures.DaskFixtures']
 
 
 @pytest.fixture(scope="session")
@@ -122,6 +122,10 @@ def pytest_collection_modifyitems(config, items):
         # Add 'spark' marker to tests with 'spark' in their name
         if "spark" in item.nodeid.lower():
             item.add_marker(pytest.mark.spark)
+
+        # Add 'dask' marker to tests with 'dask' in their name
+        if "dask" in item.nodeid.lower():
+            item.add_marker(pytest.mark.dask)
 
         # Add 'integration' marker to integration test files
         if "integration" in item.nodeid.lower():
