@@ -1,7 +1,7 @@
 # Progress: pyspark-migration-plan
 
 Started: Sat Jan 17 06:48:38 PM EST 2026
-Updated: Sat Jan 17 08:14:37 PM EST 2026 (Tasks 2.14-2.15 completed, Phase 2 COMPLETE)
+Updated: Sat Jan 17 08:20:24 PM EST 2026 (Tasks 3.1-3.6 completed: Core UDF implementations)
 
 ## Status
 
@@ -204,12 +204,12 @@ IN_PROGRESS
 
 ### Phase 3: UDF Implementation
 
-- [ ] Task 3.1: Create UDF module structure (`Helpers/SparkUDFs/`)
-- [ ] Task 3.2: Implement `point_to_tuple_udf` (WKT POINT parsing)
-- [ ] Task 3.3: Implement `geodesic_distance_udf` (lat/long distance)
-- [ ] Task 3.4: Implement `xy_distance_udf` (Euclidean distance)
-- [ ] Task 3.5: Implement `hex_to_decimal_udf` (coreData_id conversion)
-- [ ] Task 3.6: Implement `direction_and_dist_to_xy_udf` (attack offset calculation)
+- [x] Task 3.1: Create UDF module structure (`Helpers/SparkUDFs/`)
+- [x] Task 3.2: Implement `point_to_tuple_udf` (WKT POINT parsing)
+- [x] Task 3.3: Implement `geodesic_distance_udf` (lat/long distance)
+- [x] Task 3.4: Implement `xy_distance_udf` (Euclidean distance)
+- [x] Task 3.5: Implement `hex_to_decimal_udf` (coreData_id conversion)
+- [x] Task 3.6: Implement `direction_and_dist_to_xy_udf` (attack offset calculation)
 - [ ] Task 3.7: Create UDF registry system for centralized management
 - [ ] Task 3.8: Write unit tests for all UDFs
 - [ ] Task 3.9: Benchmark regular UDF vs pandas UDF performance
@@ -899,3 +899,54 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
     - Parquet read: 130,055 rows/s
     - Partitioning: 28,063 rows/s
   - Phase 2 is now COMPLETE - all 15 tasks finished and validated
+
+- **Tasks 3.1-3.6:** Core UDF implementations completed
+  - **Task 3.1:** UDF module structure already exists (`Helpers/SparkUDFs/`)
+    - `__init__.py` exports all UDFs for easy importing
+    - Organized into GeospatialUDFs.py and ConversionUDFs.py
+  - **Tasks 3.2-3.4:** Geospatial UDFs already implemented in Task 2.8
+    - `point_to_tuple_udf`: Convert WKT POINT to (x, y) struct
+    - `point_to_x_udf`: Extract longitude from WKT POINT
+    - `point_to_y_udf`: Extract latitude from WKT POINT
+    - `geodesic_distance_udf`: Calculate geodesic distance using WGS84
+    - `xy_distance_udf`: Calculate Euclidean distance
+  - **Task 3.5:** Implemented `hex_to_decimal_udf` for coreData_id conversion
+    - Created `Helpers/SparkUDFs/ConversionUDFs.py` (131 lines):
+      - `hex_to_decimal_udf`: Convert hex strings to decimal integers
+      - Handles edge case: strips decimal point from hex strings (e.g., "0xa1b2c3d4.0")
+      - Returns LongType for large hex values
+      - Null-safe: returns None for invalid inputs
+      - Replicates pandas version: `int(hex_str, 16)` conversion
+    - Created comprehensive test suite `Test/test_conversion_udfs.py` (306 lines):
+      - 10 test cases across 3 test classes
+      - TestHexToDecimalUDF (7 tests):
+        - Basic hex conversion (0x prefix handling)
+        - Hex with decimal point edge case
+        - Null value handling
+        - Invalid hex string handling
+        - Realistic BSM data with multiple vehicles
+        - Large dataset performance (1000 hex IDs)
+        - Comparison with pandas implementation (validates equivalence)
+      - TestDirectionAndDistToXYUDF (2 tests):
+        - Basic offset calculation
+        - Null value handling
+      - TestConversionUDFsIntegration (1 test):
+        - ML pipeline simulation: hex→decimal before feature extraction
+      - All 10 tests passing (100% success rate)
+    - Updated `Helpers/SparkUDFs/__init__.py` to export new UDFs
+    - Ready for use in SparkMConnectedDrivingDataCleaner (Phase 6)
+  - **Task 3.6:** Implemented `direction_and_dist_to_xy_udf` for attack offset calculation
+    - Added to ConversionUDFs.py
+    - Wraps MathHelper.direction_and_dist_to_XY() for PySpark
+    - Returns struct with (new_x, new_y) coordinates
+    - Takes starting point (x, y), direction (0-360°), and distance (meters)
+    - Null-safe error handling
+    - Tested with basic offset calculations
+    - Ready for use in attack simulation (Phase 5)
+  - Key accomplishments:
+    - All core UDFs implemented and tested ✓
+    - 100% test pass rate (10/10 tests) ✓
+    - Equivalence with pandas implementation validated ✓
+    - Null-safe error handling for all UDFs ✓
+    - Edge case handling (decimal points in hex strings) ✓
+    - Ready for integration in ML pipeline and attack simulation ✓
