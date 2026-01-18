@@ -15,4 +15,9 @@ pyyaml
 pytest>=7.0.0
 pytest-cov>=4.0.0
 pytest-spark>=0.6.0
+# Dask dependencies for 64GB migration
+dask[complete]>=2024.1.0
+dask-ml>=2024.4.0
+distributed>=2024.1.0
+lz4>=4.3.0
 

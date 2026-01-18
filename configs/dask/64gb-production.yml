@@ -1,0 +1,24 @@
+distributed:
+  version: 2
+
+  scheduler:
+    allowed-failures: 3
+    work-stealing: true
+
+  worker:
+    memory:
+      target: 0.60      # Start spilling at 60% (4.8GB per worker)
+      spill: 0.70       # Aggressive spill at 70% (5.6GB per worker)
+      pause: 0.80       # Pause at 80% (6.4GB per worker)
+      terminate: 0.95   # Kill worker at 95% (7.6GB per worker)
+
+  client:
+    heartbeat: 5s
+
+dataframe:
+  shuffle:
+    method: tasks       # Memory-efficient shuffle (vs 'disk')
+    compression: lz4    # Fast compression for spilling
+
+  backend-kwargs:
+    engine: pyarrow     # For Parquet I/O

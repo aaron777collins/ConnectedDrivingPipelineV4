@@ -1,0 +1,24 @@
+distributed:
+  version: 2
+
+  scheduler:
+    allowed-failures: 3
+    work-stealing: true
+
+  worker:
+    memory:
+      target: 0.50      # More conservative for debugging
+      spill: 0.60
+      pause: 0.70
+      terminate: 0.85
+
+  client:
+    heartbeat: 5s
+
+dataframe:
+  shuffle:
+    method: disk        # Slower but safer for dev
+    compression: lz4
+
+  backend-kwargs:
+    engine: pyarrow
