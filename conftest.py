@@ -15,6 +15,10 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+# Import PySpark fixtures to make them available globally
+# These fixtures are defined in Test/Fixtures/SparkFixtures.py
+pytest_plugins = ['Test.Fixtures.SparkFixtures']
+
 
 @pytest.fixture(scope="session")
 def project_root_path():

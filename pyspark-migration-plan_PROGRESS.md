@@ -162,7 +162,7 @@ IN_PROGRESS
 - [x] Task 1.5: Define processed data schema (`Schemas/BSMProcessedSchema.py` - 18 ML feature columns)
 - [x] Task 1.6: Implement schema validation utility (`Schemas/SchemaValidator.py`)
 - [x] Task 1.7: Migrate test framework from custom ITest to pytest
-- [ ] Task 1.8: Create PySpark test fixtures (`Test/Fixtures/SparkFixtures.py`)
+- [x] Task 1.8: Create PySpark test fixtures (`Test/Fixtures/SparkFixtures.py`)
 - [ ] Task 1.9: Create sample test datasets (1k, 10k, 100k rows in `Test/Data/`)
 - [ ] Task 1.10: Implement DataFrame comparison utility (`Test/Utils/DataFrameComparator.py`)
 
@@ -511,3 +511,41 @@ IN_PROGRESS
   - Created comprehensive README with usage examples and troubleshooting guide
   - Created example usage script (`configs/spark/example_usage.py`)
   - Tested all configurations successfully
+
+- **Task 1.8:** Created PySpark test fixtures
+  - Created `Test/Fixtures/` directory structure with `__init__.py`
+  - Implemented comprehensive `Test/Fixtures/SparkFixtures.py` (580 lines):
+    - **Session-scoped fixtures:**
+      - `spark_session`: Local Spark session optimized for testing (2 cores, 2GB RAM, 4 partitions)
+      - Automatic cleanup when test session ends
+      - Reduced log level (ERROR) to minimize test output noise
+    - **Function-scoped fixtures:**
+      - `spark_context`: Provides SparkContext from session
+      - `temp_spark_dir`: Temporary directory for I/O operations (auto-cleaned)
+      - `sample_bsm_raw_df`: 5-row DataFrame with raw BSM data matching BSMRawSchema
+      - `sample_bsm_processed_df`: 5-row DataFrame with processed data (includes 2 attackers)
+      - `small_bsm_dataset`: 100-row generated dataset for integration tests
+      - `medium_bsm_dataset`: 1000-row generated dataset for performance tests
+      - `spark_df_comparer`: DataFrame comparison utility with tolerance settings
+    - **DataFrame comparison utilities:**
+      - `assert_equal`: Compare DataFrames with floating-point tolerance
+      - `assert_schema_equal`: Verify schema matching
+      - `assert_column_exists`: Check for column presence
+    - **Dataset generators:**
+      - Realistic temporal progression (timestamps increment properly)
+      - Spatial distribution (lat/long movements)
+      - Diverse data values (speed ranges, heading rotation, etc.)
+  - Created `Test/test_spark_fixtures.py` (200 lines):
+    - 11 comprehensive tests validating all fixtures
+    - Tests for session/context fixtures
+    - Tests for all DataFrame fixtures
+    - Tests for Parquet I/O operations
+    - Tests for fixture isolation
+    - All tests passing (11/11 in 26 seconds)
+  - Updated `conftest.py`:
+    - Added `pytest_plugins = ['Test.Fixtures.SparkFixtures']`
+    - Makes Spark fixtures globally available to all tests
+  - Fixed type compatibility issues:
+    - Converted integer values to float for DoubleType fields
+    - Used simplified IDs to avoid IntegerType overflow
+  - Fixtures now ready for use in all future PySpark tests
