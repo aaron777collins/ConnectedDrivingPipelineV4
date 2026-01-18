@@ -1,0 +1,32 @@
+{
+  "pipeline_name": "MClassifierLargePipelineUserWithXYOffsetPos500mDist100kRowsEXTTimestampsCols30attackersRandOffset100To200",
+  "data": {
+    "filtering": {
+      "type": "xy_offset_position",
+      "distance_meters": 500
+    }
+  },
+  "features": {
+    "columns": "extended_with_timestamps"
+  },
+  "attacks": {
+    "enabled": true,
+    "attack_ratio": 0.3,
+    "type": "rand_offset",
+    "min_distance": 100,
+    "max_distance": 200,
+    "random_seed": 42
+  },
+  "ml": {
+    "train_test_split": {
+      "type": "random",
+      "train_ratio": 0.8,
+      "test_ratio": 0.2,
+      "random_seed": 42
+    }
+  },
+  "cache": {
+    "enabled": true
+  },
+  "_special_features": {}
+}

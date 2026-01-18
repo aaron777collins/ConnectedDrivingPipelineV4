@@ -1,0 +1,41 @@
+{
+  "pipeline_name": "MClassifierLargePipelineUserWithXYOffsetPos1000mDistRandSplit80kTrain20kTestRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021",
+  "data": {
+    "filtering": {
+      "type": "xy_offset_position",
+      "distance_meters": 1000,
+      "center_x": -106.0831353,
+      "center_y": 41.5430216
+    },
+    "date_range": {
+      "start_day": 2,
+      "end_day": 2,
+      "start_month": 4,
+      "end_month": 4,
+      "start_year": 2021,
+      "end_year": 2021
+    }
+  },
+  "features": {
+    "columns": "extended_with_timestamps"
+  },
+  "attacks": {
+    "enabled": true,
+    "attack_ratio": 0.3,
+    "type": "rand_offset",
+    "min_distance": 50,
+    "max_distance": 100,
+    "random_seed": 42
+  },
+  "ml": {
+    "train_test_split": {
+      "type": "fixed_size",
+      "train_size": 80000,
+      "test_size": 20000
+    }
+  },
+  "cache": {
+    "enabled": true
+  },
+  "_special_features": {}
+}

@@ -1,0 +1,33 @@
+{
+  "pipeline_name": "MClassifierLargePipelineUserNoXYOffsetPosNoMaxDistMapCreatorEnlarged",
+  "data": {
+    "filtering": {
+      "type": "passthrough"
+    }
+  },
+  "features": {
+    "columns": "extended_with_timestamps"
+  },
+  "attacks": {
+    "enabled": true,
+    "attack_ratio": 0.3,
+    "type": "rand_offset",
+    "min_distance": 50,
+    "max_distance": 100,
+    "random_seed": 42
+  },
+  "ml": {
+    "train_test_split": {
+      "type": "random",
+      "train_ratio": 0.8,
+      "test_ratio": 0.2,
+      "random_seed": 42
+    }
+  },
+  "cache": {
+    "enabled": true
+  },
+  "_special_features": {
+    "enlarged_map": true
+  }
+}
