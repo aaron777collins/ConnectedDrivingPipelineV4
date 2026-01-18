@@ -11,4 +11,7 @@ mkdocs-material
 pyspark>=3.3.0
 py4j
 pyyaml
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-spark>=0.6.0
 
