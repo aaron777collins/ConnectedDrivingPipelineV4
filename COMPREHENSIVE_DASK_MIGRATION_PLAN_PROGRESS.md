@@ -1,19 +1,19 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 30: Config validation complete - 30/58 tasks done, 52%)
+Last Updated: 2026-01-18 (Task 32: DaskPipelineRunner tested with all 55 configs - 32/58 tasks done, 55%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 30/58 (52%)**
+- **Tasks Completed: 32/58 (55%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
-- **Phase 5 (Pipeline Consolidation):** ⏳ IN PROGRESS (5/8 tasks)
+- **Phase 5 (Pipeline Consolidation):** ⏳ IN PROGRESS (7/8 tasks)
 - **Phase 6 (Testing):** ⏳ NOT STARTED (0/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
@@ -21,6 +21,88 @@ IN_PROGRESS
 ---
 
 ## Completed This Iteration
+
+### Task 32: Test DaskPipelineRunner with Sample Configs ✅ COMPLETE
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Test/test_dask_pipeline_runner_with_configs.py` (301 lines) - Comprehensive config testing
+- Tests DaskPipelineRunner with actual generated configs from MClassifierPipelines/configs/
+- **Test Results: 28/28 tests passing (100% pass rate)**
+
+**Test Coverage:**
+1. **Config File Loading (4 tests)**:
+   - Verify configs directory exists
+   - Validate all 55 config files present
+   - All configs contain valid JSON
+   - All configs have required fields (pipeline_name, data, features, attacks, ml, cache)
+
+2. **DaskPipelineRunner Initialization (9 tests)**:
+   - Load 4 diverse sample configs using from_config()
+   - Verify context providers setup correctly (generatorContextProvider, MLContextProvider, path providers)
+   - Validate config hash generation (consistent and unique per config)
+   - Test that different configs produce different hashes
+
+3. **Filter Type Configurations (2 tests)**:
+   - Passthrough filter configs
+   - XY offset position filter configs (distance, center coordinates)
+
+4. **Attack Type Configurations (2 tests)**:
+   - rand_offset attack configs (min/max distance)
+   - const_offset_per_id attack configs (min/max distance)
+
+5. **Train/Test Split Configurations (2 tests)**:
+   - Percentage-based splits (80/20 random)
+   - Fixed-size splits (80k train, 20k test)
+
+6. **Column Set Configurations (3 tests)**:
+   - minimal_xy_elev columns
+   - extended_with_timestamps columns
+   - minimal_xy_elev_heading_speed columns
+
+7. **Config Validation (2 tests)**:
+   - All 55 configs load without errors
+   - All 55 configs setup providers correctly
+
+**Sample Configs Tested:**
+- `MClassifierLargePipelineUserNoXYOffsetPosNoMaxDistMapCreator.json` (passthrough filter, simple)
+- `MClassifierLargePipelineUserJNoCacheWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVCols30attackersRandOffset100To200xN106y41d01to30m04y2021.json` (XY filter, date range)
+- `MClassifierLargePipelineUserWithXYOffsetPos1000mDist80kTrain20kTestRowsEXTTimestampsCols30attackersRandOffset50To100xN106y41d02m04y2021.json` (fixed split)
+- `MClassifierLargePipelineUserJNoCacheWithXYOffsetPos2000mDistRandSplit80PercentTrain20PercentTestAllRowsONLYXYELEVCols30attackersConstPosPerCarOffset100To200xN106y41d01to30m04y2021.json` (const_offset_per_id attack)
+
+**Key Achievements:**
+- ✅ All 55 config files validated as valid JSON
+- ✅ All 55 configs have required top-level fields
+- ✅ All 55 configs load successfully into DaskPipelineRunner
+- ✅ All 55 configs setup context providers correctly
+- ✅ Config hashing works correctly (consistent per config, unique across configs)
+- ✅ Diverse config types tested (filters, attacks, splits, columns)
+
+**Files Created:**
+1. `/tmp/original-repo/Test/test_dask_pipeline_runner_with_configs.py` (NEW - 301 lines, 28 tests)
+
+**Next Steps:**
+- Task 33: Validate at least 5 configs produce identical results to original scripts
+- Task 34: Create test_dask_backwards_compatibility.py
+
+**Validation:**
+- All 28 tests passing (100% pass rate)
+- Confirms all 55 configs compatible with DaskPipelineRunner
+- Ready for end-to-end pipeline execution testing (Task 33)
+- Task 32 complete ✅
+
+---
+
+## Previous Iterations
+
+### Task 31: Create test_dask_pipeline_runner.py ✅ COMPLETE
+
+**Note:** Task 31 was already complete from Task 27 implementation.
+- File exists: `/tmp/original-repo/Test/test_dask_pipeline_runner.py` (439 lines)
+- **Test Results: 19/20 passing (1 skipped integration test)**
+- Tests cover: initialization, provider setup, attack application, utility methods, pipeline execution
+- Task 31 verified complete ✅
+
+---
 
 ### Task 30: Validate Pipeline Configs ✅ COMPLETE
 
@@ -1587,8 +1669,8 @@ Based on comprehensive codebase exploration and git history analysis:
   - Created CONFIG_VALIDATION_SUMMARY.md with detailed analysis ✅
 
 #### Testing
-- [ ] Task 31: Create test_dask_pipeline_runner.py
-- [ ] Task 32: Test DaskPipelineRunner with sample configs
+- [x] Task 31: Create test_dask_pipeline_runner.py (COMPLETE - already existed from Task 27)
+- [x] Task 32: Test DaskPipelineRunner with sample configs (COMPLETE - 28 tests passing)
 - [ ] Task 33: Validate at least 5 pipeline configs produce identical results to original scripts
 
 **Dependencies:** Tasks 20-22 (ML components)
