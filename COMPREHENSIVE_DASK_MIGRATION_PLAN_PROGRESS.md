@@ -1,14 +1,14 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 51: Created comprehensive README for Dask pipeline usage - 51/58 tasks done, 88%)
+Last Updated: 2026-01-18 (Task 52: Documented DaskPipelineRunner config format with examples - 52/58 tasks done, 90%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 51/58 (88%)**
+- **Tasks Completed: 52/58 (90%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
@@ -16,11 +16,98 @@ IN_PROGRESS
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
 - **Phase 6 (Testing):** ✅ COMPLETE (10/10 tasks)
 - **Phase 7 (Optimization):** ✅ COMPLETE (7/7 tasks, 100%)
-- **Phase 8 (Documentation):** ⏳ IN PROGRESS (1/8 tasks, 13%)
+- **Phase 8 (Documentation):** ⏳ IN PROGRESS (2/8 tasks, 25%)
 
 ---
 
 ## Completed This Iteration
+
+### Task 52: Document DaskPipelineRunner config format with examples ✅ COMPLETE
+
+**Summary:**
+- Created comprehensive configuration guide: `docs/DaskPipelineRunner_Configuration_Guide.md` (~1100 lines)
+- Covers all config sections with detailed reference documentation
+- Includes 7 attack types with parameter descriptions and examples
+- Documents 4 feature column sets with use cases
+- Provides 3 filtering types (none, xy_offset_position, bounding_box)
+- Contains 5 complete example configurations
+- Added validation guide and best practices section
+
+**Implementation Details:**
+
+1. **Documentation Sections:**
+   - **Quick Start**: Minimal config + usage examples
+   - **Configuration Schema**: Top-level structure overview
+   - **Section Reference**: Detailed docs for all 6 config sections
+     - `pipeline_name`: Naming conventions and best practices
+     - `data`: Source file, filtering, partitioning, date ranges
+     - `features`: Column set selection
+     - `attacks`: Attack simulation parameters
+     - `ml`: Train/test split configuration
+     - `cache`: Parquet caching settings
+   - **Attack Types Reference**: Complete documentation for 7 attack types
+   - **Feature Column Sets**: 4 predefined sets with column counts
+   - **Filtering Types**: 3 filtering options with examples
+   - **Complete Examples**: 5 real-world configurations
+   - **Configuration Validation**: Using validation script
+   - **Best Practices**: 8 recommendations for optimal usage
+
+2. **Attack Types Documented:**
+   - `rand_offset`: Random position offset per message (10-200m)
+   - `const_offset_per_id`: Fixed offset per vehicle (100-500m)
+   - `rand_position`: Completely random positions (0-2000m)
+   - `position_swap`: Swap positions between vehicle pairs
+   - `const_offset`: Fixed offset for all vehicles (same direction)
+   - `override_const`: All attackers report same fixed position
+   - `override_rand`: Each message reports random position
+
+3. **Configuration Examples:**
+   - Example 1: Basic experiment with no attacks (baseline)
+   - Example 2: Random offset attack (30% attackers, 10-20m)
+   - Example 3: Constant offset per vehicle (40% attackers, 100-200m)
+   - Example 4: Fixed-size split with position swap
+   - Example 5: Multiple date ranges with rand_position attack
+
+4. **Best Practices:**
+   - Always use `random_seed` for reproducibility
+   - Enable caching for iterative work
+   - Use descriptive `pipeline_name`
+   - Match attack distance to filtering distance
+   - Start with `minimal_xy_elev` columns
+   - Tune `num_subsection_rows` for system RAM
+   - Use fixed-size splits for model comparisons
+   - Validate configs before running
+
+**Files Created:**
+1. `docs/DaskPipelineRunner_Configuration_Guide.md` (~1100 lines)
+
+**Validation:**
+- ✅ All config sections documented with examples
+- ✅ All 7 attack types documented with parameters
+- ✅ All 4 feature column sets documented
+- ✅ All 3 filtering types documented
+- ✅ Complete example configs for common use cases
+- ✅ Validation guide using existing script
+- ✅ Best practices from real-world usage
+- ✅ Cross-referenced with README.md and existing configs
+- ✅ Matches actual config format used in 55+ example files
+
+**Why COMPLETE:**
+- Comprehensive coverage of entire config schema
+- All attack types documented with parameter requirements
+- Multiple complete example configurations
+- Validation and troubleshooting guidance
+- Best practices from benchmarking work (Tasks 44-50)
+- Professional quality suitable for new users
+- Cross-referenced with existing documentation
+
+**Next Steps:**
+- Task 53: Create troubleshooting guide for common issues
+- Note: Some overlap with README troubleshooting section; may consolidate
+
+---
+
+## Previous Iterations
 
 ### Task 51: Create comprehensive README for Dask pipeline usage ✅ COMPLETE
 
@@ -3294,7 +3381,7 @@ Based on comprehensive codebase exploration and git history analysis:
 
 #### Documentation
 - [x] Task 51: Create comprehensive README for Dask pipeline usage
-- [ ] Task 52: Document DaskPipelineRunner config format with examples
+- [x] Task 52: Document DaskPipelineRunner config format with examples
 - [ ] Task 53: Create troubleshooting guide for common issues
 - [ ] Task 54: Update API documentation with Dask components
 
