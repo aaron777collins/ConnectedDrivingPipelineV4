@@ -11,6 +11,41 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXYAndDay.py` (180 lines)
+- Combined spatial (Euclidean distance) and temporal (day/month/year) filtering
+- Inherits from DaskConnectedDrivingLargeDataCleaner following established pattern
+
+**Key Features:**
+- Filters BSM data by BOTH Euclidean distance from origin (0, 0) AND exact date matching
+- Uses `filter_within_xy_range_and_day()` module-level function with `map_partitions` for efficiency
+- Combines spatial and temporal filters in a single partition operation for maximum efficiency
+- Deterministic tokenization (avoids lambda serialization issues)
+- Maintains lazy evaluation (no compute() calls)
+- Leverages `xy_distance` UDF from DaskUDFs/GeospatialFunctions.py
+- Vectorized boolean operations for temporal filtering (day & month & year)
+
+**Testing:**
+- Created `Test/test_dask_cleaner_with_filter_within_range_xy_and_day.py` with 14 comprehensive tests
+- All tests passing (14/14, 100% pass rate)
+- Tests cover: combined spatial-temporal filtering, spatial-only filtering, temporal-only filtering, schema preservation, empty DataFrames, lazy evaluation, year/month/day filtering independently, partition preservation, leap year handling, boundary conditions, all-match and no-match scenarios
+
+**Files Created:**
+1. `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXYAndDay.py` (NEW - 180 lines)
+2. `/tmp/original-repo/Test/test_dask_cleaner_with_filter_within_range_xy_and_day.py` (NEW - 482 lines)
+
+**Validation:**
+- All 14 tests pass with pytest
+- Confirms combined spatial-temporal filtering works correctly
+- Validates independent spatial and temporal filter functionality
+- Ready for use in pipelines requiring date-specific spatial filtering
+
+---
+
+## Previous Iterations
+
 ### Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py
 
 **Implementation Summary:**
@@ -406,8 +441,8 @@ Based on comprehensive codebase exploration and git history analysis:
 #### Filter Cleaners (6 classes needed)
 - [x] Task 6: Implement DaskCleanerWithPassthroughFilter.py (trivial - identity function, 5 tests passing)
 - [x] Task 7: Implement DaskCleanerWithFilterWithinRange.py (geodesic distance filtering, 9 tests passing)
-- [x] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering from origin, 11 tests passing) **COMPLETE**
-- [ ] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day)
+- [x] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering from origin, 11 tests passing)
+- [x] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day, 14 tests passing) **COMPLETE**
 - [ ] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range) **CRITICAL**
 - [ ] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion)
 
