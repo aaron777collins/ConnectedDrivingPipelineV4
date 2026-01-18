@@ -150,18 +150,29 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         uniqueIDs_sorted = sorted(uniqueIDs)
         self.logger.log(f"Sorted {len(uniqueIDs_sorted)} unique IDs for deterministic splitting")
 
-        # Split into regular vs attackers using dask-ml train_test_split
-        # Note: train_test_split expects array-like
-        regular, attackers = train_test_split(
-            uniqueIDs_sorted,  # Use sorted IDs for consistency
-            test_size=self.attack_ratio,
-            random_state=self.SEED,
-            shuffle=True  # Ensure reproducible shuffling
-        )
+        # Handle boundary cases where train_test_split cannot be used
+        # train_test_split requires test_size in (0.0, 1.0) exclusive
+        if self.attack_ratio <= 0.0:
+            # 0% attackers: all IDs are regular vehicles
+            attackers_set = set()
+            self.logger.log("attack_ratio=0.0: No attackers selected")
+        elif self.attack_ratio >= 1.0:
+            # 100% attackers: all IDs are attackers
+            attackers_set = set(uniqueIDs_sorted)
+            self.logger.log(f"attack_ratio=1.0: All {len(attackers_set)} IDs selected as attackers")
+        else:
+            # Split into regular vs attackers using dask-ml train_test_split
+            # Note: train_test_split expects array-like
+            regular, attackers = train_test_split(
+                uniqueIDs_sorted,  # Use sorted IDs for consistency
+                test_size=self.attack_ratio,
+                random_state=self.SEED,
+                shuffle=True  # Ensure reproducible shuffling
+            )
 
-        # Convert attackers to set for efficient lookup
-        attackers_set = set(attackers)
-        self.logger.log(f"Selected {len(attackers_set)} attackers out of {len(uniqueIDs)} total IDs")
+            # Convert attackers to set for efficient lookup
+            attackers_set = set(attackers)
+            self.logger.log(f"Selected {len(attackers_set)} attackers out of {len(uniqueIDs)} total IDs")
 
         # Add isAttacker column using map_partitions for efficiency
         def _assign_attackers(partition):

@@ -1009,6 +1009,350 @@ class TestPositionalOverrideRand:
 
 
 # ========================================================================
+# Test Class 9: Boundary Conditions (0% and 100% attackers)
+# ========================================================================
+
+class TestAttackerBoundaryConditions:
+    """
+    Test suite for boundary conditions in attacker selection methods.
+
+    This test class validates behavior at extreme attack_ratio values:
+    - 0% attackers (attack_ratio = 0.0): No vehicles should be marked as attackers
+    - 100% attackers (attack_ratio = 1.0): All vehicles should be marked as attackers
+
+    Tests both deterministic (add_attackers) and random (add_rand_attackers) methods,
+    plus validates that all 8 attack methods handle these boundary conditions correctly.
+    """
+
+    def test_zero_percent_attackers_deterministic(self, dask_client, sample_bsm_data):
+        """Test add_attackers() with attack_ratio = 0.0 (no attackers)."""
+        # Use the Dependency Injection system to temporarily override attack_ratio
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        # Create custom context provider with 0% attack_ratio
+        class ZeroPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 0.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = ZeroPercentContextProvider
+
+        try:
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_zero_percent"
+            )
+
+            attacker.add_attackers()
+            result = attacker.get_data().compute()
+
+            # Verify NO attackers were selected
+            assert 'isAttacker' in result.columns
+            assert (result['isAttacker'] == 0).all(), \
+                "With 0% attack_ratio, all isAttacker values should be 0"
+
+            # Verify total row count unchanged
+            assert len(result) == 17
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_hundred_percent_attackers_deterministic(self, dask_client, sample_bsm_data):
+        """Test add_attackers() with attack_ratio = 1.0 (all attackers)."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class HundredPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 1.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = HundredPercentContextProvider
+
+        try:
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_hundred_percent"
+            )
+
+            attacker.add_attackers()
+            result = attacker.get_data().compute()
+
+            # Verify ALL vehicles are attackers
+            assert 'isAttacker' in result.columns
+            assert (result['isAttacker'] == 1).all(), \
+                "With 100% attack_ratio, all isAttacker values should be 1"
+
+            # Verify total row count unchanged
+            assert len(result) == 17
+
+            # Verify all unique vehicle IDs are marked as attackers
+            unique_ids = result.groupby('coreData_id')['isAttacker'].first()
+            assert (unique_ids == 1).all(), \
+                "All unique vehicle IDs should be marked as attackers"
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_zero_percent_attackers_random(self, dask_client, sample_bsm_data):
+        """Test add_rand_attackers() with attack_ratio = 0.0 (no attackers)."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class ZeroPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 0.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = ZeroPercentContextProvider
+
+        try:
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_zero_percent_rand"
+            )
+
+            attacker.add_rand_attackers()
+            result = attacker.get_data().compute()
+
+            # Verify NO attackers were selected (random.random() <= 0.0 is always False)
+            assert 'isAttacker' in result.columns
+            assert (result['isAttacker'] == 0).all(), \
+                "With 0% attack_ratio, all isAttacker values should be 0 (random method)"
+
+            assert len(result) == 17
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_hundred_percent_attackers_random(self, dask_client, sample_bsm_data):
+        """Test add_rand_attackers() with attack_ratio = 1.0 (all attackers)."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class HundredPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 1.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = HundredPercentContextProvider
+
+        try:
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_hundred_percent_rand"
+            )
+
+            attacker.add_rand_attackers()
+            result = attacker.get_data().compute()
+
+            # Verify ALL rows are attackers (random.random() <= 1.0 is always True)
+            assert 'isAttacker' in result.columns
+            assert (result['isAttacker'] == 1).all(), \
+                "With 100% attack_ratio, all isAttacker values should be 1 (random method)"
+
+            assert len(result) == 17
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_positional_attacks_with_zero_percent_attackers(self, dask_client, sample_bsm_data):
+        """Test that positional attack methods handle 0% attackers gracefully (no-op)."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class ZeroPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 0.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = ZeroPercentContextProvider
+
+        try:
+            # Store original positions
+            original = sample_bsm_data.compute()
+
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_zero_percent_positional"
+            )
+
+            # Add 0% attackers, then apply positional offset
+            attacker.add_attackers()
+            attacker.add_attacks_positional_offset_const(direction_angle=45, distance_meters=100)
+            result = attacker.get_data().compute()
+
+            # Since 0% attackers, no positions should be modified
+            assert (result['isAttacker'] == 0).all()
+
+            # All positions should remain unchanged
+            pd.testing.assert_series_equal(
+                original['x_pos'].reset_index(drop=True),
+                result['x_pos'].reset_index(drop=True),
+                check_names=False
+            )
+            pd.testing.assert_series_equal(
+                original['y_pos'].reset_index(drop=True),
+                result['y_pos'].reset_index(drop=True),
+                check_names=False
+            )
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_positional_attacks_with_hundred_percent_attackers(self, dask_client, sample_bsm_data):
+        """Test that positional attack methods modify ALL positions with 100% attackers."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class HundredPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 1.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = HundredPercentContextProvider
+
+        try:
+            # Store original positions
+            original = sample_bsm_data.compute()
+
+            attacker = DaskConnectedDrivingAttacker(
+                data=sample_bsm_data,
+                id="test_hundred_percent_positional"
+            )
+
+            # Add 100% attackers, then apply positional offset
+            attacker.add_attackers()
+            attacker.add_attacks_positional_offset_const(direction_angle=45, distance_meters=100)
+            result = attacker.get_data().compute()
+
+            # All vehicles should be attackers
+            assert (result['isAttacker'] == 1).all()
+
+            # ALL positions should be modified (none should match original)
+            positions_unchanged = (
+                (result['x_pos'] == original['x_pos']) &
+                (result['y_pos'] == original['y_pos'])
+            ).sum()
+
+            # With a 100m offset at 45°, positions MUST change
+            assert positions_unchanged == 0, \
+                "With 100% attackers and positional offset, all positions should be modified"
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_all_attack_methods_with_zero_percent_attackers(self, dask_client, sample_bsm_data):
+        """Test that all 8 attack methods handle 0% attackers without errors."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class ZeroPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 0.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = ZeroPercentContextProvider
+
+        try:
+            # Test each attack method executes without errors
+            attack_methods = [
+                ('add_attacks_positional_swap_rand', {}),
+                ('add_attacks_positional_offset_const', {'direction_angle': 45, 'distance_meters': 100}),
+                ('add_attacks_positional_offset_rand', {'min_dist': 50, 'max_dist': 200}),
+                ('add_attacks_positional_offset_const_per_id_with_random_direction', {'min_dist': 50, 'max_dist': 200}),
+                ('add_attacks_positional_override_const', {'direction_angle': 45, 'distance_meters': 100}),
+                ('add_attacks_positional_override_rand', {'min_dist': 50, 'max_dist': 200}),
+            ]
+
+            for method_name, kwargs in attack_methods:
+                attacker = DaskConnectedDrivingAttacker(
+                    data=sample_bsm_data,
+                    id=f"test_{method_name}"
+                )
+
+                attacker.add_attackers()  # 0% attackers
+                method = getattr(attacker, method_name)
+                method(**kwargs)
+                result = attacker.get_data().compute()
+
+                # Should execute without errors
+                assert len(result) == 17
+                assert (result['isAttacker'] == 0).all(), \
+                    f"{method_name} should preserve 0% attackers"
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+    def test_all_attack_methods_with_hundred_percent_attackers(self, dask_client, sample_bsm_data):
+        """Test that all 8 attack methods handle 100% attackers without errors."""
+        from Decorators.StandardDependencyInjection import SDI_DEPENDENCIES
+
+        class HundredPercentContextProvider(GeneratorContextProvider):
+            def __init__(self):
+                super().__init__({
+                    'ConnectedDrivingAttacker.attack_ratio': 1.0,
+                    'ConnectedDrivingAttacker.SEED': 42,
+                    'ConnectedDrivingCleaner.x_pos': -106.0,
+                    'ConnectedDrivingCleaner.y_pos': 41.0,
+                })
+
+        original_provider = SDI_DEPENDENCIES['IGeneratorContextProvider']
+        SDI_DEPENDENCIES['IGeneratorContextProvider'] = HundredPercentContextProvider
+
+        try:
+            # Test each attack method executes without errors
+            attack_methods = [
+                ('add_attacks_positional_swap_rand', {}),
+                ('add_attacks_positional_offset_const', {'direction_angle': 45, 'distance_meters': 100}),
+                ('add_attacks_positional_offset_rand', {'min_dist': 50, 'max_dist': 200}),
+                ('add_attacks_positional_offset_const_per_id_with_random_direction', {'min_dist': 50, 'max_dist': 200}),
+                ('add_attacks_positional_override_const', {'direction_angle': 45, 'distance_meters': 100}),
+                ('add_attacks_positional_override_rand', {'min_dist': 50, 'max_dist': 200}),
+            ]
+
+            for method_name, kwargs in attack_methods:
+                attacker = DaskConnectedDrivingAttacker(
+                    data=sample_bsm_data,
+                    id=f"test_{method_name}"
+                )
+
+                attacker.add_attackers()  # 100% attackers
+                method = getattr(attacker, method_name)
+                method(**kwargs)
+                result = attacker.get_data().compute()
+
+                # Should execute without errors
+                assert len(result) == 17
+                assert (result['isAttacker'] == 1).all(), \
+                    f"{method_name} should preserve 100% attackers"
+        finally:
+            SDI_DEPENDENCIES['IGeneratorContextProvider'] = original_provider
+
+
+# ========================================================================
 # Integration Tests
 # ========================================================================
 

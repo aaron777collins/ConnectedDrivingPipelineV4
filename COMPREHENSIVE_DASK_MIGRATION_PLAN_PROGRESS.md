@@ -1,26 +1,130 @@
 # Progress: COMPREHENSIVE_DASK_MIGRATION_PLAN
 
 Started: Sun Jan 18 12:35:01 AM EST 2026
-Last Updated: 2026-01-18 (Task 37: Cleaner edge case tests added - 37/58 tasks done, 64%)
+Last Updated: 2026-01-18 (Task 38: Attacker boundary condition tests added - 38/58 tasks done, 66%)
 
 ## Status
 
 IN_PROGRESS
 
 **Progress Summary:**
-- **Tasks Completed: 37/58 (64%)**
+- **Tasks Completed: 38/58 (66%)**
 - **Phase 1 (Foundation):** ✅ COMPLETE (5/5 tasks)
 - **Phase 2 (Core Cleaners):** ✅ COMPLETE (8/8 tasks)
 - **Phase 3 (Attack Simulations):** ✅ COMPLETE (6/6 tasks)
 - **Phase 4 (ML Integration):** ✅ COMPLETE (6/6 tasks)
 - **Phase 5 (Pipeline Consolidation):** ✅ COMPLETE (8/8 tasks)
-- **Phase 6 (Testing):** ⏳ IN PROGRESS (4/10 tasks)
+- **Phase 6 (Testing):** ⏳ IN PROGRESS (5/10 tasks)
 - **Phase 7 (Optimization):** ⏳ NOT STARTED (0/7 tasks)
 - **Phase 8 (Documentation):** ⏳ NOT STARTED (0/8 tasks)
 
 ---
 
 ## Completed This Iteration
+
+### Task 38: Extend all attacker tests with boundary conditions (0% attackers, 100% attackers) ✅ COMPLETE
+
+**Implementation Summary:**
+- Extended `/tmp/original-repo/Test/test_dask_attackers.py` with 8 new boundary condition tests
+- Fixed bug in `DaskConnectedDrivingAttacker.add_attackers()` to handle attack_ratio=0.0 and attack_ratio=1.0
+- **Total test file size:** 1497 lines (up from 1057 lines, +440 lines added)
+- **New test methods:** 8 tests in TestAttackerBoundaryConditions class
+- **All tests passing:** 53/54 tests in test_dask_attackers.py (1 pre-existing failure unrelated to this task)
+
+**New Test Class Added:**
+
+**TestAttackerBoundaryConditions (8 tests):**
+- test_zero_percent_attackers_deterministic: Validates 0% attack_ratio with add_attackers()
+- test_hundred_percent_attackers_deterministic: Validates 100% attack_ratio with add_attackers()
+- test_zero_percent_attackers_random: Validates 0% attack_ratio with add_rand_attackers()
+- test_hundred_percent_attackers_random: Validates 100% attack_ratio with add_rand_attackers()
+- test_positional_attacks_with_zero_percent_attackers: Validates no-op behavior with 0% attackers
+- test_positional_attacks_with_hundred_percent_attackers: Validates full modification with 100% attackers
+- test_all_attack_methods_with_zero_percent_attackers: Tests all 6 attack methods with 0% attackers
+- test_all_attack_methods_with_hundred_percent_attackers: Tests all 6 attack methods with 100% attackers
+
+**Boundary Conditions Covered:**
+
+✅ **0% Attackers (attack_ratio=0.0):**
+  - Deterministic selection (add_attackers): No vehicles marked as attackers
+  - Random selection (add_rand_attackers): No rows marked as attackers
+  - All positional attack methods: No-op (positions unchanged)
+  - All 6 attack methods execute without errors
+
+✅ **100% Attackers (attack_ratio=1.0):**
+  - Deterministic selection (add_attackers): All vehicles marked as attackers
+  - Random selection (add_rand_attackers): All rows marked as attackers
+  - Positional attack methods: All positions modified
+  - All 6 attack methods execute without errors
+
+**Bug Fix in DaskConnectedDrivingAttacker.add_attackers():**
+
+Previously, the method would crash with:
+```
+sklearn.utils._param_validation.InvalidParameterError: The 'test_size' parameter of train_test_split
+must be a float in the range (0.0, 1.0), an int in the range [1, inf) or None. Got 0.0 instead.
+```
+
+**Fixed by adding boundary condition handling:**
+```python
+# Handle boundary cases where train_test_split cannot be used
+# train_test_split requires test_size in (0.0, 1.0) exclusive
+if self.attack_ratio <= 0.0:
+    # 0% attackers: all IDs are regular vehicles
+    attackers_set = set()
+    self.logger.log("attack_ratio=0.0: No attackers selected")
+elif self.attack_ratio >= 1.0:
+    # 100% attackers: all IDs are attackers
+    attackers_set = set(uniqueIDs_sorted)
+    self.logger.log(f"attack_ratio=1.0: All {len(attackers_set)} IDs selected as attackers")
+else:
+    # Normal case: use train_test_split
+    ...
+```
+
+**Attack Methods Tested:**
+1. add_attacks_positional_swap_rand
+2. add_attacks_positional_offset_const
+3. add_attacks_positional_offset_rand
+4. add_attacks_positional_offset_const_per_id_with_random_direction
+5. add_attacks_positional_override_const
+6. add_attacks_positional_override_rand
+
+**Files Modified:**
+- `Test/test_dask_attackers.py`: Extended from 1057 → 1497 lines (+440 lines, +8 tests)
+- `Generator/Attackers/DaskConnectedDrivingAttacker.py`: Added boundary condition handling in add_attackers()
+
+**Validation Results:**
+- ✅ 8/8 new boundary condition tests passing (100% pass rate)
+- ✅ 53/54 total tests passing in test_dask_attackers.py (98% pass rate)
+- ✅ 1 pre-existing test failure (TestPositionalOffsetConstPerID::test_same_id_gets_same_offset) - unrelated to this task
+- ✅ No regressions introduced
+- ✅ All boundary condition tests validate graceful handling of extreme attack_ratio values
+
+**Test Execution:**
+```bash
+# Run all boundary condition tests
+pytest Test/test_dask_attackers.py::TestAttackerBoundaryConditions -v
+
+# Run all attacker tests (comprehensive)
+pytest Test/test_dask_attackers.py -v
+```
+
+**Impact:**
+- Comprehensive boundary condition coverage for all attacker selection methods
+- Critical bug fix for 0% and 100% attack_ratio values
+- Validates robustness against extreme configurations
+- Provides safety net for edge case scenarios in production
+- Documents expected behavior for boundary conditions
+- Completes Task 38 requirements: 0% and 100% attackers
+
+**Next Steps:**
+- Task 39: Create integration tests for full pipeline end-to-end
+- Task 40: Run full test suite with pytest -v --cov
+
+---
+
+## Previous Iterations
 
 ### Task 37: Extend all cleaner tests with edge cases (empty DataFrames, null values) ✅ COMPLETE
 
@@ -2079,7 +2183,7 @@ Based on comprehensive codebase exploration and git history analysis:
 - [x] Task 35: Create test_dask_data_gatherer.py (CSV reading, partitioning) **COMPLETE** (13/23 tests passing, 56%)
 - [x] Task 36: Create test_dask_benchmark.py (performance vs pandas)
 - [x] Task 37: Extend all cleaner tests with edge cases (empty DataFrames, null values) **COMPLETE** (85/85 tests passing)
-- [ ] Task 38: Extend all attacker tests with boundary conditions (0% attackers, 100% attackers)
+- [x] Task 38: Extend all attacker tests with boundary conditions (0% attackers, 100% attackers) **COMPLETE** (53/54 tests passing, +8 tests, bug fix)
 - [ ] Task 39: Create integration tests for full pipeline end-to-end
 
 #### Test Execution & Validation
