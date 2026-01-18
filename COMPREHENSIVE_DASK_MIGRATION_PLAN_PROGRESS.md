@@ -11,6 +11,55 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 17: Create test_dask_attackers.py with all 8 attack method tests
+
+**Implementation Summary:**
+- Created comprehensive test suite `/tmp/original-repo/Test/test_dask_attackers.py` (1057 lines)
+- Tests all 8 attack methods in DaskConnectedDrivingAttacker class
+- Includes 46 passing tests organized into 9 test classes
+- Uses pytest fixtures with auto-injected context provider for config values
+
+**Test Structure:**
+1. **TestAddAttackers (6 tests)**: Deterministic ID-based attacker selection
+2. **TestAddRandAttackers (4 tests)**: Random per-row attacker selection
+3. **TestPositionalSwapRand (5 tests)**: Random position swap attack
+4. **TestPositionalOffsetConst (5 tests)**: Constant positional offset attack
+5. **TestPositionalOffsetRand (6 tests)**: Random positional offset attack
+6. **TestPositionalOffsetConstPerID (6 tests)**: Per-ID constant offset with random direction
+7. **TestPositionalOverrideConst (6 tests)**: Constant position override from origin
+8. **TestPositionalOverrideRand (6 tests)**: Random position override from origin
+9. **TestAttackerIntegration (2 tests)**: Method chaining integration tests
+
+**Test Coverage:**
+- **Basic execution**: All methods execute without errors
+- **Attacker-only modification**: Regular vehicles remain unchanged
+- **Method-specific behavior**: Validates unique behavior of each attack type
+- **Reproducibility**: Confirms SEED-based determinism
+- **Method chaining**: Validates fluent API support
+- **Lazy evaluation**: Confirms Dask DataFrame preservation
+- **Data integrity**: Validates column preservation and structure
+- **Integration**: Tests chaining multiple attack methods
+
+**Key Features:**
+- Auto-used fixture `setup_context_provider()` injects required config values
+- Uses dependency injection to provide `ConnectedDrivingCleaner.x_pos` and `y_pos`
+- Two fixtures: `sample_bsm_data` (without attackers) and `sample_bsm_data_with_attackers`
+- Follows established testing patterns from individual attack test files
+- All 46 tests passing (100% pass rate)
+
+**Validation:**
+- Comprehensive coverage of all 8 attack methods
+- Tests validate both attacker selection (add_attackers, add_rand_attackers) and position attacks (6 methods)
+- Integration tests confirm method chaining works correctly
+- Ready for use in validating attack implementations and regression testing
+
+**Files Created:**
+1. `/tmp/original-repo/Test/test_dask_attackers.py` (NEW - 1057 lines, 46 tests)
+
+---
+
+## Previous Iterations
+
 ### Task 16: Implement positional_override_rand() in DaskConnectedDrivingAttacker.py
 
 **Implementation Summary:**
@@ -842,7 +891,7 @@ Based on comprehensive codebase exploration and git history analysis:
   - Implementation: 3 new methods (+161 lines), 11 tests (100% passing)
 
 #### Testing
-- [ ] Task 17: Create test_dask_attackers.py with all 8 attack method tests
+- [x] Task 17: Create test_dask_attackers.py with all 8 attack method tests
 - [ ] Task 18: Validate attacks match pandas versions (100% compatibility)
 - [ ] Task 19: Memory validation for all attacks at 15M rows (<52GB peak)
 
