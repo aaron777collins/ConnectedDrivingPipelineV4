@@ -170,10 +170,10 @@ IN_PROGRESS
 
 - [x] Task 2.1: Create ParquetCache decorator (`Decorators/ParquetCache.py`)
 - [x] Task 2.2: Update FileCache to support Spark DataFrames
-- [ ] Task 2.3: Create SparkDataGatherer class (`Gatherer/SparkDataGatherer.py`)
-- [ ] Task 2.4: Implement spark.read.csv with schema in SparkDataGatherer
-- [ ] Task 2.5: Implement DataFrame.limit() for numrows parameter
-- [ ] Task 2.6: Add Parquet write support to SparkDataGatherer
+- [x] Task 2.3: Create SparkDataGatherer class (`Gatherer/SparkDataGatherer.py`)
+- [x] Task 2.4: Implement spark.read.csv with schema in SparkDataGatherer
+- [x] Task 2.5: Implement DataFrame.limit() for numrows parameter
+- [x] Task 2.6: Add Parquet write support to SparkDataGatherer
 - [ ] Task 2.7: Implement format detection utility (CSV vs Parquet auto-detection)
 - [ ] Task 2.8: Create SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
 - [ ] Task 2.9: Migrate column selection from `df[columns]` to `df.select(*columns)`
@@ -436,6 +436,28 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
 - Key tasks: ParquetCache decorator, SparkDataGatherer, column operations
 
 ## Completed This Iteration
+
+- **Tasks 2.3-2.6:** Created SparkDataGatherer with full functionality
+  - Implemented `Gatherer/SparkDataGatherer.py` (159 lines):
+    - PySpark implementation of DataGatherer interface
+    - Uses spark.read.csv with BSMRawSchema for schema validation
+    - Implements DataFrame.limit() for row limiting (numrows parameter)
+    - Integrates ParquetCache decorator for caching (replaces CSVCache)
+    - Automatic CSV→Parquet path conversion for cache files
+    - split_large_data() method using Spark partitioning instead of file splitting
+  - Created comprehensive test suite `Test/test_spark_data_gatherer.py` (257 lines):
+    - 10 test cases across 4 test classes
+    - Tests for initialization, CSV reading, caching, splitting
+    - Integration tests with sample datasets (1k, 10k rows)
+    - Tests use dependency injection providers (PathProvider, InitialGathererPathProvider, GeneratorContextProvider)
+    - All tests pass when run individually (singleton provider limitation in batch runs)
+  - Key features implemented:
+    - spark.read.csv with schema validation ✓
+    - DataFrame.limit() for row limiting ✓
+    - Parquet write support via ParquetCache ✓
+    - Large dataset partitioning ✓
+    - Compatible with existing DI framework ✓
+  - Tasks 2.4, 2.5, 2.6 all completed as part of SparkDataGatherer implementation
 
 - **Task 2.2:** FileCache support for Spark DataFrames (Task already complete via ParquetCache)
   - Explored codebase to understand FileCache/CSVCache architecture
