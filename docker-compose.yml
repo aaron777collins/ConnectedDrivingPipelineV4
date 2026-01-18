@@ -10,21 +10,21 @@ services:
     container_name: cdp-pipeline
     restart: unless-stopped
 
-    # Resource limits (adjusted for safe operation on 64GB system)
+    # Resource limits (adjust based on your host system)
     deploy:
       resources:
         limits:
           cpus: '12'
-          memory: 48G  # 5 workers × 8GB = 40GB + 8GB for scheduler/overhead (leaves 16GB for host)
+          memory: 56G  # Leave 8GB for host OS on 64GB system
         reservations:
-          cpus: '5'
+          cpus: '6'
           memory: 32G
 
     # Environment configuration
     environment:
-      - DASK_WORKERS=5
-      - DASK_THREADS_PER_WORKER=1
-      - DASK_MEMORY_LIMIT=8GB
+      - DASK_WORKERS=4
+      - DASK_THREADS_PER_WORKER=3
+      - DASK_MEMORY_LIMIT=12GB
       - DASK_DASHBOARD_PORT=8787
       - PYTHONPATH=/app
 

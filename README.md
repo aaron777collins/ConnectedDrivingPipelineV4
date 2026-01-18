@@ -379,13 +379,13 @@ See `MClassifierPipelines/configs/` for 40+ example configurations covering vari
 
 ### Memory Usage
 
-| Configuration | Peak Memory | System Headroom | Status |
-|---------------|-------------|-----------------|--------|
-| 64GB Production (5 workers × 8GB) | 35-38GB | 24GB+ | ✅ Optimal |
-| Development (4 workers × 6GB) | 28-32GB | 32GB+ | ✅ Safe |
-| Old Pandas | 55-60GB | 4-9GB | ❌ Unstable |
+| Configuration | Peak Memory | Status |
+|---------------|-------------|--------|
+| 64GB Production | 38-40GB | ✅ Optimal |
+| Development (8 workers) | 42-45GB | ✅ Acceptable |
+| Old Pandas | 55-60GB | ❌ Unstable |
 
-**Memory Safety:** The default configuration uses **5 workers × 8GB = 40GB** for Dask workers, leaving **24GB free** for the Linux kernel, OS services, system cache, and safety margin. The pipeline will automatically spill to disk if memory exceeds 50% per worker (configurable in `configs/dask/64gb-production.yml`).
+**Note:** With 64GB RAM, you have ~24GB headroom for safety. The pipeline will automatically spill to disk if memory exceeds 50% per worker (configurable in `configs/dask/64gb-production.yml`).
 
 ### Cache Performance
 
@@ -667,10 +667,9 @@ result = df.compute()  # OK: Dask executes lazy operations
 
 ### 3. Memory Configuration
 Adjust worker memory limits for your system:
-- 64GB → 5 workers × 8GB = 40GB (recommended, leaves 24GB for kernel/OS)
-- 128GB → 12 workers × 8GB = 96GB (leaves 32GB for kernel/OS)
-- 32GB → 3 workers × 8GB = 24GB (leaves 8GB for kernel/OS)
-- Edit `Helpers/DaskSessionManager.py` to change `n_workers` and `memory_limit` defaults
+- 64GB → 6 workers × 8GB = 48GB (recommended)
+- 128GB → 12 workers × 8GB = 96GB
+- Edit `configs/dask/64gb-production.yml`
 
 ## Contributing
 
