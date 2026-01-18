@@ -11,6 +11,38 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 7: Implement DaskCleanerWithFilterWithinRange.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRange.py` (154 lines)
+- Geodesic distance-based spatial filtering using WGS84 ellipsoid
+- Inherits from DaskConnectedDrivingLargeDataCleaner following established pattern
+
+**Key Features:**
+- Filters BSM data to include only points within geodesic distance from center point (x_pos, y_pos)
+- Uses `filter_within_geodesic_range()` module-level function with `map_partitions` for efficiency
+- Deterministic tokenization (avoids lambda serialization issues)
+- Maintains lazy evaluation (no compute() calls)
+- Leverages `geodesic_distance` UDF from DaskUDFs/GeospatialFunctions.py
+
+**Testing:**
+- Created `Test/test_dask_cleaner_with_filter_within_range.py` with 9 comprehensive tests
+- All tests passing (9/9, 100% pass rate)
+- Tests cover: filtering accuracy, schema preservation, empty DataFrames, lazy evaluation, geodesic vs Euclidean distance, partition preservation, different center points
+
+**Files Created:**
+1. `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRange.py` (NEW - 154 lines)
+2. `/tmp/original-repo/Test/test_dask_cleaner_with_filter_within_range.py` (NEW - 292 lines)
+
+**Validation:**
+- All 9 tests pass with pytest
+- Confirms geodesic distance filtering works correctly
+- Ready for use in pipelines requiring distance-based spatial filtering
+
+---
+
+## Previous Iterations
+
 ### Task 6: Implement DaskCleanerWithPassthroughFilter.py
 
 **Implementation Summary:**
@@ -341,7 +373,7 @@ Based on comprehensive codebase exploration and git history analysis:
 
 #### Filter Cleaners (6 classes needed)
 - [x] Task 6: Implement DaskCleanerWithPassthroughFilter.py (trivial - identity function, 5 tests passing)
-- [ ] Task 7: Implement DaskCleanerWithFilterWithinRange.py (geodesic distance filtering)
+- [x] Task 7: Implement DaskCleanerWithFilterWithinRange.py (geodesic distance filtering, 9 tests passing)
 - [ ] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering) **CRITICAL**
 - [ ] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day)
 - [ ] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range) **CRITICAL**
