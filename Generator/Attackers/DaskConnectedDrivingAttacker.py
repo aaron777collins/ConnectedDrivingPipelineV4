@@ -31,6 +31,7 @@ from dask.dataframe import DataFrame
 from dask_ml.model_selection import train_test_split
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Generator.Attackers.IConnectedDrivingAttacker import IConnectedDrivingAttacker
+from Helpers.MathHelper import MathHelper
 from Logger.Logger import Logger
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
@@ -363,5 +364,143 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             row[self.pos_lat_col] = copydata.iloc[random_index][self.pos_lat_col]
             row[self.pos_long_col] = copydata.iloc[random_index][self.pos_long_col]
             row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
+
+        return row
+
+    def add_attacks_positional_offset_const(self, direction_angle=45, distance_meters=50):
+        """
+        Add constant positional offset attack using compute-then-daskify strategy.
+
+        This method applies a constant positional offset to all attackers by:
+        1. Computing Dask DataFrame to pandas
+        2. Applying pandas positional offset attack (reuses existing logic)
+        3. Converting result back to Dask DataFrame
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - Offsets position by a constant direction and distance
+        - Uses MathHelper for accurate offset calculations
+        - Supports both XY coordinates and lat/lon coordinates
+
+        Args:
+            direction_angle (int/float): Direction in degrees (0° = North, positive = clockwise)
+                Default: 45° (northeast)
+            distance_meters (int/float): Distance to offset in meters
+                Default: 50m
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the attack
+            operation. Memory usage peaks at ~2x data size (original + result).
+            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
+
+        Examples:
+            # Apply 50m offset at 45° (northeast)
+            attacker.add_attacks_positional_offset_const()
+
+            # Apply 100m offset due north
+            attacker.add_attacks_positional_offset_const(direction_angle=0, distance_meters=100)
+
+            # Apply 200m offset due east
+            attacker.add_attacks_positional_offset_const(direction_angle=90, distance_meters=200)
+        """
+        self.logger.log(
+            f"Starting positional offset const attack: "
+            f"direction={direction_angle}°, distance={distance_meters}m"
+        )
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for positional offset...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas positional offset attack
+        self.logger.log("Applying positional offset attack to pandas DataFrame...")
+        df_offset = self._apply_pandas_positional_offset_const(df_pandas, direction_angle, distance_meters)
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
+
+        self.logger.log("Positional offset const attack complete")
+        return self
+
+    def _apply_pandas_positional_offset_const(self, df_pandas, direction_angle, distance_meters):
+        """
+        Apply constant positional offset attack to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
+        For each attacker row:
+        1. Calculate new position based on direction angle and distance
+        2. Replace attacker's position with the new position
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
+            distance_meters (int/float): Distance to offset in meters
+
+        Returns:
+            pd.DataFrame: DataFrame with position-offset attackers
+
+        Note:
+            This method applies the attack row-wise using pandas .apply().
+            Only rows with isAttacker=1 are modified.
+        """
+        # Apply offset to each row (only affects attackers)
+        df_offset = df_pandas.apply(
+            lambda row: self._positional_offset_const_attack(row, direction_angle, distance_meters),
+            axis=1
+        )
+
+        # Count attackers that were offset
+        n_attackers = (df_offset['isAttacker'] == 1).sum()
+        self.logger.log(f"Applied offset to {n_attackers} attackers")
+
+        return df_offset
+
+    def _positional_offset_const_attack(self, row, direction_angle, distance_meters):
+        """
+        Apply constant positional offset to a single attacker row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
+            distance_meters (int/float): Distance to offset in meters
+
+        Returns:
+            pd.Series: Row with position offset (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionalOffsetAttacker.positional_offset_const_attack
+            to ensure 100% compatibility with pandas version.
+        """
+        # Only offset positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Calculate new position based on coordinate system (XY or lat/lon)
+        if self.isXYCoords:
+            # XY coordinate system (Cartesian)
+            newX, newY = MathHelper.direction_and_dist_to_XY(
+                row[self.x_col],
+                row[self.y_col],
+                direction_angle,
+                distance_meters
+            )
+            row[self.x_col] = newX
+            row[self.y_col] = newY
+        else:
+            # Lat/Lon coordinate system (WGS84 geodesic)
+            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
+                row[self.pos_lat_col],
+                row[self.pos_long_col],
+                direction_angle,
+                distance_meters
+            )
+            row[self.pos_lat_col] = newLat
+            row[self.pos_long_col] = newLong
 
         return row
