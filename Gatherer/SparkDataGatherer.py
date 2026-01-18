@@ -24,6 +24,7 @@ from Decorators.ParquetCache import ParquetCache
 from Decorators.StandardDependencyInjection import StandardDependencyInjection
 from Gatherer.IDataGatherer import IDataGatherer
 from Helpers.SparkSessionManager import SparkSessionManager
+from Helpers.SchemaInferencer import SchemaInferencer
 from Schemas.BSMRawSchema import get_bsm_raw_schema
 from Logger.Logger import Logger
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
@@ -54,12 +55,26 @@ class SparkDataGatherer(IDataGatherer):
         # Get or create Spark session
         self.spark = SparkSessionManager.get_session()
 
+        # Initialize schema inferencer
+        self.schema_inferencer = SchemaInferencer(self.spark)
+
         # Initialize data and configuration
         self.data = None
         self.numrows = self._generatorContextProvider.get("DataGatherer.numrows")
         self.filepath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.filepath")
         self.subsectionpath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.subsectionpath")
         self.splitfilespath = self._initialGathererPathProvider.getPathWithModelName("DataGatherer.splitfilespath")
+
+        # Schema inference settings (optional - defaults to explicit schema)
+        try:
+            self.use_schema_inference = self._generatorContextProvider.get("DataGatherer.infer_schema")
+        except:
+            self.use_schema_inference = False
+
+        try:
+            self.schema_inference_sample_size = self._generatorContextProvider.get("DataGatherer.inference_sample_size")
+        except:
+            self.schema_inference_sample_size = 10000
 
         # Convert CSV cache path to Parquet format
         # Replace .csv extension with .parquet for cached files
@@ -82,6 +97,10 @@ class SparkDataGatherer(IDataGatherer):
         Internal method to read CSV data using Spark with schema validation.
         Results are cached as Parquet files via ParquetCache decorator.
 
+        Supports both explicit schemas and automatic schema inference:
+        - By default: Uses explicit BSM raw schema (get_bsm_raw_schema)
+        - With inference: Automatically detects types from CSV data
+
         Args:
             full_file_cache_path: Path for cache file (used by ParquetCache)
 
@@ -90,8 +109,20 @@ class SparkDataGatherer(IDataGatherer):
         """
         self.logger.log("Didn't find file. Reading from full dataset with Spark.")
 
-        # Get BSM raw schema
-        schema = get_bsm_raw_schema()
+        # Determine schema strategy
+        if self.use_schema_inference:
+            self.logger.log("Using automatic schema inference")
+            # Infer schema with fallback to explicit schema
+            schema = self.schema_inferencer.infer_with_fallback(
+                self.filepath,
+                expected_schema=get_bsm_raw_schema(),
+                sample_size=self.schema_inference_sample_size,
+                header=True
+            )
+        else:
+            # Use explicit BSM raw schema (default behavior)
+            self.logger.log("Using explicit BSM raw schema")
+            schema = get_bsm_raw_schema()
 
         # Read CSV with schema
         df = self.spark.read \

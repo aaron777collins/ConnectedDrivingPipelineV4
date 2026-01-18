@@ -30,7 +30,7 @@ IN_PROGRESS
 - [x] Task 20: Migrate ConnectedDrivingCleaner
 - [x] Task 21: Migrate ConnectedDrivingLargeDataCleaner
 - [x] Task 22: Test file I/O with large datasets
-- [ ] Task 23: Implement automatic schema inference
+- [x] Task 23: Implement automatic schema inference
 - [ ] Task 24: Add schema evolution support
 - [ ] Task 25: Validate backwards compatibility
 
@@ -127,7 +127,7 @@ IN_PROGRESS
 - [ ] Task 105: Deprecate pandas pipeline
 
 ## Completed This Iteration
-- Task 22: Verified large file I/O testing with 100k row datasets
+- Task 23: Implemented automatic schema inference with comprehensive testing
 
 ## Notes
 - Tasks 1-4 were already completed in previous work (PySpark dependencies, SparkSession utility, Spark configs, and BSM schemas)
@@ -230,3 +230,30 @@ IN_PROGRESS
   - All tests passing successfully
   - Performance metrics validated: Parquet provides ~8.5x read speedup and ~2.6x compression
   - Confirms large dataset I/O works correctly with SparkDataGatherer and split_large_data functionality
+- Task 23: Implemented automatic schema inference:
+  - Created Helpers/SchemaInferencer.py with comprehensive SchemaInferencer class:
+    - infer_from_csv(): Infers schema from CSV files with optional sampling
+    - infer_from_parquet(): Reads schema from Parquet metadata
+    - infer_with_fallback(): Graceful fallback to expected schema on failure
+    - compare_schemas(): Validates inferred vs expected schemas
+    - get_schema_summary(): Human-readable schema statistics
+    - Type compatibility checking (int/long, float/double, etc.)
+  - Created Test/test_schema_inferencer.py with 27 comprehensive tests:
+    - CSV inference with different sample sizes
+    - Parquet schema reading
+    - Fallback mechanisms
+    - Schema comparison (exact match, compatible types, missing/extra columns)
+    - Type compatibility validation
+    - Schema summary generation
+    - Real BSM data inference validation
+    - Custom delimiters and header handling
+    - Integration tests for complete workflows
+    - All 27 tests passing with 94.79% code coverage
+  - Integrated schema inference into SparkDataGatherer:
+    - Added optional use_schema_inference flag (default: False)
+    - Added configurable schema_inference_sample_size (default: 10000)
+    - Maintains backward compatibility (explicit BSM schema by default)
+    - Falls back to explicit schema if inference fails
+    - Config keys: DataGatherer.infer_schema, DataGatherer.inference_sample_size
+  - Convenience functions: infer_csv_schema(), infer_parquet_schema()
+  - Documentation includes examples and best practices
