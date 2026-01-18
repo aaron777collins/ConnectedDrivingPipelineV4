@@ -168,7 +168,7 @@ IN_PROGRESS
 
 ### Phase 2: Core Data Operations
 
-- [ ] Task 2.1: Create ParquetCache decorator (`Decorators/ParquetCache.py`)
+- [x] Task 2.1: Create ParquetCache decorator (`Decorators/ParquetCache.py`)
 - [ ] Task 2.2: Update FileCache to support Spark DataFrames
 - [ ] Task 2.3: Create SparkDataGatherer class (`Gatherer/SparkDataGatherer.py`)
 - [ ] Task 2.4: Implement spark.read.csv with schema in SparkDataGatherer
@@ -637,3 +637,36 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
     - Tests for summary printing
     - All tests passing
   - Utility now available for all migration validation tests
+
+- **Task 2.1:** Created ParquetCache decorator
+  - Created `Decorators/ParquetCache.py` (92 lines)
+    - Follows same MD5-based caching pattern as FileCache and CSVCache
+    - Uses PySpark for reading/writing Parquet files
+    - Integrates with SparkSessionManager for Spark session access
+    - Supports all FileCache features:
+      - cache_variables parameter for custom cache key generation
+      - full_file_cache_path parameter for explicit cache path override
+      - Automatic MD5 hashing of function name + parameters
+    - Uses Parquet format with snappy compression
+    - Overwrite mode for cache writes to handle partial writes
+    - Comprehensive docstrings with usage examples
+  - Created `Test/test_parquet_cache.py` (353 lines)
+    - 10 comprehensive test cases across 4 test classes:
+      - TestParquetCacheBasic: Basic caching functionality (3 tests)
+      - TestParquetCacheWithCacheVariables: Cache key control (1 test)
+      - TestParquetCacheSchema: Schema preservation (2 tests)
+      - TestParquetCacheEdgeCases: Edge cases like empty/large DataFrames (2 tests)
+      - TestParquetCacheIntegration: Real-world scenarios (2 tests)
+    - Tests validate:
+      - Cache hit/miss behavior
+      - Data integrity after cache round-trip
+      - Schema preservation (with Parquet nullable considerations)
+      - Cache key generation with custom cache_variables
+      - Complex data types (arrays, maps)
+      - Empty and large DataFrames (10,000 rows)
+      - Explicit cache path override
+      - Multiple cached functions simultaneously
+    - All 10 tests passing
+    - Includes auto-cleanup fixture to prevent test interference
+  - ParquetCache now ready for use in SparkDataGatherer and other PySpark components
+  - Provides Parquet-based alternative to CSVCache for distributed DataFrame caching
