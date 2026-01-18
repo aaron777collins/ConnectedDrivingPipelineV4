@@ -11,6 +11,47 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 2: Extend Test/Utils/DataFrameComparator.py with assert_dask_equal(), assert_pandas_dask_equal()
+
+**Implementation Summary:**
+- Extended `Test/Utils/DataFrameComparator.py` with 5 new Dask comparison methods:
+  - `assert_dask_equal()` - Compare two Dask DataFrames
+  - `assert_pandas_dask_equal()` - Compare pandas vs Dask DataFrame
+  - `assert_dask_schema_equal()` - Compare Dask DataFrame schemas
+  - `assert_dask_column_exists()` - Verify single column presence
+  - `assert_dask_columns_exist()` - Verify multiple columns presence
+
+**Method Details:**
+- All methods follow the same pattern as existing Spark comparison methods
+- Dask DataFrames are computed to pandas before comparison for precision
+- Support for tolerance-based floating-point comparison (rtol, atol)
+- Options for ignoring column order and row order
+- Proper error messages showing differences
+- ImportError if Dask is not available
+
+**Testing:**
+- Created `Test/test_dataframe_comparator_dask.py` with 15 comprehensive tests
+- All tests passed (15/15) including:
+  - Identical DataFrames comparison
+  - Different values detection
+  - Different columns detection
+  - pandas vs Dask comparison
+  - Schema validation
+  - Column existence checks
+  - Tolerance-based comparison
+  - Ignore column/row order options
+
+**Files Modified:**
+1. `/tmp/original-repo/Test/Utils/DataFrameComparator.py` (added 5 Dask methods, 264 new lines)
+2. `/tmp/original-repo/Test/test_dataframe_comparator_dask.py` (NEW - 167 lines)
+
+**Validation:**
+- All 15 tests pass without errors
+- Methods match DaskFixtures.DaskDataFrameComparer pattern
+- Ready for use in all Dask migration tests
+
+---
+
 ### Task 1: Create Test/Fixtures/DaskFixtures.py with dask_client, sample Dask DataFrames
 
 **Implementation Summary:**
@@ -137,7 +178,7 @@ Based on comprehensive codebase exploration and git history analysis:
 
 #### Infrastructure & Testing
 - [x] Task 1: Create Test/Fixtures/DaskFixtures.py with dask_client, sample Dask DataFrames
-- [ ] Task 2: Extend Test/Utils/DataFrameComparator.py with assert_dask_equal(), assert_pandas_dask_equal()
+- [x] Task 2: Extend Test/Utils/DataFrameComparator.py with assert_dask_equal(), assert_pandas_dask_equal()
 - [ ] Task 3: Create Scripts/convert_csv_cache_to_parquet.py utility
 - [ ] Task 4: Create Test/test_existing_dask_components.py validation tests
 - [ ] Task 5: Validate DaskSessionManager with memory tracking tests

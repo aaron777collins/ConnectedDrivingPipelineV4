@@ -1,8 +1,8 @@
 """
-DataFrame comparison utilities for testing pandas vs PySpark migrations.
+DataFrame comparison utilities for testing pandas vs PySpark/Dask migrations.
 
 This module provides utilities for comparing DataFrames during the migration
-from pandas to PySpark, allowing validation that PySpark implementations
+from pandas to PySpark and Dask, allowing validation that implementations
 produce equivalent results to pandas implementations.
 
 Usage:
@@ -16,13 +16,25 @@ Usage:
     # Compare PySpark vs pandas DataFrames
     comparator.assert_pandas_spark_equal(pandas_df, spark_df, rtol=1e-5)
 
+    # Compare two Dask DataFrames
+    comparator.assert_dask_equal(ddf1, ddf2, rtol=1e-5)
+
+    # Compare pandas vs Dask DataFrames
+    comparator.assert_pandas_dask_equal(pandas_df, dask_df, rtol=1e-5)
+
     # Compare schemas only
     comparator.assert_schema_equal(df1, df2)
 """
 
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Union
 import pandas as pd
 from pyspark.sql import DataFrame as SparkDataFrame
+
+try:
+    import dask.dataframe as dd
+    DASK_AVAILABLE = True
+except ImportError:
+    DASK_AVAILABLE = False
 
 
 class DataFrameComparator:
@@ -384,3 +396,268 @@ class DataFrameComparator:
         df2.show(5, truncate=50)
 
         print(f"{'='*60}\n")
+
+    # ==================== DASK COMPARISON METHODS ====================
+
+    def assert_dask_equal(
+        self,
+        df1,  # dd.DataFrame
+        df2,  # dd.DataFrame
+        check_dtype: bool = True,
+        rtol: float = 1e-5,
+        atol: float = 1e-8,
+        ignore_column_order: bool = False,
+        ignore_row_order: bool = True
+    ):
+        """
+        Assert that two Dask DataFrames are equal.
+
+        Args:
+            df1: First Dask DataFrame
+            df2: Second Dask DataFrame
+            check_dtype: Whether to check data types match (default: True)
+            rtol: Relative tolerance for floating-point comparison (default: 1e-5)
+            atol: Absolute tolerance for floating-point comparison (default: 1e-8)
+            ignore_column_order: If True, sort columns before comparison (default: False)
+            ignore_row_order: If True, sort rows before comparison (default: True)
+
+        Raises:
+            AssertionError: If DataFrames are not equal
+            ImportError: If Dask is not available
+
+        Example:
+            comparator = DataFrameComparator()
+            comparator.assert_dask_equal(expected_ddf, actual_ddf, rtol=1e-9)
+        """
+        if not DASK_AVAILABLE:
+            raise ImportError(
+                "Dask is not available. Install with: pip install dask[complete]"
+            )
+
+        # Compute DataFrames to pandas for comparison
+        pdf1 = df1.compute()
+        pdf2 = df2.compute()
+
+        # Check shapes
+        assert pdf1.shape == pdf2.shape, (
+            f"Shapes differ: {pdf1.shape} vs {pdf2.shape}"
+        )
+
+        # Check columns
+        cols1 = set(pdf1.columns)
+        cols2 = set(pdf2.columns)
+        assert cols1 == cols2, (
+            f"Column sets differ:\n"
+            f"  Only in df1: {cols1 - cols2}\n"
+            f"  Only in df2: {cols2 - cols1}"
+        )
+
+        # Sort columns if requested
+        if ignore_column_order:
+            sorted_cols = sorted(pdf1.columns)
+            pdf1 = pdf1[sorted_cols]
+            pdf2 = pdf2[sorted_cols]
+
+        # Sort rows if requested (for stable comparison)
+        if ignore_row_order:
+            pdf1 = pdf1.sort_values(by=list(pdf1.columns)).reset_index(drop=True)
+            pdf2 = pdf2.sort_values(by=list(pdf2.columns)).reset_index(drop=True)
+
+        # Use pandas testing for detailed comparison
+        import pandas.testing as pdt
+        pdt.assert_frame_equal(
+            pdf1, pdf2,
+            rtol=rtol,
+            atol=atol,
+            check_dtype=check_dtype
+        )
+
+    def assert_pandas_dask_equal(
+        self,
+        pandas_df: pd.DataFrame,
+        dask_df,  # dd.DataFrame
+        rtol: float = 1e-5,
+        atol: float = 1e-8,
+        ignore_column_order: bool = False,
+        check_dtype: bool = False  # Default to False for cross-platform comparison
+    ):
+        """
+        Assert that a pandas DataFrame and Dask DataFrame are equal.
+
+        Useful for validating that Dask implementations produce the same
+        results as pandas implementations.
+
+        Args:
+            pandas_df: Pandas DataFrame (expected/baseline)
+            dask_df: Dask DataFrame (actual/new implementation)
+            rtol: Relative tolerance for floating-point comparison (default: 1e-5)
+            atol: Absolute tolerance for floating-point comparison (default: 1e-8)
+            ignore_column_order: If True, sort columns before comparison (default: False)
+            check_dtype: Whether to check data types match (default: False)
+                        Set to False by default because pandas/Dask may have different type systems
+
+        Raises:
+            AssertionError: If DataFrames are not equal
+            ImportError: If Dask is not available
+
+        Example:
+            comparator = DataFrameComparator()
+            pandas_result = pandas_pipeline.run(data)
+            dask_result = dask_pipeline.run(data)
+            comparator.assert_pandas_dask_equal(pandas_result, dask_result, rtol=1e-9)
+        """
+        if not DASK_AVAILABLE:
+            raise ImportError(
+                "Dask is not available. Install with: pip install dask[complete]"
+            )
+
+        # Compute Dask DataFrame to pandas
+        dask_as_pandas = dask_df.compute()
+
+        # Check row counts
+        assert len(pandas_df) == len(dask_as_pandas), (
+            f"Row counts differ: pandas={len(pandas_df)} vs dask={len(dask_as_pandas)}"
+        )
+
+        # Check columns
+        pandas_cols = set(pandas_df.columns)
+        dask_cols = set(dask_as_pandas.columns)
+        assert pandas_cols == dask_cols, (
+            f"Column sets differ:\n"
+            f"  Only in pandas: {pandas_cols - dask_cols}\n"
+            f"  Only in dask: {dask_cols - pandas_cols}"
+        )
+
+        # Sort columns if requested
+        if ignore_column_order:
+            sorted_cols = sorted(pandas_df.columns)
+            pandas_df = pandas_df[sorted_cols]
+            dask_as_pandas = dask_as_pandas[sorted_cols]
+
+        # Sort both DataFrames for stable comparison
+        pandas_sorted = pandas_df.sort_values(by=list(pandas_df.columns)).reset_index(drop=True)
+        dask_sorted = dask_as_pandas.sort_values(by=list(dask_as_pandas.columns)).reset_index(drop=True)
+
+        # Use pandas testing for detailed comparison
+        import pandas.testing as pdt
+        pdt.assert_frame_equal(
+            pandas_sorted,
+            dask_sorted,
+            rtol=rtol,
+            atol=atol,
+            check_dtype=check_dtype
+        )
+
+    def assert_dask_schema_equal(
+        self,
+        df1,  # dd.DataFrame
+        df2   # dd.DataFrame
+    ):
+        """
+        Assert that two Dask DataFrames have the same schema.
+
+        Args:
+            df1: First Dask DataFrame
+            df2: Second Dask DataFrame
+
+        Raises:
+            AssertionError: If schemas differ
+            ImportError: If Dask is not available
+
+        Example:
+            comparator = DataFrameComparator()
+            comparator.assert_dask_schema_equal(expected_schema_df, actual_schema_df)
+        """
+        if not DASK_AVAILABLE:
+            raise ImportError(
+                "Dask is not available. Install with: pip install dask[complete]"
+            )
+
+        # Get dtypes as dictionaries
+        dtypes1 = df1.dtypes.to_dict()
+        dtypes2 = df2.dtypes.to_dict()
+
+        # Check column names match
+        cols1 = set(dtypes1.keys())
+        cols2 = set(dtypes2.keys())
+        assert cols1 == cols2, (
+            f"Schema column names differ:\n"
+            f"  Only in df1: {cols1 - cols2}\n"
+            f"  Only in df2: {cols2 - cols1}"
+        )
+
+        # Check data types match for each column
+        type_mismatches = []
+        for col in dtypes1.keys():
+            if dtypes1[col] != dtypes2[col]:
+                type_mismatches.append(
+                    f"  {col}: {dtypes1[col]} vs {dtypes2[col]}"
+                )
+
+        assert not type_mismatches, (
+            f"Schema data types differ:\n" + "\n".join(type_mismatches)
+        )
+
+    def assert_dask_column_exists(
+        self,
+        df,  # dd.DataFrame
+        column_name: str
+    ):
+        """
+        Assert that a Dask DataFrame contains a specific column.
+
+        Args:
+            df: Dask DataFrame
+            column_name: Name of column to check
+
+        Raises:
+            AssertionError: If column does not exist
+            ImportError: If Dask is not available
+
+        Example:
+            comparator = DataFrameComparator()
+            comparator.assert_dask_column_exists(result_df, 'isAttacker')
+        """
+        if not DASK_AVAILABLE:
+            raise ImportError(
+                "Dask is not available. Install with: pip install dask[complete]"
+            )
+
+        assert column_name in df.columns, (
+            f"Column '{column_name}' not found in DataFrame.\n"
+            f"Available columns: {list(df.columns)}"
+        )
+
+    def assert_dask_columns_exist(
+        self,
+        df,  # dd.DataFrame
+        column_names: List[str]
+    ):
+        """
+        Assert that a Dask DataFrame contains multiple specific columns.
+
+        Args:
+            df: Dask DataFrame
+            column_names: List of column names to check
+
+        Raises:
+            AssertionError: If any column does not exist
+            ImportError: If Dask is not available
+
+        Example:
+            comparator = DataFrameComparator()
+            comparator.assert_dask_columns_exist(
+                result_df,
+                ['x_pos', 'y_pos', 'isAttacker']
+            )
+        """
+        if not DASK_AVAILABLE:
+            raise ImportError(
+                "Dask is not available. Install with: pip install dask[complete]"
+            )
+
+        missing_columns = [col for col in column_names if col not in df.columns]
+        assert not missing_columns, (
+            f"Missing columns: {missing_columns}\n"
+            f"Available columns: {list(df.columns)}"
+        )
