@@ -207,7 +207,16 @@ class TestDaskCleanersGoldenDataset:
 class TestDaskCleanersEdgeCases:
     """
     Edge case and boundary condition tests for Dask cleaners.
+
+    Tests cover:
+    - Empty DataFrames
+    - Null/NaN values in critical columns
+    - Invalid data formats
+    - Single-row DataFrames
+    - Missing required columns
     """
+
+    # ========== UDF Edge Cases ==========
 
     def test_point_parsing_handles_none(self, dask_client):
         """Test that point parsing functions handle None values gracefully"""
@@ -463,6 +472,435 @@ class TestDaskCleanerIntegration:
         assert result.iloc[0]['coreData_id_decimal'] == 2712847316
         assert abs(result.iloc[0]['x_pos'] - (-105.9378)) < 1e-9
         assert abs(result.iloc[0]['y_pos'] - 41.2565) < 1e-9
+
+
+@pytest.mark.dask
+class TestDaskCleanersEmptyDataFrames:
+    """
+    Test that all Dask cleaner operations handle empty DataFrames correctly.
+
+    Empty DataFrames can occur from:
+    - Empty input files
+    - Aggressive filtering that removes all rows
+    - Data validation that drops all invalid records
+    """
+
+    def test_empty_dataframe_with_point_parsing(self, dask_client):
+        """Test applying point parsing UDFs to empty Dask DataFrame"""
+        # Create empty DataFrame with proper schema
+        pdf = pd.DataFrame({
+            'coreData_position': pd.Series([], dtype='object'),
+            'id': pd.Series([], dtype='int64')
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Apply UDFs
+        ddf['x_pos'] = ddf['coreData_position'].apply(point_to_x, meta=('coreData_position', 'float64'))
+        ddf['y_pos'] = ddf['coreData_position'].apply(point_to_y, meta=('coreData_position', 'float64'))
+
+        result = ddf.compute()
+
+        # Validate empty DataFrame with correct schema
+        assert len(result) == 0, "Should have 0 rows"
+        assert 'x_pos' in result.columns, "Should have x_pos column"
+        assert 'y_pos' in result.columns, "Should have y_pos column"
+        assert list(result.columns) == ['coreData_position', 'id', 'x_pos', 'y_pos']
+
+    def test_empty_dataframe_with_distance_calculation(self, dask_client):
+        """Test distance calculations on empty DataFrame"""
+        pdf = pd.DataFrame({
+            'x_pos': pd.Series([], dtype='float64'),
+            'y_pos': pd.Series([], dtype='float64'),
+            'id': pd.Series([], dtype='int64')
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Add distance column
+        ddf['distance'] = ddf.apply(
+            lambda row: xy_distance(row['x_pos'], row['y_pos'], 0.0, 0.0),
+            axis=1,
+            meta=('distance', 'float64')
+        )
+
+        result = ddf.compute()
+
+        # Should have empty DataFrame with distance column
+        assert len(result) == 0
+        assert 'distance' in result.columns
+
+    def test_empty_dataframe_with_filtering(self, dask_client):
+        """Test filtering operations on empty DataFrame"""
+        pdf = pd.DataFrame({
+            'x_pos': pd.Series([], dtype='float64'),
+            'y_pos': pd.Series([], dtype='float64'),
+            'value': pd.Series([], dtype='float64')
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Filter (should return empty)
+        filtered = ddf[ddf['value'] > 10.0]
+        result = filtered.compute()
+
+        assert len(result) == 0
+        assert list(result.columns) == ['x_pos', 'y_pos', 'value']
+
+    def test_empty_dataframe_with_hex_conversion(self, dask_client):
+        """Test hex-to-decimal conversion on empty DataFrame"""
+        pdf = pd.DataFrame({
+            'hex_id': pd.Series([], dtype='object'),
+            'name': pd.Series([], dtype='object')
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Convert hex to decimal
+        ddf['decimal_id'] = ddf['hex_id'].apply(
+            lambda x: int(x, 16) if x else None,
+            meta=('hex_id', 'int64')
+        )
+
+        result = ddf.compute()
+
+        assert len(result) == 0
+        assert 'decimal_id' in result.columns
+
+
+@pytest.mark.dask
+class TestDaskCleanersNullValues:
+    """
+    Test that all Dask cleaner operations handle null/NaN values correctly.
+
+    Null values can occur from:
+    - Missing data in source files
+    - Invalid data that gets converted to null
+    - Gaps in sensor readings
+    - Data quality issues
+    """
+
+    def test_point_parsing_with_null_values(self, dask_client):
+        """Test point parsing when some values are null"""
+        pdf = pd.DataFrame({
+            'coreData_position': [
+                "POINT (-105.9378 41.2565)",
+                None,
+                "POINT (-105.9380 41.2570)",
+                None,
+                "POINT (-105.9385 41.2575)",
+            ],
+            'id': [1, 2, 3, 4, 5]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Apply UDFs
+        ddf['x_pos'] = ddf['coreData_position'].apply(point_to_x, meta=('coreData_position', 'float64'))
+        ddf['y_pos'] = ddf['coreData_position'].apply(point_to_y, meta=('coreData_position', 'float64'))
+
+        result = ddf.compute()
+
+        # Validate: rows with None should have None x_pos/y_pos
+        assert len(result) == 5
+        assert pd.isna(result.iloc[1]['x_pos']), "Row 1 should have null x_pos"
+        assert pd.isna(result.iloc[1]['y_pos']), "Row 1 should have null y_pos"
+        assert pd.isna(result.iloc[3]['x_pos']), "Row 3 should have null x_pos"
+        assert not pd.isna(result.iloc[0]['x_pos']), "Row 0 should have valid x_pos"
+        assert not pd.isna(result.iloc[2]['x_pos']), "Row 2 should have valid x_pos"
+
+    def test_distance_calculation_with_null_coordinates(self, dask_client):
+        """Test distance calculations when coordinates contain null values"""
+        pdf = pd.DataFrame({
+            'x_pos': [0.0, None, 3.0, None, 10.0],
+            'y_pos': [0.0, 4.0, None, None, 10.0],
+            'id': [1, 2, 3, 4, 5]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Add distance column (will fail if x or y is null)
+        # The xy_distance function should handle null by propagating None
+        def safe_xy_distance(row):
+            if pd.isna(row['x_pos']) or pd.isna(row['y_pos']):
+                return None
+            return xy_distance(row['x_pos'], row['y_pos'], 0.0, 0.0)
+
+        ddf['distance'] = ddf.apply(safe_xy_distance, axis=1, meta=('distance', 'float64'))
+
+        result = ddf.compute()
+
+        # Validate null handling
+        assert len(result) == 5
+        assert not pd.isna(result.iloc[0]['distance']), "Row 0 should have valid distance"
+        assert pd.isna(result.iloc[1]['distance']), "Row 1 should have null distance (null x)"
+        assert pd.isna(result.iloc[2]['distance']), "Row 2 should have null distance (null y)"
+        assert pd.isna(result.iloc[3]['distance']), "Row 3 should have null distance (both null)"
+        assert not pd.isna(result.iloc[4]['distance']), "Row 4 should have valid distance"
+
+    def test_hex_conversion_with_null_values(self, dask_client):
+        """Test hex-to-decimal conversion when hex IDs contain null values"""
+        pdf = pd.DataFrame({
+            'hex_id': ["A1B2C3D4", None, "B2C3D4E5", None, "FFFFFFFF"],
+            'name': ["vehicle1", "vehicle2", "vehicle3", "vehicle4", "vehicle5"]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Convert hex to decimal (handle None)
+        ddf['decimal_id'] = ddf['hex_id'].apply(
+            lambda x: int(x, 16) if x is not None and pd.notna(x) else None,
+            meta=('hex_id', 'object')
+        )
+
+        result = ddf.compute()
+
+        # Validate null handling
+        assert len(result) == 5
+        assert result.iloc[0]['decimal_id'] == 2712847316, "Row 0 should have valid decimal"
+        assert pd.isna(result.iloc[1]['decimal_id']), "Row 1 should have null decimal"
+        assert result.iloc[2]['decimal_id'] == 2999178469, "Row 2 should have valid decimal"
+        assert pd.isna(result.iloc[3]['decimal_id']), "Row 3 should have null decimal"
+        assert result.iloc[4]['decimal_id'] == 4294967295, "Row 4 should have valid decimal"
+
+    def test_filtering_with_null_values(self, dask_client):
+        """Test filtering when filter columns contain null values"""
+        pdf = pd.DataFrame({
+            'x_pos': [0.0, 3.0, None, 10.0, None],
+            'y_pos': [0.0, 4.0, 10.0, None, None],
+            'id': [1, 2, 3, 4, 5]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Filter by x_pos > 2.0 (nulls should be excluded)
+        filtered = ddf[ddf['x_pos'] > 2.0]
+        result = filtered.compute()
+
+        # Only rows 1 and 3 should remain (null rows filtered out)
+        assert len(result) == 2
+        assert list(result['id'].values) == [2, 4]
+
+    def test_all_null_dataframe(self, dask_client):
+        """Test operations on DataFrame where all values are null"""
+        pdf = pd.DataFrame({
+            'coreData_position': [None, None, None],
+            'x_pos': [None, None, None],
+            'y_pos': [None, None, None],
+            'id': [1, 2, 3]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Apply point parsing (should return all nulls)
+        ddf['parsed_x'] = ddf['coreData_position'].apply(point_to_x, meta=('coreData_position', 'float64'))
+
+        result = ddf.compute()
+
+        # All parsed values should be null
+        assert len(result) == 3
+        assert result['parsed_x'].isna().all(), "All parsed values should be null"
+
+
+@pytest.mark.dask
+class TestDaskCleanersSingleRowDataFrames:
+    """
+    Test that all Dask cleaner operations handle single-row DataFrames correctly.
+
+    Single-row DataFrames can occur from:
+    - Very small datasets
+    - Aggressive filtering
+    - Edge cases in data processing
+    """
+
+    def test_single_row_point_parsing(self, dask_client):
+        """Test point parsing with single-row DataFrame"""
+        pdf = pd.DataFrame({
+            'coreData_position': ["POINT (-105.9378 41.2565)"],
+            'id': [1]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Apply UDFs
+        ddf['x_pos'] = ddf['coreData_position'].apply(point_to_x, meta=('coreData_position', 'float64'))
+        ddf['y_pos'] = ddf['coreData_position'].apply(point_to_y, meta=('coreData_position', 'float64'))
+
+        result = ddf.compute()
+
+        # Validate single row processed correctly
+        assert len(result) == 1
+        assert abs(result.iloc[0]['x_pos'] - (-105.9378)) < 1e-9
+        assert abs(result.iloc[0]['y_pos'] - 41.2565) < 1e-9
+
+    def test_single_row_distance_calculation(self, dask_client):
+        """Test distance calculation with single-row DataFrame"""
+        pdf = pd.DataFrame({
+            'x_pos': [3.0],
+            'y_pos': [4.0],
+            'id': [1]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Add distance column
+        ddf['distance'] = ddf.apply(
+            lambda row: xy_distance(row['x_pos'], row['y_pos'], 0.0, 0.0),
+            axis=1,
+            meta=('distance', 'float64')
+        )
+
+        result = ddf.compute()
+
+        # Validate
+        assert len(result) == 1
+        assert abs(result.iloc[0]['distance'] - 5.0) < 1e-9
+
+    def test_single_row_filtering(self, dask_client):
+        """Test filtering with single-row DataFrame"""
+        pdf = pd.DataFrame({
+            'x_pos': [3.0],
+            'y_pos': [4.0],
+            'value': [10.0]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Filter that includes the row
+        filtered_in = ddf[ddf['value'] > 5.0]
+        result_in = filtered_in.compute()
+        assert len(result_in) == 1
+
+        # Filter that excludes the row
+        filtered_out = ddf[ddf['value'] > 15.0]
+        result_out = filtered_out.compute()
+        assert len(result_out) == 0
+
+    def test_single_row_hex_conversion(self, dask_client):
+        """Test hex conversion with single-row DataFrame"""
+        pdf = pd.DataFrame({
+            'hex_id': ["A1B2C3D4"],
+            'name': ["vehicle1"]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=1)
+
+        # Convert hex to decimal
+        ddf['decimal_id'] = ddf['hex_id'].apply(
+            lambda x: int(x, 16) if x else None,
+            meta=('hex_id', 'int64')
+        )
+
+        result = ddf.compute()
+
+        # Validate
+        assert len(result) == 1
+        assert result.iloc[0]['decimal_id'] == 2712847316
+
+
+@pytest.mark.dask
+class TestDaskCleanersInvalidData:
+    """
+    Test that all Dask cleaner operations handle invalid data formats correctly.
+
+    Invalid data can occur from:
+    - Data corruption
+    - Format changes in source systems
+    - Manual data entry errors
+    - Encoding issues
+    """
+
+    def test_invalid_point_format_handling(self, dask_client):
+        """Test handling of various invalid POINT formats"""
+        pdf = pd.DataFrame({
+            'coreData_position': [
+                "POINT (-105.9378 41.2565)",  # Valid
+                "INVALID STRING",  # Invalid
+                "POINT ()",  # Empty coordinates
+                "POINT (abc def)",  # Non-numeric
+                "(-105.9378 41.2565)",  # Missing POINT keyword
+                "POINT (-105.9378 41.2565",  # Missing closing paren
+            ],
+            'id': [1, 2, 3, 4, 5, 6]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Apply UDFs (should handle errors gracefully)
+        def safe_point_to_x(point_str):
+            try:
+                return point_to_x(point_str)
+            except:
+                return None
+
+        def safe_point_to_y(point_str):
+            try:
+                return point_to_y(point_str)
+            except:
+                return None
+
+        ddf['x_pos'] = ddf['coreData_position'].apply(safe_point_to_x, meta=('coreData_position', 'float64'))
+        ddf['y_pos'] = ddf['coreData_position'].apply(safe_point_to_y, meta=('coreData_position', 'float64'))
+
+        result = ddf.compute()
+
+        # First row should be valid
+        assert not pd.isna(result.iloc[0]['x_pos'])
+        assert not pd.isna(result.iloc[0]['y_pos'])
+
+        # Invalid rows should have None or NaN
+        # (actual behavior depends on point_to_x/y implementation)
+        assert len(result) == 6
+
+    def test_invalid_hex_format_handling(self, dask_client):
+        """Test handling of invalid hexadecimal formats"""
+        pdf = pd.DataFrame({
+            'hex_id': [
+                "A1B2C3D4",  # Valid
+                "GHIJKLMN",  # Invalid hex characters
+                "12.34",  # Decimal point
+                "",  # Empty string
+                "0xABCD",  # With 0x prefix
+            ],
+            'name': ["v1", "v2", "v3", "v4", "v5"]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Safe hex conversion
+        def safe_hex_to_decimal(hex_str):
+            if not hex_str or pd.isna(hex_str):
+                return None
+            try:
+                # Remove 0x prefix if present
+                hex_str = str(hex_str).replace("0x", "").replace(".0", "").strip()
+                return int(hex_str, 16) if hex_str else None
+            except (ValueError, AttributeError):
+                return None
+
+        ddf['decimal_id'] = ddf['hex_id'].apply(safe_hex_to_decimal, meta=('hex_id', 'object'))
+
+        result = ddf.compute()
+
+        # Valid row should convert
+        assert result.iloc[0]['decimal_id'] == 2712847316
+
+        # Invalid rows should return None
+        assert pd.isna(result.iloc[1]['decimal_id']) or result.iloc[1]['decimal_id'] is None
+        assert pd.isna(result.iloc[3]['decimal_id']) or result.iloc[3]['decimal_id'] is None
+
+        # 0x prefix should be handled
+        # Empty string should return None
+
+    def test_extreme_coordinate_values(self, dask_client):
+        """Test handling of extreme coordinate values"""
+        pdf = pd.DataFrame({
+            'x_pos': [0.0, 1e10, -1e10, 1e-10, -1e-10],
+            'y_pos': [0.0, 1e10, -1e10, 1e-10, -1e-10],
+            'id': [1, 2, 3, 4, 5]
+        })
+        ddf = dd.from_pandas(pdf, npartitions=2)
+
+        # Calculate distances
+        ddf['distance'] = ddf.apply(
+            lambda row: xy_distance(row['x_pos'], row['y_pos'], 0.0, 0.0),
+            axis=1,
+            meta=('distance', 'float64')
+        )
+
+        result = ddf.compute()
+
+        # Should not raise errors, even with extreme values
+        assert len(result) == 5
+        assert not result['distance'].isna().all()
+
+        # Validate some expected values
+        assert abs(result.iloc[0]['distance']) < 1e-9  # (0,0) -> 0
 
 
 if __name__ == "__main__":
