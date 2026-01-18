@@ -59,6 +59,23 @@ Expected output:
 ✅ System ready for production workloads
 ```
 
+### Docker Deployment (Alternative)
+
+For containerized deployment with Docker:
+
+```bash
+# Build and run with Docker Compose
+docker compose build
+docker compose run --rm pipeline python validate_dask_setup.py
+
+# Start the pipeline service
+docker compose up -d pipeline
+
+# Access Dask dashboard at http://localhost:8787
+```
+
+See [DOCKER.md](DOCKER.md) for complete Docker deployment guide, including production configurations, scaling, and monitoring.
+
 ### Basic Usage
 
 #### 1. Run a Pipeline from Config

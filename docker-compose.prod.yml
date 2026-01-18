@@ -1,0 +1,176 @@
+version: '3.8'
+
+# Production Docker Compose configuration
+# Usage: docker compose -f docker-compose.prod.yml up -d
+
+services:
+  # Dask Scheduler
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: connected-driving-pipeline:latest
+    container_name: cdp-scheduler
+    restart: always
+
+    command: >
+      bash -c "python -c 'from dask.distributed import Scheduler;
+               s = Scheduler(port=8786, dashboard_address=\":8787\");
+               s.start()' &
+               tail -f /dev/null"
+
+    ports:
+      - "8786:8786"  # Scheduler port
+      - "8787:8787"  # Dashboard port
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+    networks:
+      - dask-network
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',8786)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Dask Workers (scale horizontally)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: connected-driving-pipeline:latest
+    restart: always
+
+    command: python -m distributed.cli.dask_worker scheduler:8786 --nworkers 1 --nthreads 4 --memory-limit 12GB
+
+    depends_on:
+      scheduler:
+        condition: service_healthy
+
+    deploy:
+      mode: replicated
+      replicas: 4
+      resources:
+        limits:
+          cpus: '4'
+          memory: 14G
+        reservations:
+          cpus: '3'
+          memory: 12G
+
+    environment:
+      - DASK_DISTRIBUTED__WORKER__DAEMON=false
+      - DASK_DISTRIBUTED__WORKER__MEMORY__TARGET=0.85
+      - DASK_DISTRIBUTED__WORKER__MEMORY__SPILL=0.90
+      - DASK_DISTRIBUTED__WORKER__MEMORY__PAUSE=0.95
+      - DASK_DISTRIBUTED__WORKER__MEMORY__TERMINATE=0.98
+
+    volumes:
+      - ./cache:/cache:rw
+      - ./logs/workers:/app/logs:rw
+
+    networks:
+      - dask-network
+
+  # Pipeline Runner
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: connected-driving-pipeline:latest
+    container_name: cdp-runner
+    restart: "no"
+
+    depends_on:
+      scheduler:
+        condition: service_healthy
+
+    environment:
+      - DASK_SCHEDULER_ADDRESS=tcp://scheduler:8786
+      - PYTHONPATH=/app
+
+    volumes:
+      - ./data:/data:rw
+      - ./cache:/cache:rw
+      - ./logs/pipeline:/app/logs:rw
+      - ./configs:/app/configs:ro
+      - ./MClassifierPipelines/configs:/app/MClassifierPipelines/configs:ro
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+        reservations:
+          cpus: '1'
+          memory: 4G
+
+    networks:
+      - dask-network
+
+    # Override with specific pipeline command
+    command: python validate_dask_setup.py
+
+  # Monitoring: Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cdp-prometheus
+    restart: always
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+
+    networks:
+      - dask-network
+
+    profiles:
+      - monitoring
+
+  # Monitoring: Grafana (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cdp-grafana
+    restart: always
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+
+    networks:
+      - dask-network
+
+    profiles:
+      - monitoring
+
+networks:
+  dask-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

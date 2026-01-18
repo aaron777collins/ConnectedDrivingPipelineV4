@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Main pipeline service
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: connected-driving-pipeline:latest
+    container_name: cdp-pipeline
+    restart: unless-stopped
+
+    # Resource limits (adjust based on your host system)
+    deploy:
+      resources:
+        limits:
+          cpus: '12'
+          memory: 56G  # Leave 8GB for host OS on 64GB system
+        reservations:
+          cpus: '6'
+          memory: 32G
+
+    # Environment configuration
+    environment:
+      - DASK_WORKERS=4
+      - DASK_THREADS_PER_WORKER=3
+      - DASK_MEMORY_LIMIT=12GB
+      - DASK_DASHBOARD_PORT=8787
+      - PYTHONPATH=/app
+
+    # Port mappings
+    ports:
+      - "8787:8787"  # Dask dashboard
+      - "8786:8786"  # Dask scheduler
+
+    # Volume mappings
+    volumes:
+      - ./data:/data:rw
+      - ./cache:/cache:rw
+      - ./logs:/app/logs:rw
+      - ./configs:/app/configs:ro
+      - ./MClassifierPipelines/configs:/app/MClassifierPipelines/configs:ro
+
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+
+    # Override default command for interactive shell
+    # command: /bin/bash
+
+    networks:
+      - dask-network
+
+  # Optional: Jupyter notebook server for interactive analysis
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: connected-driving-pipeline:latest
+    container_name: cdp-jupyter
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+    environment:
+      - PYTHONPATH=/app
+      - JUPYTER_ENABLE_LAB=yes
+
+    ports:
+      - "8888:8888"  # Jupyter
+
+    volumes:
+      - ./data:/data:rw
+      - ./cache:/cache:rw
+      - ./logs:/app/logs:rw
+      - ./notebooks:/app/notebooks:rw
+
+    command: >
+      bash -c "pip install --user jupyter jupyterlab &&
+               jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+               --allow-root --NotebookApp.token='' --NotebookApp.password=''"
+
+    networks:
+      - dask-network
+
+    profiles:
+      - jupyter
+
+networks:
+  dask-network:
+    driver: bridge
+
+volumes:
+  data:
+  cache:
+  logs:

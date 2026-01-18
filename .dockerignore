@@ -1,0 +1,85 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Git
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation build
+docs/_build/
+site/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Cache directories
+cache/
+Cache/
+logs/
+.cache/
+
+# Large data files (mount as volume instead)
+data/
+*.csv
+*.parquet
+*.pkl
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+tmp/
+
+# Progress and report files
+*PROGRESS.md
+*REPORT.md
+*SUMMARY.md
+*ANALYSIS.md
+COMPREHENSIVE_*.md
+
+# Benchmark files
+benchmark_*.py
+validate_*.py
+
+# Test data
+test_*.csv
