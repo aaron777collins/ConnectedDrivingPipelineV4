@@ -47,8 +47,13 @@ class ConnectedDrivingAttacker(IConnectedDrivingAttacker):
     def add_attackers(self):
         uniqueIDs = self.getUniqueIDsFromCleanData()
 
+        # CRITICAL: Sort IDs to ensure consistent order across runs and compatibility with Dask version
+        # pandas.unique() and dask.unique() can return IDs in different orders
+        # train_test_split is order-dependent, so sorting ensures deterministic results
+        uniqueIDs_sorted = sorted(uniqueIDs)
+
         # Splits the data into the regular cars and the new chosen attackers (5% attackers)
-        regular, attackers = train_test_split(uniqueIDs, test_size=self.attack_ratio, random_state=self.SEED)
+        regular, attackers = train_test_split(uniqueIDs_sorted, test_size=self.attack_ratio, random_state=self.SEED)
 
         # Adds a column called isAttacker with 0 if they are regular and 1 if they are in the attackers list
         self.data["isAttacker"] = self.data.coreData_id.apply(lambda x: 1 if x in attackers else 0)

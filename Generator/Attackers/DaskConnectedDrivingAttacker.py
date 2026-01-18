@@ -120,8 +120,9 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
         This method:
         1. Extracts unique vehicle IDs
-        2. Splits IDs into regular vs attackers using train_test_split
-        3. Adds 'isAttacker' column (0 for regular, 1 for attackers)
+        2. Sorts IDs for consistent ordering (pandas.unique() vs dask.unique() order can differ)
+        3. Splits IDs into regular vs attackers using train_test_split
+        4. Adds 'isAttacker' column (0 for regular, 1 for attackers)
 
         The split is deterministic (controlled by SEED) and consistent across runs.
 
@@ -131,16 +132,26 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         Note:
             Uses dask_ml.model_selection.train_test_split instead of sklearn.
             This approach ensures consistent attacker assignment across experiments.
+
+            IMPORTANT: We sort unique IDs before splitting to ensure pandas and Dask
+            versions produce identical results. pandas.unique() and dask.unique()
+            can return values in different orders, and train_test_split is order-dependent.
         """
         self.logger.log(f"Adding attackers with attack_ratio={self.attack_ratio}, SEED={self.SEED}")
 
         # Get unique vehicle IDs (computed to pandas Series)
         uniqueIDs = self.getUniqueIDsFromCleanData()
 
+        # CRITICAL: Sort IDs to ensure consistent order with pandas version
+        # pandas.unique() and dask.unique() can return IDs in different orders
+        # train_test_split is order-dependent, so sorting ensures identical results
+        uniqueIDs_sorted = sorted(uniqueIDs)
+        self.logger.log(f"Sorted {len(uniqueIDs_sorted)} unique IDs for deterministic splitting")
+
         # Split into regular vs attackers using dask-ml train_test_split
-        # Note: train_test_split expects array-like, so we convert to list
+        # Note: train_test_split expects array-like
         regular, attackers = train_test_split(
-            uniqueIDs,
+            uniqueIDs_sorted,  # Use sorted IDs for consistency
             test_size=self.attack_ratio,
             random_state=self.SEED,
             shuffle=True  # Ensure reproducible shuffling
