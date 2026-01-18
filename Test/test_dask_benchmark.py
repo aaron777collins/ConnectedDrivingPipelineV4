@@ -5,6 +5,7 @@ This module implements:
 - Task 36: Create test_dask_benchmark.py (performance vs pandas)
 - Task 44: Benchmark all cleaners (pandas vs Dask) on 1M, 5M, 10M rows
 - Task 45: Benchmark all attacks on 5M, 10M, 15M rows
+- Task 46: Benchmark full pipeline end-to-end
 
 Tests compare Dask vs pandas implementations across:
 1. Data gathering operations (CSV reading, caching)
@@ -13,6 +14,7 @@ Tests compare Dask vs pandas implementations across:
 4. Attacker operations (all 8 attack methods)
 5. Large-scale attacker benchmarks (all 7 attack methods on 5M-15M rows) - Task 45
 6. ML preparation operations
+7. Full pipeline end-to-end (gather → clean → attack → ML → metrics) - Task 46
 
 Metrics:
 - Execution time (seconds)
@@ -56,6 +58,7 @@ from Gatherer.DaskDataGatherer import DaskDataGatherer
 from Generator.Cleaners.DaskConnectedDrivingCleaner import DaskConnectedDrivingCleaner
 from Generator.Attackers.DaskConnectedDrivingAttacker import DaskConnectedDrivingAttacker
 from MachineLearning.DaskMConnectedDrivingDataCleaner import DaskMConnectedDrivingDataCleaner
+from MachineLearning.DaskPipelineRunner import DaskPipelineRunner
 
 # Pandas implementations (for comparison)
 from Gatherer.DataGatherer import DataGatherer
@@ -1094,6 +1097,249 @@ class TestLargeDatasetBenchmark:
         # Validation
         assert len(pandas_result) > 0
         assert len(dask_result) > 0
+
+
+# ============================================================================
+# TASK 46: FULL PIPELINE END-TO-END BENCHMARKS
+# ============================================================================
+
+class TestFullPipelineEndToEndBenchmark:
+    """
+    End-to-end pipeline benchmarks - Task 46.
+
+    Tests the complete ML pipeline from data gathering through classifier training:
+    1. Data gathering (CSV → DataFrame)
+    2. Large data cleaning (spatial/temporal filtering)
+    3. Train/test split
+    4. Attack simulation (add attackers + position attacks)
+    5. ML feature preparation (hex conversion, column selection)
+    6. Classifier training (RandomForest, DecisionTree, KNeighbors)
+    7. Results collection
+
+    Benchmark Sizes:
+    - Small: 10K rows (1K unique vehicles)
+    - Medium: 50K rows (5K unique vehicles)
+    - Large: 100K rows (10K unique vehicles)
+
+    These sizes are intentionally smaller than Tasks 44-45 because:
+    - End-to-end pipeline includes expensive ML training (3 classifiers)
+    - Focuses on measuring pipeline integration overhead
+    - Validates that all components work together correctly
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_test_data(self, tmp_path):
+        """Setup test data and configuration for pipeline benchmarks."""
+        # Create temporary CSV file for testing
+        self.test_data_file = tmp_path / "test_pipeline_data.csv"
+        self.config_file = tmp_path / "test_pipeline_config.json"
+
+        # Generate test data and save to CSV
+        test_df = generate_test_data(n_rows=10000, n_unique_vehicles=1000, seed=42)
+        test_df.to_csv(self.test_data_file, index=False)
+
+        # Create minimal pipeline configuration
+        self.pipeline_config = {
+            "pipeline_name": "BenchmarkTestPipeline",
+            "data": {
+                "source_file": str(self.test_data_file),
+                "num_subsection_rows": 100000,
+                "lines_per_file": 1000000,
+                "columns": ["RxDevice", "FileId", "TxDevice", "Gentime", "Speed",
+                           "Heading", "Latitude", "Longitude", "Elevation"],
+                "filtering": {
+                    "type": "xy_offset_position",
+                    "distance_meters": 2000,
+                    "center_x": -106.0831353,
+                    "center_y": 41.5430216,
+                    "use_xy_coords": True
+                },
+                "date_range": {
+                    "start_day": 1,
+                    "end_day": 30,
+                    "start_month": 4,
+                    "end_month": 4,
+                    "start_year": 2021,
+                    "end_year": 2021
+                }
+            },
+            "features": {
+                "columns": "minimal_xy_elev"
+            },
+            "attacks": {
+                "enabled": True,
+                "attack_ratio": 0.3,
+                "type": "rand_offset",
+                "min_distance": 10,
+                "max_distance": 20,
+                "seed": 42
+            },
+            "ml": {
+                "train_test_split": {
+                    "type": "random",
+                    "train_ratio": 0.8,
+                    "test_ratio": 0.2,
+                    "random_seed": 42
+                }
+            },
+            "cache": {
+                "enabled": False
+            }
+        }
+
+        # Save config to file
+        import json
+        with open(self.config_file, 'w') as f:
+            json.dump(self.pipeline_config, f, indent=2)
+
+        yield
+
+        # Cleanup is handled automatically by tmp_path fixture
+
+    def test_pipeline_end_to_end_small(self):
+        """
+        Benchmark end-to-end pipeline on small dataset (10K rows).
+
+        This test measures the complete pipeline execution time including:
+        - Data loading and cleaning
+        - Attack simulation
+        - ML feature preparation
+        - Classifier training (3 models)
+        - Results collection
+
+        Expected: ~5-15 seconds for 10K rows (ML training dominates)
+        """
+        print("\n" + "="*80)
+        print("FULL PIPELINE END-TO-END BENCHMARK - SMALL DATASET (10K rows)")
+        print("="*80)
+
+        # Start timing
+        start_time = time.time()
+
+        # Create and run pipeline
+        runner = DaskPipelineRunner(self.pipeline_config)
+        results = runner.run()
+
+        # Calculate total execution time
+        total_time = time.time() - start_time
+
+        # Extract result counts
+        n_results = len(results)
+
+        # Print benchmark results
+        print(f"\n{'Metric':<40} {'Value':>15}")
+        print("-" * 60)
+        print(f"{'Total Execution Time (s)':<40} {total_time:>15.2f}")
+        print(f"{'Number of Classifiers Trained':<40} {n_results:>15}")
+        print(f"{'Avg Time per Classifier (s)':<40} {total_time/max(n_results,1):>15.2f}")
+
+        # Validate results
+        print(f"\n{'Validation Results':^60}")
+        print("-" * 60)
+
+        # Check that we got results for all 3 classifiers
+        assert n_results == 3, f"Expected 3 classifiers, got {n_results}"
+        print(f"✓ All 3 classifiers trained successfully")
+
+        # Validate each classifier's results
+        for i, (classifier, train_results, test_results) in enumerate(results):
+            classifier_name = type(classifier).__name__
+
+            # Check that results are tuples with 5 metrics each
+            assert len(train_results) == 5, f"Train results should have 5 metrics, got {len(train_results)}"
+            assert len(test_results) == 5, f"Test results should have 5 metrics, got {len(test_results)}"
+
+            # Check that metrics are in valid ranges (0-1 for most, >0 for all)
+            train_acc, train_prec, train_rec, train_f1, train_spec = train_results
+            test_acc, test_prec, test_rec, test_f1, test_spec = test_results
+
+            assert 0 <= train_acc <= 1, f"Train accuracy out of range: {train_acc}"
+            assert 0 <= test_acc <= 1, f"Test accuracy out of range: {test_acc}"
+
+            print(f"✓ {classifier_name}: Train Acc={train_acc:.4f}, Test Acc={test_acc:.4f}")
+
+        # Performance assertion - should complete in reasonable time
+        # End-to-end with ML training is expensive, allow up to 60 seconds for small dataset
+        assert total_time < 60, f"Pipeline took {total_time:.2f}s, expected < 60s"
+        print(f"✓ Pipeline completed in {total_time:.2f}s (< 60s threshold)")
+
+        print("\n" + "="*80)
+        print("PIPELINE BENCHMARK COMPLETE")
+        print("="*80 + "\n")
+
+    @pytest.mark.parametrize("n_rows,n_vehicles", [
+        (10000, 1000),    # Small: 10K rows
+        (50000, 5000),    # Medium: 50K rows
+        (100000, 10000),  # Large: 100K rows
+    ])
+    def test_pipeline_scaling(self, n_rows, n_vehicles, tmp_path):
+        """
+        Benchmark pipeline scaling across different dataset sizes.
+
+        Tests pipeline performance on:
+        - 10K rows: Quick validation
+        - 50K rows: Medium scale
+        - 100K rows: Large scale (ML training becomes expensive)
+
+        Metrics:
+        - Total execution time
+        - Time per row
+        - Classifier training time
+        - Pipeline throughput (rows/second)
+        """
+        print(f"\n{'='*80}")
+        print(f"PIPELINE SCALING BENCHMARK - {n_rows:,} ROWS ({n_vehicles:,} VEHICLES)")
+        print(f"{'='*80}")
+
+        # Create temporary test data for this scale
+        test_file = tmp_path / f"pipeline_data_{n_rows}.csv"
+        test_df = generate_test_data(n_rows=n_rows, n_unique_vehicles=n_vehicles, seed=42)
+        test_df.to_csv(test_file, index=False)
+
+        # Create config for this test
+        config = self.pipeline_config.copy()
+        config["pipeline_name"] = f"BenchmarkPipeline_{n_rows}"
+        config["data"]["source_file"] = str(test_file)
+
+        # Run pipeline and measure time
+        start_time = time.time()
+        runner = DaskPipelineRunner(config)
+        results = runner.run()
+        total_time = time.time() - start_time
+
+        # Calculate metrics
+        throughput = n_rows / total_time if total_time > 0 else 0
+        time_per_row_ms = (total_time / n_rows) * 1000 if n_rows > 0 else 0
+        n_classifiers = len(results)
+        avg_time_per_classifier = total_time / max(n_classifiers, 1)
+
+        # Print results
+        print(f"\n{'Performance Metrics':^80}")
+        print("-" * 80)
+        print(f"{'Dataset Size':<40} {n_rows:>15,} rows")
+        print(f"{'Unique Vehicles':<40} {n_vehicles:>15,}")
+        print(f"{'Total Execution Time (s)':<40} {total_time:>15.2f}")
+        print(f"{'Throughput (rows/sec)':<40} {throughput:>15.2f}")
+        print(f"{'Time per Row (ms)':<40} {time_per_row_ms:>15.4f}")
+        print(f"{'Classifiers Trained':<40} {n_classifiers:>15}")
+        print(f"{'Avg Time per Classifier (s)':<40} {avg_time_per_classifier:>15.2f}")
+
+        # Print ML results summary
+        print(f"\n{'Classifier Results':^80}")
+        print("-" * 80)
+        for classifier, train_results, test_results in results:
+            classifier_name = type(classifier).__name__
+            train_acc = train_results[0]
+            test_acc = test_results[0]
+            print(f"{classifier_name:<40} Train: {train_acc:.4f}, Test: {test_acc:.4f}")
+
+        # Validation
+        assert n_classifiers == 3, f"Expected 3 classifiers, got {n_classifiers}"
+        assert total_time > 0, "Pipeline should take measurable time"
+
+        print(f"\n{'='*80}")
+        print(f"SCALING BENCHMARK COMPLETE - {n_rows:,} ROWS")
+        print(f"{'='*80}\n")
 
 
 if __name__ == "__main__":
