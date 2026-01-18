@@ -11,6 +11,38 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py
+
+**Implementation Summary:**
+- Created `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXY.py` (151 lines)
+- Euclidean distance-based spatial filtering from origin (0, 0)
+- Inherits from DaskConnectedDrivingLargeDataCleaner following established pattern
+
+**Key Features:**
+- Filters BSM data to include only points within Euclidean distance from origin (0, 0)
+- Uses `filter_within_xy_range()` module-level function with `map_partitions` for efficiency
+- Deterministic tokenization (avoids lambda serialization issues)
+- Maintains lazy evaluation (no compute() calls)
+- Leverages `xy_distance` UDF from DaskUDFs/GeospatialFunctions.py
+
+**Testing:**
+- Created `Test/test_dask_cleaner_with_filter_within_range_xy.py` with 11 comprehensive tests
+- All tests passing (11/11, 100% pass rate)
+- Tests cover: filtering accuracy, schema preservation, empty DataFrames, lazy evaluation, Euclidean distance calculation, partition preservation, negative coordinates, origin point handling
+
+**Files Created:**
+1. `/tmp/original-repo/Generator/Cleaners/CleanersWithFilters/DaskCleanerWithFilterWithinRangeXY.py` (NEW - 151 lines)
+2. `/tmp/original-repo/Test/test_dask_cleaner_with_filter_within_range_xy.py` (NEW - 296 lines)
+
+**Validation:**
+- All 11 tests pass with pytest
+- Confirms Euclidean distance filtering works correctly from origin
+- Ready for use in pipelines requiring XY coordinate-based spatial filtering
+
+---
+
+## Previous Iterations
+
 ### Task 7: Implement DaskCleanerWithFilterWithinRange.py
 
 **Implementation Summary:**
@@ -374,7 +406,7 @@ Based on comprehensive codebase exploration and git history analysis:
 #### Filter Cleaners (6 classes needed)
 - [x] Task 6: Implement DaskCleanerWithPassthroughFilter.py (trivial - identity function, 5 tests passing)
 - [x] Task 7: Implement DaskCleanerWithFilterWithinRange.py (geodesic distance filtering, 9 tests passing)
-- [ ] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering) **CRITICAL**
+- [x] Task 8: Implement DaskCleanerWithFilterWithinRangeXY.py (Euclidean distance filtering from origin, 11 tests passing) **COMPLETE**
 - [ ] Task 9: Implement DaskCleanerWithFilterWithinRangeXYAndDay.py (spatial + exact day)
 - [ ] Task 10: Implement DaskCleanerWithFilterWithinRangeXYAndDateRange.py (spatial + date range) **CRITICAL**
 - [ ] Task 11: Implement MachineLearning/DaskMConnectedDrivingDataCleaner.py (hex conversion)
