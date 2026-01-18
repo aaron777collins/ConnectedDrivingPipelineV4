@@ -11,6 +11,68 @@ IN_PROGRESS
 
 ## Completed This Iteration
 
+### Task 14: Implement positional_offset_const_per_id_with_random_direction() in DaskConnectedDrivingAttacker.py
+
+**Implementation Summary:**
+- Added 3 new methods to DaskConnectedDrivingAttacker.py (831 lines total, +176 new lines)
+- Implements per-vehicle-ID constant offset with random direction/distance
+- Each attacker vehicle ID gets a random direction (0-360°) and distance (min_dist to max_dist)
+- Direction/distance is constant for all rows with the same vehicle ID
+- Different vehicle IDs get different random directions/distances
+
+**Key Features:**
+- Uses compute-then-daskify strategy (computes to pandas, applies attack, converts back to Dask)
+- Maintains lookup dictionary to ensure consistent direction/distance per vehicle ID
+- Supports both XY coordinates and lat/lon coordinates
+- Uses SEED for reproducible randomness
+- Memory-safe for 15-20M rows (peak usage ~12-32GB)
+
+**Methods Added:**
+1. `add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=25, max_dist=250)` - Public API
+2. `_apply_pandas_positional_offset_const_per_id_with_random_direction(df_pandas, min_dist, max_dist)` - Pandas attack logic
+3. `_positional_offset_const_attack_per_id_with_random_direction(row, min_dist, max_dist, lookupDict)` - Per-row attack
+
+**Testing:**
+- Created `Test/test_dask_attacker_offset_const_per_id.py` with 11 comprehensive tests
+- All 11 tests passing (100% pass rate)
+- Tests cover: basic execution, attacker-only modification, per-ID consistency, different-IDs-get-different-offsets, distance range validation, reproducibility with SEED, custom distance ranges, method chaining, column preservation, lazy evaluation, empty DataFrames
+
+**Test Coverage:**
+1. **Basic Functionality (3 tests)**:
+   - Attack executes without errors
+   - Only attackers are modified (regulars unchanged)
+   - Same vehicle ID gets same offset (rtol=1e-4 for geodesic variations)
+
+2. **Randomness & Consistency (3 tests)**:
+   - Different vehicle IDs get different offsets
+   - Offset distances within specified range (geodesic calculation)
+   - Reproducibility with same SEED
+
+3. **Configuration (2 tests)**:
+   - Custom distance range (10-20m)
+   - Method chaining support
+
+4. **Data Integrity (3 tests)**:
+   - Preserves other columns unchanged
+   - Lazy evaluation preserved (returns Dask DataFrame)
+   - Empty DataFrame handling
+
+**Validation:**
+- All 11 tests pass with pytest
+- Confirms per-ID offset consistency with rtol=1e-4 (geodesic calculations have tiny numerical variations)
+- Validates offset distances within specified range using WGS84 geodesic distance
+- Ready for use in pipelines requiring per-vehicle-ID constant offset attacks
+
+**Files Created:**
+1. `/tmp/original-repo/Test/test_dask_attacker_offset_const_per_id.py` (NEW - 405 lines)
+
+**Files Modified:**
+1. `/tmp/original-repo/Generator/Attackers/DaskConnectedDrivingAttacker.py` (831 lines, +176 new)
+
+---
+
+## Previous Iterations
+
 ### Task 13: Validate all cleaners match pandas versions (rtol=1e-9)
 
 **Implementation Summary:**
@@ -643,9 +705,10 @@ Based on comprehensive codebase exploration and git history analysis:
 ### **PHASE 3: ATTACK SIMULATIONS**
 
 #### Remaining Attack Methods (3 methods)
-- [ ] Task 14: Implement positional_offset_const_per_id_with_random_direction() in DaskConnectedDrivingAttacker.py
+- [x] Task 14: Implement positional_offset_const_per_id_with_random_direction() in DaskConnectedDrivingAttacker.py **COMPLETE**
   - Complex: Requires state management with direction_lookup and distance_lookup dicts
   - Strategy: Compute attackers, build per-ID lookups, apply with consistency
+  - Implementation: 3 new methods (+176 lines), 11 tests (100% passing)
 
 - [ ] Task 15: Implement positional_override_const() in DaskConnectedDrivingAttacker.py
   - Simple: Similar to offset_const but uses absolute positions from origin

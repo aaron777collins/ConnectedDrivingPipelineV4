@@ -652,3 +652,179 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             row[self.pos_long_col] = newLong
 
         return row
+
+    def add_attacks_positional_offset_const_per_id_with_random_direction(self, min_dist=25, max_dist=250):
+        """
+        Add positional offset attack with random direction/distance per vehicle ID.
+
+        This method applies a positional offset attack where:
+        1. Each attacker vehicle (by coreData_id) gets a random direction (0-360°) and distance (min_dist to max_dist)
+        2. That direction/distance is CONSTANT for all rows with the same vehicle ID
+        3. Different vehicle IDs get different random directions/distances
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - First occurrence of each attacker ID gets random direction/distance assigned
+        - Subsequent rows with same ID reuse the same direction/distance
+        - Uses MathHelper for accurate offset calculations
+        - Supports both XY coordinates and lat/lon coordinates
+        - Uses SEED for reproducible randomness
+
+        Args:
+            min_dist (int/float): Minimum offset distance in meters
+                Default: 25m
+            max_dist (int/float): Maximum offset distance in meters
+                Default: 250m
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the attack
+            operation. Memory usage peaks at ~2x data size (original + result).
+            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
+
+            The lookup dictionary stores direction/distance per vehicle ID to ensure
+            consistency across all rows for the same vehicle.
+
+        Examples:
+            # Apply random offset per ID between 25-250m (default)
+            attacker.add_attacks_positional_offset_const_per_id_with_random_direction()
+
+            # Apply random offset per ID between 10-100m
+            attacker.add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=10, max_dist=100)
+
+            # Apply random offset per ID between 100-500m
+            attacker.add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=100, max_dist=500)
+        """
+        self.logger.log(
+            f"Starting positional offset const per ID with random direction attack: "
+            f"min_dist={min_dist}m, max_dist={max_dist}m"
+        )
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for positional offset per ID...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas positional offset attack with per-ID lookup
+        self.logger.log("Applying positional offset per ID attack to pandas DataFrame...")
+        df_offset = self._apply_pandas_positional_offset_const_per_id_with_random_direction(
+            df_pandas, min_dist, max_dist
+        )
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
+
+        self.logger.log("Positional offset const per ID with random direction attack complete")
+        return self
+
+    def _apply_pandas_positional_offset_const_per_id_with_random_direction(self, df_pandas, min_dist, max_dist):
+        """
+        Apply positional offset attack with per-ID lookup to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
+        For each attacker row:
+        1. Check if vehicle ID exists in lookup dictionary
+        2. If not, generate random direction and distance and store in lookup
+        3. Apply offset using the stored direction/distance for that ID
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+            min_dist (int/float): Minimum offset distance in meters
+            max_dist (int/float): Maximum offset distance in meters
+
+        Returns:
+            pd.DataFrame: DataFrame with position-offset attackers
+
+        Note:
+            This method applies the attack row-wise using pandas .apply().
+            Only rows with isAttacker=1 are modified.
+            Uses SEED for reproducible randomness.
+            Lookup dictionary ensures same ID always gets same direction/distance.
+        """
+        # Set random seed for reproducibility
+        random.seed(self.SEED)
+
+        # Create lookup dictionary to store direction/distance per vehicle ID
+        lookupDict = {}
+
+        # Apply offset to each row (only affects attackers)
+        df_offset = df_pandas.apply(
+            lambda row: self._positional_offset_const_attack_per_id_with_random_direction(
+                row, min_dist, max_dist, lookupDict
+            ),
+            axis=1
+        )
+
+        # Count attackers that were offset
+        n_attackers = (df_offset['isAttacker'] == 1).sum()
+        n_unique_ids = len(lookupDict)
+        self.logger.log(
+            f"Applied offset to {n_attackers} attacker rows "
+            f"({n_unique_ids} unique vehicle IDs)"
+        )
+
+        return df_offset
+
+    def _positional_offset_const_attack_per_id_with_random_direction(self, row, min_dist, max_dist, lookupDict):
+        """
+        Apply positional offset with per-ID random direction/distance to a single row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            min_dist (int/float): Minimum offset distance in meters
+            max_dist (int/float): Maximum offset distance in meters
+            lookupDict (dict): Dictionary storing direction/distance per vehicle ID
+
+        Returns:
+            pd.Series: Row with position offset (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionalOffsetAttacker.positional_offset_const_attack_per_id_with_random_direction
+            to ensure 100% compatibility with pandas version.
+
+            The lookupDict is passed by reference, so changes persist across row iterations.
+        """
+        # Only offset positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Check if this vehicle ID already has direction/distance assigned
+        vehicle_id = row["coreData_id"]
+        if vehicle_id not in lookupDict:
+            # First occurrence: generate and store random direction/distance
+            lookupDict[vehicle_id] = {
+                "direction": random.randint(0, 360),
+                "distance": random.randint(min_dist, max_dist)
+            }
+
+        # Retrieve the stored direction/distance for this vehicle ID
+        direction_angle = lookupDict[vehicle_id]["direction"]
+        distance_meters = lookupDict[vehicle_id]["distance"]
+
+        # Calculate new position based on coordinate system (XY or lat/lon)
+        if self.isXYCoords:
+            # XY coordinate system (Cartesian)
+            newX, newY = MathHelper.direction_and_dist_to_XY(
+                row[self.x_col],
+                row[self.y_col],
+                direction_angle,
+                distance_meters
+            )
+            row[self.x_col] = newX
+            row[self.y_col] = newY
+        else:
+            # Lat/Lon coordinate system (WGS84 geodesic)
+            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
+                row[self.pos_lat_col],
+                row[self.pos_long_col],
+                direction_angle,
+                distance_meters
+            )
+            row[self.pos_lat_col] = newLat
+            row[self.pos_long_col] = newLong
+
+        return row
