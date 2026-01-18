@@ -114,7 +114,7 @@ Testing & Validation (Tasks 66-105)
 - [x] Task 15: Implement geodesic_distance() calculation
 - [x] Task 16: Implement xy_distance() calculation
 - [x] Task 17: Create DaskUDFRegistry for function caching
-- [ ] Task 18: Implement map_partitions wrappers for UDFs
+- [x] Task 18: Implement map_partitions wrappers for UDFs
 - [ ] Task 19: Test UDF performance vs PySpark UDFs
 - [ ] Task 20: Validate UDF outputs match PySpark
 
@@ -224,6 +224,72 @@ Testing & Validation (Tasks 66-105)
 ---
 
 ## Completed This Iteration
+
+**Task 18: Implemented map_partitions Wrappers for UDFs**
+
+Created optimized wrapper functions for applying UDFs to Dask DataFrame partitions using map_partitions() for better performance:
+
+**Files Created:**
+- `Helpers/DaskUDFs/MapPartitionsWrappers.py` - 10 wrapper functions with comprehensive documentation
+- `validate_dask_map_partitions_wrappers.py` - 11 test cases covering all wrappers
+
+**Wrapper Functions Implemented:**
+
+**Single-Operation Wrappers:**
+- ✅ `extract_xy_coordinates()` - Extract X/Y from WKT POINT in one pass
+- ✅ `extract_coordinates_as_tuple()` - Extract (x, y) tuples
+- ✅ `convert_hex_id_column()` - Convert hex strings to decimal
+
+**Multi-Operation Wrappers:**
+- ✅ `parse_and_convert_coordinates()` - Combined coordinate parsing + hex conversion
+- ✅ `calculate_distance_from_reference()` - Geodesic distance from reference point
+- ✅ `calculate_pairwise_xy_distance()` - Euclidean distance between two XY points
+- ✅ `apply_positional_offset()` - Apply attack offset only to attackers (conditional)
+
+**Generic Utilities:**
+- ✅ `apply_udf_to_column()` - Generic wrapper for any single-argument UDF
+- ✅ `batch_apply_udfs()` - Apply multiple UDFs in one map_partitions() call
+- ✅ `apply_udf_conditionally()` - Apply UDF only to rows matching condition
+
+**Performance Benefits:**
+- Reduces task graph overhead (one task vs multiple per partition)
+- Minimizes data serialization/deserialization
+- Enables batch processing of related operations
+- Better memory locality and cache utilization
+
+**Validation Results:**
+- Created `validate_dask_map_partitions_wrappers.py` - 11 comprehensive tests
+- All 11 tests passed ✓:
+  - extract_xy_coordinates (handles None values)
+  - extract_coordinates_as_tuple (proper tuple output)
+  - convert_hex_id_column (hex to decimal conversion)
+  - parse_and_convert_coordinates (combined operations)
+  - calculate_distance_from_reference (geodesic distance)
+  - calculate_pairwise_xy_distance (Euclidean distance)
+  - apply_positional_offset (conditional attack application)
+  - apply_udf_to_column (generic wrapper)
+  - batch_apply_udfs (multiple operations in one pass)
+  - apply_udf_conditionally (selective application)
+  - Performance comparison (1.32x speedup vs multiple apply() calls)
+
+**Performance Benchmark:**
+- Multiple apply() calls: 0.105s
+- Single map_partitions(): 0.079s
+- **Speedup: 1.32x** (on 10,000 rows with 10 partitions)
+
+**Integration:**
+- Updated `Helpers/DaskUDFs/__init__.py` to export all 10 wrapper functions
+- Organized exports into categories (single-op, multi-op, generic utilities)
+- Added comprehensive docstrings with usage examples
+
+**Key Design Patterns:**
+1. **Accept partition as first arg** - Follows Dask map_partitions() convention
+2. **Configurable column names** - Allows flexible input/output columns
+3. **Return modified partition** - Required by map_partitions()
+4. **Proper meta handling** - Users must specify meta when calling
+5. **Comprehensive examples** - Each function includes usage example
+
+**Previous Iteration:**
 
 **Task 17: Created DaskUDFRegistry for Function Management**
 

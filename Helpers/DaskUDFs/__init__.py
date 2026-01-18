@@ -40,6 +40,22 @@ from Helpers.DaskUDFs.RegisterDaskUDFs import (
     initialize_dask_udf_registry
 )
 
+from Helpers.DaskUDFs.MapPartitionsWrappers import (
+    # Single-operation wrappers
+    extract_xy_coordinates,
+    extract_coordinates_as_tuple,
+    convert_hex_id_column,
+    # Multi-operation wrappers
+    parse_and_convert_coordinates,
+    calculate_distance_from_reference,
+    calculate_pairwise_xy_distance,
+    apply_positional_offset,
+    # Generic utilities
+    apply_udf_to_column,
+    batch_apply_udfs,
+    apply_udf_conditionally,
+)
+
 __all__ = [
     # Geospatial Functions
     'point_to_tuple',
@@ -56,4 +72,17 @@ __all__ = [
     'FunctionMetadata',
     'get_registry',
     'initialize_dask_udf_registry',
+    # Map Partitions Wrappers - Single-operation
+    'extract_xy_coordinates',
+    'extract_coordinates_as_tuple',
+    'convert_hex_id_column',
+    # Map Partitions Wrappers - Multi-operation
+    'parse_and_convert_coordinates',
+    'calculate_distance_from_reference',
+    'calculate_pairwise_xy_distance',
+    'apply_positional_offset',
+    # Map Partitions Wrappers - Generic utilities
+    'apply_udf_to_column',
+    'batch_apply_udfs',
+    'apply_udf_conditionally',
 ]
