@@ -1,10 +1,28 @@
 # Progress: pyspark-migration-plan
 
 Started: Sat Jan 17 06:48:38 PM EST 2026
+Updated: Sat Jan 17 07:15:00 PM EST 2026 (128GB memory configuration applied)
 
 ## Status
 
 IN_PROGRESS
+
+## ⚠️ CRITICAL REQUIREMENT: 128GB Memory Configuration
+
+**MANDATORY:** All code must use the 128GB single-node configuration with conservative memory allocation.
+
+- **Configuration File:** `configs/spark/128gb-single-node.yml`
+- **Driver Memory:** 12GB (+ 1.2GB overhead = 13.2GB total)
+- **Executor Memory:** 80GB (+ 8GB overhead = 88GB total)
+- **Total Allocation:** ~108-110GB (leaves 18-20GB for Linux kernel/OS)
+- **Executor Cores:** 8
+
+**See `MEMORY_CONFIG_128GB.md` for complete requirements and guidelines.**
+
+**DO NOT use:**
+- ❌ `cluster.yml` (16GB driver + 32GB executor - too small)
+- ❌ `large-dataset.yml` (32GB driver + 64GB executor - requires 500GB+ cluster)
+- ❌ Any configuration with > 80GB executor memory
 
 ## Analysis
 
@@ -175,11 +193,11 @@ IN_PROGRESS
 - [x] Task 2.5: Implement DataFrame.limit() for numrows parameter
 - [x] Task 2.6: Add Parquet write support to SparkDataGatherer
 - [x] Task 2.7: Implement format detection utility (CSV vs Parquet auto-detection)
-- [ ] Task 2.8: Create SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
-- [ ] Task 2.9: Migrate column selection from `df[columns]` to `df.select(*columns)`
-- [ ] Task 2.10: Migrate `.drop(columns=[...])` to `.drop('col1', 'col2')`
-- [ ] Task 2.11: Migrate `.dropna()` to `.na.drop()`
-- [ ] Task 2.12: Test column operations with sample datasets
+- [x] Task 2.8: Create SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
+- [x] Task 2.9: Migrate column selection from `df[columns]` to `df.select(*columns)`
+- [x] Task 2.10: Migrate `.drop(columns=[...])` to `.drop('col1', 'col2')`
+- [x] Task 2.11: Migrate `.dropna()` to `.na.drop()`
+- [x] Task 2.12: Test column operations with sample datasets
 - [ ] Task 2.13: Create SparkConnectedDrivingLargeDataCleaner
 - [ ] Task 2.14: Replace file splitting with partitioning strategy
 - [ ] Task 2.15: Test large file I/O with 100k+ row datasets
@@ -436,6 +454,64 @@ All 10 tasks in Phase 1 (Foundation & Infrastructure) have been completed succes
 - Key tasks: ParquetCache decorator, SparkDataGatherer, column operations
 
 ## Completed This Iteration
+
+- **Task 2.8:** Created SparkConnectedDrivingCleaner (`Generator/Cleaners/SparkConnectedDrivingCleaner.py`)
+  - Implemented complete PySpark-based data cleaning for Connected Driving BSM datasets
+  - Created `SparkConnectedDrivingCleaner.py` (238 lines):
+    - PySpark implementation of `IConnectedDrivingCleaner` interface
+    - Uses `ParquetCache` decorator instead of `CSVCache` for distributed caching
+    - Implements column selection with `.select(*columns)`
+    - Implements null dropping with `.na.drop()`
+    - Parses WKT POINT strings using `point_to_x_udf` and `point_to_y_udf`
+    - Drops coreData_position column after parsing
+    - Optional XY coordinate conversion using `geodesic_distance_udf`
+    - Replicates exact pandas behavior including confusing coordinate parameter semantics
+    - Full dependency injection support (PathProvider, GeneratorPathProvider, GeneratorContextProvider)
+    - Comprehensive docstrings and inline comments explaining PySpark equivalents
+  - Created geospatial UDF module `Helpers/SparkUDFs/GeospatialUDFs.py` (165 lines):
+    - `point_to_tuple_udf`: Convert WKT POINT to (x, y) struct
+    - `point_to_x_udf`: Extract longitude from WKT POINT
+    - `point_to_y_udf`: Extract latitude from WKT POINT
+    - `geodesic_distance_udf`: Calculate distance between lat/long points
+    - `xy_distance_udf`: Calculate Euclidean distance
+    - All UDFs handle None/null values gracefully
+    - Wraps existing `DataConverter` and `MathHelper` utilities
+  - Created comprehensive test suite `Test/test_spark_connected_driving_cleaner.py` (425 lines):
+    - 13 test cases across 4 test classes
+    - TestSparkConnectedDrivingCleanerInitialization (3 tests):
+      - Initialization with data
+      - Initialization without data (should fail)
+      - Context provider configuration
+    - TestSparkConnectedDrivingCleanerCleaning (4 tests):
+      - Basic data cleaning
+      - Null value dropping
+      - XY coordinate conversion
+      - WKT POINT parsing accuracy
+    - TestSparkConnectedDrivingCleanerCaching (2 tests):
+      - Parquet cache file creation
+      - Cache key variation with different parameters
+    - TestSparkConnectedDrivingCleanerIntegration (4 tests):
+      - Method chaining
+      - Error handling for uncleaned data
+      - clean_data_with_timestamps not implemented (deferred to subclass)
+      - Large dataset cleaning (100 rows)
+    - All 13 tests passing (100% success rate)
+    - Tests use proper dependency injection setup
+    - Tests use isolated cache directories
+    - Tests handle PySpark row ordering (non-deterministic)
+  - Key accomplishments:
+    - Migrated column selection: `df[columns]` → `df.select(*columns)` ✓
+    - Migrated column dropping: `df.drop(columns=[...], inplace=True)` → `df.drop('col')` ✓
+    - Migrated null dropping: `df.dropna()` → `df.na.drop()` ✓
+    - Migrated .map() operations: `df['col'].map(lambda)` → UDFs with `withColumn()` ✓
+    - Replicated exact pandas behavior including edge cases ✓
+    - Full test coverage with integration tests ✓
+  - Files created:
+    - `Generator/Cleaners/SparkConnectedDrivingCleaner.py` (238 lines)
+    - `Helpers/SparkUDFs/__init__.py` (22 lines)
+    - `Helpers/SparkUDFs/GeospatialUDFs.py` (165 lines)
+    - `Test/test_spark_connected_driving_cleaner.py` (425 lines)
+  - Total: ~850 lines of production code + tests
 
 - **Task 2.7:** Implemented format detection utility (CSV vs Parquet auto-detection)
   - Created `Helpers/FormatDetector.py` (305 lines):

@@ -1,0 +1,113 @@
+# Spark Configuration for 128GB RAM Single-Node System
+# Optimized to leave 18-20GB for Linux kernel and system processes
+# Use this configuration for processing large BSM datasets on a single powerful machine
+
+spark_config:
+  # Application Settings
+  app_name: "ConnectedDrivingPipeline-128GB"
+
+  # Master Configuration
+  master: "local[8]"  # Single-node with 8 cores for optimal parallelism
+
+  # Memory Configuration (CRITICAL - Conservative allocation for 128GB system)
+  driver_memory: "12g"          # Driver JVM heap (+ 1.2GB overhead = 13.2GB total)
+  executor_memory: "80g"        # Executor JVM heap (+ 8GB overhead = 88GB total)
+  executor_memoryOverhead: "8g" # Off-heap memory for Python UDFs, network buffers, etc.
+
+  # Execution Configuration
+  executor_cores: 8  # Optimal parallelism for single-node (matches local[8])
+
+  # Memory Management (Fine-tuned for UDF-heavy workloads)
+  memory_fraction: 0.8           # 80% for Spark execution/storage, 20% for Python/user objects
+  memory_storage_fraction: 0.4   # 40% for caching DataFrames, 60% for execution
+
+  # Shuffle and Partition Settings
+  sql_shuffle_partitions: 200    # Good balance for 100M+ rows on single node
+  default_parallelism: 16        # 2x executor cores for task parallelism
+
+  # Adaptive Query Execution (Essential for performance)
+  sql_adaptive_enabled: true
+  sql_adaptive_coalesce_partitions_enabled: true
+  sql_adaptive_skewJoin_enabled: true
+
+  # Arrow Integration (Critical for pandas UDF performance)
+  sql_execution_arrow_pyspark_enabled: true
+  sql_execution_arrow_pyspark_fallback_enabled: true
+  sql_execution_arrow_maxRecordsPerBatch: 10000
+
+  # Compression (Snappy for balanced speed/compression)
+  sql_parquet_compression_codec: "snappy"
+  io_compression_codec: "snappy"
+
+  # Dynamic Allocation (Keep single executor in local mode)
+  dynamicAllocation_enabled: true
+  dynamicAllocation_minExecutors: 1
+  dynamicAllocation_maxExecutors: 1  # Single-node = single executor
+
+  # Result Size Limit (Prevent OOM from collect() operations)
+  driver_maxResultSize: "4g"  # Maximum size for actions like collect()
+
+  # Broadcast Join Threshold
+  sql_autoBroadcastJoinThreshold: 52428800  # 50MB (for attacker ID lookups)
+
+  # Serialization (Kryo for better performance)
+  serializer: "org.apache.spark.serializer.KryoSerializer"
+  kryoserializer_buffer_max: "1024m"
+
+  # Network and Timeout Settings
+  network_timeout: 300s
+  executor_heartbeatInterval: 30s
+
+  # UI and Logging
+  ui_port: 4040
+  ui_showConsoleProgress: true
+  ui_retainedJobs: 100
+  ui_retainedStages: 100
+  log_level: "WARN"  # Reduce logging overhead
+
+  # Event Logging (for profiling and debugging)
+  eventLog_enabled: true
+  eventLog_dir: "/tmp/spark-events"
+
+  # Local Directory (for spill files)
+  local_dir: "/tmp/spark-temp"
+
+  # File Output Settings
+  sql_files_maxPartitionBytes: 134217728  # 128MB per output partition
+
+  # Python Worker Configuration (Important for UDF performance)
+  python_worker_memory: "2g"    # Memory per Python worker process
+  python_worker_reuse: true     # Reuse workers across tasks
+
+  # Storage
+  storage_memoryMapThreshold: 2m
+
+comments:
+  - "**Target System:** 128GB RAM single-node workstation/server"
+  - "**Memory Breakdown:**"
+  - "  - Driver: 12GB + 1.2GB overhead = 13.2GB"
+  - "  - Executor: 80GB + 8GB overhead = 88GB"
+  - "  - Python UDF workers (8 cores): 4-6GB"
+  - "  - Linux kernel + OS: 18-20GB"
+  - "  - **Total allocation: ~123-127GB** (safe margin)"
+  - ""
+  - "**Use Cases:**"
+  - "  - Processing 10M-100M+ rows on a single machine"
+  - "  - Development and testing before cluster deployment"
+  - "  - Medium-scale BSM datasets (full day of messages)"
+  - ""
+  - "**Performance Characteristics:**"
+  - "  - Can cache 2-3 large DataFrames simultaneously"
+  - "  - All shuffle operations in-memory (no disk spill under normal load)"
+  - "  - Efficient pandas UDF execution with 8 parallel workers"
+  - ""
+  - "**Tuning Guidelines:**"
+  - "  - Monitor system memory with: watch -n 1 free -h"
+  - "  - If OOM detected: reduce executor_memory to 72g"
+  - "  - If UDF-heavy: increase memory_fraction to 0.85"
+  - "  - If shuffle spilling: increase executor_memoryOverhead to 10g"
+  - "  - Check Spark UI at http://localhost:4040 during execution"
+  - ""
+  - "**CRITICAL: Do NOT increase memory beyond these values**"
+  - "  - System stability requires 15-20GB free for OS/kernel"
+  - "  - Exceeding limits will cause kernel OOM killer to terminate processes"

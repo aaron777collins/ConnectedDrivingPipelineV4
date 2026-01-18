@@ -8,9 +8,10 @@ spark_config:
   # Master Configuration
   master: "yarn"  # Use YARN for resource management (change to spark://HOST:PORT for standalone)
 
-  # Memory Configuration
+  # Memory Configuration (for multi-node cluster with moderate resources)
   driver_memory: "16g"
   executor_memory: "32g"
+  # NOTE: For 128GB single-node systems, use 128gb-single-node.yml instead
 
   # Execution Configuration
   executor_cores: 4

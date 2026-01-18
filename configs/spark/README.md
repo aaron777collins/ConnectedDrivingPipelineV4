@@ -4,6 +4,55 @@ This directory contains Spark configuration templates for different deployment s
 
 ## Configuration Files
 
+### `128gb-single-node.yml` ⭐ **RECOMMENDED FOR PRODUCTION**
+**Use for:** Processing large BSM datasets on a 128GB RAM single-node workstation/server
+
+**Characteristics:**
+- **Target System:** 128GB RAM (conservatively allocates 108-110GB, leaves 18-20GB for OS/kernel)
+- Single-node execution with 8 cores (`local[8]`)
+- **Driver memory:** 12GB (+ 1.2GB overhead = 13.2GB total)
+- **Executor memory:** 80GB (+ 8GB overhead = 88GB total)
+- Optimized for pandas UDF performance (memory_fraction=0.8)
+- Shuffle partitions: 200 (optimal for 100M+ rows on single node)
+- Suitable for datasets: 10M-100M+ rows
+- Can cache 2-3 large DataFrames simultaneously
+- All shuffle operations in-memory (no disk spill)
+
+**Memory Breakdown:**
+```
+Driver JVM:           13.2 GB
+Executor JVM:         88.0 GB
+Python UDF workers:    4-6 GB
+Linux kernel + OS:    18-20 GB
+─────────────────────────────
+TOTAL:               ~123-127 GB
+```
+
+**Example usage:**
+```python
+from Helpers.SparkSessionManager import SparkSessionManager
+
+# Load 128GB configuration from YAML
+spark = SparkSessionManager.get_session_from_config_file(
+    'configs/spark/128gb-single-node.yml'
+)
+
+# Or use direct configuration
+spark = SparkSessionManager.get_local_session(
+    cores=8,
+    driver_memory="12g",
+    executor_memory="80g"
+)
+```
+
+**⚠️ CRITICAL WARNINGS:**
+- **DO NOT** increase memory beyond these values - system stability requires 15-20GB free for OS/kernel
+- Monitor system memory during execution: `watch -n 1 free -h`
+- If OOM detected: reduce `executor_memory` to 72g
+- Check Spark UI at http://localhost:4040 during execution
+
+---
+
 ### `local.yml`
 **Use for:** Local development and testing on laptops/workstations
 

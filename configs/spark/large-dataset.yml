@@ -105,3 +105,5 @@ comments:
   - "Kryo serialization for faster object serialization"
   - "Larger broadcast threshold (100MB) for attacker ID lookup tables"
   - "Adjust dynamicAllocation_maxExecutors based on cluster size"
+  - ""
+  - "NOTE: For 128GB single-node systems, use 128gb-single-node.yml instead"
