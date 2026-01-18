@@ -504,3 +504,151 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
             row[self.pos_long_col] = newLong
 
         return row
+
+    def add_attacks_positional_offset_rand(self, min_dist=25, max_dist=250):
+        """
+        Add random positional offset attack using compute-then-daskify strategy.
+
+        This method applies a random positional offset to all attackers by:
+        1. Computing Dask DataFrame to pandas
+        2. Applying pandas positional offset attack (reuses existing logic)
+        3. Converting result back to Dask DataFrame
+
+        The attack:
+        - Only affects rows where isAttacker=1
+        - Offsets position by a random direction (0-360°) and random distance (min_dist to max_dist)
+        - Uses MathHelper for accurate offset calculations
+        - Supports both XY coordinates and lat/lon coordinates
+        - Uses SEED for reproducible randomness
+
+        Args:
+            min_dist (int/float): Minimum offset distance in meters
+                Default: 25m
+            max_dist (int/float): Maximum offset distance in meters
+                Default: 250m
+
+        Returns:
+            self: For method chaining
+
+        Note:
+            This method materializes the entire DataFrame to pandas for the attack
+            operation. Memory usage peaks at ~2x data size (original + result).
+            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
+
+        Examples:
+            # Apply random offset between 25-250m (default)
+            attacker.add_attacks_positional_offset_rand()
+
+            # Apply random offset between 10-100m
+            attacker.add_attacks_positional_offset_rand(min_dist=10, max_dist=100)
+
+            # Apply random offset between 100-500m
+            attacker.add_attacks_positional_offset_rand(min_dist=100, max_dist=500)
+        """
+        self.logger.log(
+            f"Starting positional offset rand attack: "
+            f"min_dist={min_dist}m, max_dist={max_dist}m"
+        )
+
+        # Step 1: Compute Dask DataFrame to pandas
+        self.logger.log("Computing Dask DataFrame to pandas for positional offset...")
+        df_pandas = self.data.compute()
+        n_partitions = self.data.npartitions
+        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+
+        # Step 2: Apply pandas positional offset attack
+        self.logger.log("Applying positional offset attack to pandas DataFrame...")
+        df_offset = self._apply_pandas_positional_offset_rand(df_pandas, min_dist, max_dist)
+
+        # Step 3: Convert back to Dask DataFrame
+        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
+        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
+
+        self.logger.log("Positional offset rand attack complete")
+        return self
+
+    def _apply_pandas_positional_offset_rand(self, df_pandas, min_dist, max_dist):
+        """
+        Apply random positional offset attack to pandas DataFrame.
+
+        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
+        For each attacker row:
+        1. Generate random direction (0-360°) and random distance (min_dist to max_dist)
+        2. Calculate new position based on random direction and distance
+        3. Replace attacker's position with the new position
+
+        Args:
+            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
+            min_dist (int/float): Minimum offset distance in meters
+            max_dist (int/float): Maximum offset distance in meters
+
+        Returns:
+            pd.DataFrame: DataFrame with position-offset attackers
+
+        Note:
+            This method applies the attack row-wise using pandas .apply().
+            Only rows with isAttacker=1 are modified.
+            Uses SEED for reproducible randomness.
+        """
+        # Set random seed for reproducibility
+        random.seed(self.SEED)
+
+        # Apply offset to each row (only affects attackers)
+        df_offset = df_pandas.apply(
+            lambda row: self._positional_offset_rand_attack(row, min_dist, max_dist),
+            axis=1
+        )
+
+        # Count attackers that were offset
+        n_attackers = (df_offset['isAttacker'] == 1).sum()
+        self.logger.log(f"Applied random offset to {n_attackers} attackers")
+
+        return df_offset
+
+    def _positional_offset_rand_attack(self, row, min_dist, max_dist):
+        """
+        Apply random positional offset to a single attacker row.
+
+        Args:
+            row (pd.Series): Single row from DataFrame
+            min_dist (int/float): Minimum offset distance in meters
+            max_dist (int/float): Maximum offset distance in meters
+
+        Returns:
+            pd.Series: Row with random position offset (if attacker) or unchanged (if regular)
+
+        Note:
+            This method is identical to StandardPositionalOffsetAttacker.positional_offset_rand_attack
+            to ensure 100% compatibility with pandas version.
+        """
+        # Only offset positions for attackers
+        if row["isAttacker"] == 0:
+            return row
+
+        # Generate random direction and distance
+        direction_angle = random.randint(0, 360)
+        distance = random.randint(min_dist, max_dist)
+
+        # Calculate new position based on coordinate system (XY or lat/lon)
+        if self.isXYCoords:
+            # XY coordinate system (Cartesian)
+            newX, newY = MathHelper.direction_and_dist_to_XY(
+                row[self.x_col],
+                row[self.y_col],
+                direction_angle,
+                distance
+            )
+            row[self.x_col] = newX
+            row[self.y_col] = newY
+        else:
+            # Lat/Lon coordinate system (WGS84 geodesic)
+            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
+                row[self.pos_lat_col],
+                row[self.pos_long_col],
+                direction_angle,
+                distance
+            )
+            row[self.pos_lat_col] = newLat
+            row[self.pos_long_col] = newLong
+
+        return row
