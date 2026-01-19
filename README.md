@@ -24,7 +24,7 @@ ConnectedDrivingPipelineV4 is a complete rewrite of the original pandas-based pi
 - **Storage:** 500GB+ SSD (1TB+ recommended for caching)
 
 **Software Requirements:**
-- Python 3.10 or 3.11
+- Python 3.10+ (3.10, 3.11, or 3.12 supported - **NOT** 3.8 or 3.9)
 - Linux/macOS (Windows may work but not tested)
 
 ### Installation
@@ -64,15 +64,25 @@ Expected output:
 For containerized deployment with Docker:
 
 ```bash
-# Build and run with Docker Compose
+# Build the Docker image
 docker compose build
+
+# Validate Dask setup inside the container
 docker compose run --rm pipeline python validate_dask_setup.py
+
+# Expected output:
+# ✅ All Dask dependencies installed correctly
+# ✅ 64GB RAM detected (sufficient for 15M rows)
+# ✅ Dask LocalCluster initialized successfully
+# ✅ System ready for production workloads
 
 # Start the pipeline service
 docker compose up -d pipeline
 
 # Access Dask dashboard at http://localhost:8787
 ```
+
+**Note:** The validation script (`validate_dask_setup.py`) runs 8 comprehensive tests to verify Dask configuration, dependencies, and system resources. This script is included in the Docker image and should always pass before running production workloads.
 
 See [DOCKER.md](DOCKER.md) for complete Docker deployment guide, including production configurations, scaling, and monitoring.
 
@@ -467,7 +477,7 @@ python your_pipeline_script.py
 ### CI/CD Pipeline
 
 The project includes automated testing via GitHub Actions. Every push and pull request triggers:
-- Unit tests across Python 3.8, 3.9, 3.10, 3.11
+- Unit tests across Python 3.10, 3.11, 3.12
 - Code quality checks (flake8, black, isort)
 - Integration and slow tests
 - Docker build validation
@@ -585,6 +595,30 @@ pip install -r requirements.txt --force-reinstall
 # Verify installation
 python validate_dask_setup.py
 ```
+
+#### 5. CI/CD Pipeline Failures
+
+**Common CI/CD Issues and Solutions:**
+
+**Issue: Python version errors in CI**
+- **Symptom:** Tests fail with syntax errors or `SyntaxError: invalid syntax` on Python 3.8 or 3.9
+- **Solution:** This project requires Python 3.10+. Check your `.github/workflows/test.yml` to ensure it only uses Python 3.10, 3.11, and 3.12
+
+**Issue: Missing fixture errors**
+- **Symptom:** `fixture 'someDict' not found` in test output
+- **Solution:** Ensure `conftest.py` contains all required fixtures. This was fixed in commit c8b1ac3
+
+**Issue: Docker build fails with missing validation script**
+- **Symptom:** `COPY failed: file not found in build context` or `validate_dask_setup.py: not found`
+- **Solution:** Check `.dockerignore` file - ensure `!validate_dask_setup.py` exception is present before the `validate_*.py` exclusion pattern (fixed in commit b88dd7b)
+
+**Issue: Indentation/syntax errors in validation scripts**
+- **Symptom:** `IndentationError` or `SyntaxError` in `validate_dask_clean_with_timestamps.py`
+- **Solution:** This was a formatting issue fixed in commit fddfa5e. Ensure all Python files have consistent 4-space indentation
+
+**Issue: Import errors for Helpers or Decorators modules**
+- **Symptom:** `ModuleNotFoundError: No module named 'Helpers'` or `'Decorators'`
+- **Solution:** Ensure `Helpers/__init__.py` and `Decorators/__init__.py` exist (even if empty). Fixed in commits 919d8ad and 465e016
 
 For more detailed troubleshooting, see the [Troubleshooting Guide](docs/Troubleshooting_Guide.md).
 
