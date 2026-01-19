@@ -68,16 +68,21 @@ class TestCIFixes:
         """
         from Decorators.CacheManager import CacheManager
 
-        # Create a CacheManager instance with logging enabled
-        logger = logging.getLogger("test_cachemanager")
-        cache_manager = CacheManager(logger=logger, cache_dir="/tmp/test_cache")
-
-        # Try to trigger logging (which was causing recursion before the fix)
-        # This should NOT raise RecursionError
+        # CacheManager is a singleton - get the instance
+        # This should not cause recursion errors during initialization
         try:
-            # Access an attribute to trigger __getattribute__ and potentially _log
-            _ = cache_manager.cache_dir
+            cache_manager = CacheManager.get_instance()
+
+            # Access various attributes to trigger __getattribute__ and potentially _log
+            # This should NOT raise RecursionError
             _ = cache_manager.logger
+            _ = cache_manager.use_logger
+            _ = cache_manager.hits
+            _ = cache_manager.misses
+            _ = cache_manager.cache_base_path
+
+            # Try calling a method that might trigger logging
+            stats = cache_manager.get_statistics()
 
             # If we get here without RecursionError, the fix is working
             assert True, "CacheManager attribute access works without recursion"
@@ -175,9 +180,14 @@ class TestCIFixes:
             ".dockerignore is missing 'validate_*.py' exclusion pattern"
         )
 
+        # Note: line numbers are 0-indexed in the list, but we report as 1-indexed for clarity
+        assert exception_line is not None and exclusion_line is not None, (
+            "Both exception and exclusion patterns must exist"
+        )
+
         assert exception_line < exclusion_line, (
             "In .dockerignore, '!validate_dask_setup.py' must come BEFORE 'validate_*.py'. "
-            f"Currently: exception at line {exception_line}, exclusion at line {exclusion_line}"
+            f"Currently: exception at line {exception_line + 1}, exclusion at line {exclusion_line + 1}"
         )
 
     def test_imports_work(self):
