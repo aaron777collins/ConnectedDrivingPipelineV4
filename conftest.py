@@ -113,6 +113,15 @@ def cleanup_cache_files():
             pass  # Ignore cleanup errors
 
 
+@pytest.fixture
+def someDict():
+    """Fixture providing a simple dictionary for pass-by-reference tests."""
+    return {
+        'key1': 'value1',
+        'key2': 'value2'
+    }
+
+
 # Hook to customize test collection
 def pytest_collection_modifyitems(config, items):
     """
