@@ -160,97 +160,97 @@ def validate_test_1_basic_cleaning_with_timestamps():
     # Setup configuration
     setup_test_config(isXYCoords=False)
 
-        # Create cleaner
-        cleaner = DaskCleanWithTimestamps(data=dask_df)
+    # Create cleaner
+    cleaner = DaskCleanWithTimestamps(data=dask_df)
 
-        # Execute cleaning
-        print("Executing clean_data_with_timestamps()...")
-        cleaner.clean_data_with_timestamps()
+    # Execute cleaning
+    print("Executing clean_data_with_timestamps()...")
+    cleaner.clean_data_with_timestamps()
 
-        # Get cleaned data
-        cleaned_df = cleaner.get_cleaned_data().compute()
+    # Get cleaned data
+    cleaned_df = cleaner.get_cleaned_data().compute()
 
-        print(f"\nCleaned data shape: {cleaned_df.shape}")
-        print(f"Expected rows: ~990 (1000 - 1% nulls)")
+    print(f"\nCleaned data shape: {cleaned_df.shape}")
+    print(f"Expected rows: ~990 (1000 - 1% nulls)")
 
-        # Validate row count (should drop ~1% nulls)
-        assert 980 <= len(cleaned_df) <= 1000, f"Unexpected row count: {len(cleaned_df)}"
-        print("✓ Row count validation passed")
+    # Validate row count (should drop ~1% nulls)
+    assert 980 <= len(cleaned_df) <= 1000, f"Unexpected row count: {len(cleaned_df)}"
+    print("✓ Row count validation passed")
 
-        # Validate columns exist
-        expected_columns = [
-            'coreData_id', 'coreData_speed', 'coreData_heading',
-            'metadata_recordType', 'metadata_generatedAt',
-            'x_pos', 'y_pos',  # From POINT parsing
-            'month', 'day', 'year', 'hour', 'minute', 'second', 'pm'  # Temporal features
-        ]
-        for col in expected_columns:
-            assert col in cleaned_df.columns, f"Missing column: {col}"
-        print(f"✓ All {len(expected_columns)} expected columns present")
+    # Validate columns exist
+    expected_columns = [
+        'coreData_id', 'coreData_speed', 'coreData_heading',
+        'metadata_recordType', 'metadata_generatedAt',
+        'x_pos', 'y_pos',  # From POINT parsing
+        'month', 'day', 'year', 'hour', 'minute', 'second', 'pm'  # Temporal features
+    ]
+    for col in expected_columns:
+        assert col in cleaned_df.columns, f"Missing column: {col}"
+    print(f"✓ All {len(expected_columns)} expected columns present")
 
-        # Validate dropped columns
-        dropped_columns = ['coreData_position', 'coreData_position_lat', 'coreData_position_long']
-        for col in dropped_columns:
-            assert col not in cleaned_df.columns, f"Column should be dropped: {col}"
-        print(f"✓ Position columns properly dropped")
+    # Validate dropped columns
+    dropped_columns = ['coreData_position', 'coreData_position_lat', 'coreData_position_long']
+    for col in dropped_columns:
+        assert col not in cleaned_df.columns, f"Column should be dropped: {col}"
+    print(f"✓ Position columns properly dropped")
 
-        # Validate temporal features
-        print("\nValidating temporal features:")
+    # Validate temporal features
+    print("\nValidating temporal features:")
 
-        # Month: should be 1-12
-        assert cleaned_df['month'].min() >= 1, "Month minimum invalid"
-        assert cleaned_df['month'].max() <= 12, "Month maximum invalid"
-        print(f"  ✓ month: range [{cleaned_df['month'].min()}, {cleaned_df['month'].max()}]")
+    # Month: should be 1-12
+    assert cleaned_df['month'].min() >= 1, "Month minimum invalid"
+    assert cleaned_df['month'].max() <= 12, "Month maximum invalid"
+    print(f"  ✓ month: range [{cleaned_df['month'].min()}, {cleaned_df['month'].max()}]")
 
-        # Day: should be 1-31
-        assert cleaned_df['day'].min() >= 1, "Day minimum invalid"
-        assert cleaned_df['day'].max() <= 31, "Day maximum invalid"
-        print(f"  ✓ day: range [{cleaned_df['day'].min()}, {cleaned_df['day'].max()}]")
+    # Day: should be 1-31
+    assert cleaned_df['day'].min() >= 1, "Day minimum invalid"
+    assert cleaned_df['day'].max() <= 31, "Day maximum invalid"
+    print(f"  ✓ day: range [{cleaned_df['day'].min()}, {cleaned_df['day'].max()}]")
 
-        # Year: should be 2019 in our test data
-        assert cleaned_df['year'].min() >= 2019, "Year minimum invalid"
-        assert cleaned_df['year'].max() <= 2019, "Year maximum invalid"
-        print(f"  ✓ year: {cleaned_df['year'].unique()}")
+    # Year: should be 2019 in our test data
+    assert cleaned_df['year'].min() >= 2019, "Year minimum invalid"
+    assert cleaned_df['year'].max() <= 2019, "Year maximum invalid"
+    print(f"  ✓ year: {cleaned_df['year'].unique()}")
 
-        # Hour: should be 0-23
-        assert cleaned_df['hour'].min() >= 0, "Hour minimum invalid"
-        assert cleaned_df['hour'].max() <= 23, "Hour maximum invalid"
-        print(f"  ✓ hour: range [{cleaned_df['hour'].min()}, {cleaned_df['hour'].max()}]")
+    # Hour: should be 0-23
+    assert cleaned_df['hour'].min() >= 0, "Hour minimum invalid"
+    assert cleaned_df['hour'].max() <= 23, "Hour maximum invalid"
+    print(f"  ✓ hour: range [{cleaned_df['hour'].min()}, {cleaned_df['hour'].max()}]")
 
-        # Minute: should be 0-59
-        assert cleaned_df['minute'].min() >= 0, "Minute minimum invalid"
-        assert cleaned_df['minute'].max() <= 59, "Minute maximum invalid"
-        print(f"  ✓ minute: range [{cleaned_df['minute'].min()}, {cleaned_df['minute'].max()}]")
+    # Minute: should be 0-59
+    assert cleaned_df['minute'].min() >= 0, "Minute minimum invalid"
+    assert cleaned_df['minute'].max() <= 59, "Minute maximum invalid"
+    print(f"  ✓ minute: range [{cleaned_df['minute'].min()}, {cleaned_df['minute'].max()}]")
 
-        # Second: should be 0-59
-        assert cleaned_df['second'].min() >= 0, "Second minimum invalid"
-        assert cleaned_df['second'].max() <= 59, "Second maximum invalid"
-        print(f"  ✓ second: range [{cleaned_df['second'].min()}, {cleaned_df['second'].max()}]")
+    # Second: should be 0-59
+    assert cleaned_df['second'].min() >= 0, "Second minimum invalid"
+    assert cleaned_df['second'].max() <= 59, "Second maximum invalid"
+    print(f"  ✓ second: range [{cleaned_df['second'].min()}, {cleaned_df['second'].max()}]")
 
-        # PM: should be 0 or 1
-        assert set(cleaned_df['pm'].unique()).issubset({0, 1}), "PM indicator invalid"
-        print(f"  ✓ pm: values {sorted(cleaned_df['pm'].unique())}")
+    # PM: should be 0 or 1
+    assert set(cleaned_df['pm'].unique()).issubset({0, 1}), "PM indicator invalid"
+    print(f"  ✓ pm: values {sorted(cleaned_df['pm'].unique())}")
 
-        # Validate AM/PM logic
-        am_rows = cleaned_df[cleaned_df['pm'] == 0]
-        pm_rows = cleaned_df[cleaned_df['pm'] == 1]
-        assert all(am_rows['hour'] < 12), "AM rows should have hour < 12"
-        assert all(pm_rows['hour'] >= 12), "PM rows should have hour >= 12"
-        print(f"  ✓ AM/PM logic correct: {len(am_rows)} AM, {len(pm_rows)} PM")
+    # Validate AM/PM logic
+    am_rows = cleaned_df[cleaned_df['pm'] == 0]
+    pm_rows = cleaned_df[cleaned_df['pm'] == 1]
+    assert all(am_rows['hour'] < 12), "AM rows should have hour < 12"
+    assert all(pm_rows['hour'] >= 12), "PM rows should have hour >= 12"
+    print(f"  ✓ AM/PM logic correct: {len(am_rows)} AM, {len(pm_rows)} PM")
 
-        # Validate POINT parsing
-        assert cleaned_df['x_pos'].notna().all(), "x_pos has null values"
-        assert cleaned_df['y_pos'].notna().all(), "y_pos has null values"
-        # x_pos should be longitudes (negative in Colorado)
-        assert cleaned_df['x_pos'].min() < -104, "x_pos (longitude) out of range"
-        assert cleaned_df['x_pos'].max() < -103, "x_pos (longitude) out of range"
-        # y_pos should be latitudes (positive in Colorado)
-        assert cleaned_df['y_pos'].min() > 39, "y_pos (latitude) out of range"
-        assert cleaned_df['y_pos'].max() < 41, "y_pos (latitude) out of range"
-        print(f"✓ POINT parsing: x_pos [{cleaned_df['x_pos'].min():.3f}, {cleaned_df['x_pos'].max():.3f}], "
-              f"y_pos [{cleaned_df['y_pos'].min():.3f}, {cleaned_df['y_pos'].max():.3f}]")
+    # Validate POINT parsing
+    assert cleaned_df['x_pos'].notna().all(), "x_pos has null values"
+    assert cleaned_df['y_pos'].notna().all(), "y_pos has null values"
+    # x_pos should be longitudes (negative in Colorado)
+    assert cleaned_df['x_pos'].min() < -104, "x_pos (longitude) out of range"
+    assert cleaned_df['x_pos'].max() < -103, "x_pos (longitude) out of range"
+    # y_pos should be latitudes (positive in Colorado)
+    assert cleaned_df['y_pos'].min() > 39, "y_pos (latitude) out of range"
+    assert cleaned_df['y_pos'].max() < 41, "y_pos (latitude) out of range"
+    print(f"✓ POINT parsing: x_pos [{cleaned_df['x_pos'].min():.3f}, {cleaned_df['x_pos'].max():.3f}], "
+          f"y_pos [{cleaned_df['y_pos'].min():.3f}, {cleaned_df['y_pos'].max():.3f}]")
 
-        print("\n✓ TEST 1 PASSED: Basic cleaning with timestamps works correctly")
+    print("\n✓ TEST 1 PASSED: Basic cleaning with timestamps works correctly")
 
 
 def validate_test_2_xy_coordinate_conversion():
