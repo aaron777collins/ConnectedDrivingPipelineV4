@@ -80,6 +80,7 @@ COMPREHENSIVE_*.md
 # Benchmark files
 benchmark_*.py
 validate_*.py
+!validate_dask_setup.py
 
 # Test data
 test_*.csv
