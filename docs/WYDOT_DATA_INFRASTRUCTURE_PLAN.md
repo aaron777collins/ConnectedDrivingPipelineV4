@@ -1,9 +1,9 @@
 # WYDOT Data Infrastructure Plan
 ## Comprehensive Architecture for Flexible CV Pilot Data Access
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** 2026-01-28  
-**Status:** Draft for Review  
+**Status:** Reviewed & Audited  
 
 ---
 
@@ -17,6 +17,9 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 - **Memory-efficient processing** - Optimized for 32GB-128GB systems
 - **Robust error handling** - Resume-capable downloads with integrity checks
 
+**Related Documents:**
+- [Cache Key Specification](./CACHE_KEY_SPECIFICATION.md) - Detailed cache design
+
 ---
 
 ## Table of Contents
@@ -28,8 +31,9 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 5. [Implementation Plan](#5-implementation-plan)
 6. [Dependencies & Prerequisites](#6-dependencies--prerequisites)
 7. [Error Handling & Recovery](#7-error-handling--recovery)
-8. [Testing Strategy](#8-testing-strategy)
-9. [Appendices](#appendices)
+8. [Concurrency & Safety](#8-concurrency--safety)
+9. [Testing Strategy](#9-testing-strategy)
+10. [Appendices](#appendices)
 
 ---
 
@@ -54,10 +58,12 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 |-----------|--------|-------------|
 | Source_Name | `wydot`, `wydot_backup`, `thea`, `nycdot` | Data producer |
 | Data_Type | `BSM`, `TIM`, `SPAT`, `EVENT` | Message type |
-| Year | `2017`-`2026` | 4-digit year (UTC) |
-| Month | `01`-`12` | 2-digit month (UTC) |
-| Day | `01`-`31` | 2-digit day (UTC) |
-| Hour | `00`-`23` | 2-digit hour (UTC) |
+| Year | `2017`-`2026` | 4-digit year **(UTC)** |
+| Month | `01`-`12` | 2-digit month **(UTC)** |
+| Day | `01`-`31` | 2-digit day **(UTC)** |
+| Hour | `00`-`23` | 2-digit hour **(UTC)** |
+
+**⚠️ CRITICAL: All dates in S3 are in UTC.** See [Time Zone Handling](#84-time-zone-handling).
 
 ### 1.3 Data Format
 
@@ -73,6 +79,15 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 | thea | ✅ | ✅ | ✅ | ❌ |
 | nycdot | ❌ | ❌ | ❌ | ✅ |
 
+### 1.5 Known Data Gaps
+
+Some dates may have **no data** due to:
+- System maintenance
+- Pilot downtime
+- Network issues
+
+See: [ITS CV Pilot Known Data Gaps](https://github.com/usdot-its-jpo-data-portal/sandbox/wiki/ITS-CV-Pilot-Data-Sandbox-Known-Data-Gaps-and-Caveats)
+
 ---
 
 ## 2. Architecture Design
@@ -86,6 +101,7 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 │  │ data_source  │  │ date_range   │  │ processing_config    │  │
 │  │ .yml         │  │ .yml         │  │ .yml                 │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+│                    ↓ Pydantic Validation                        │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -95,14 +111,16 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 │  │                   S3DataFetcher                           │  │
 │  │  - List objects by date range                             │  │
 │  │  - Parallel download with resume                          │  │
+│  │  - Rate limiting & backoff                                │  │
 │  │  - Integrity verification                                 │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                              │                                  │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │                    Local Cache                            │  │
-│  │  - Downloaded JSON files                                  │  │
-│  │  - Manifest tracking                                      │  │
-│  │  - TTL-based expiration                                   │  │
+│  │  - Hierarchical: {source}/{type}/{year}/{month}/{day}    │  │
+│  │  - Manifest with file locking                             │  │
+│  │  - LRU eviction when disk full                            │  │
+│  │  - Atomic writes (temp file + rename)                     │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -116,9 +134,9 @@ This document outlines a comprehensive infrastructure for accessing Wyoming Conn
 │                              │                                  │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │              Parquet Cache (Processed)                    │  │
-│  │  - Cleaned, validated data                                │  │
+│  │  - Consistent schema (merged columns)                     │  │
 │  │  - Partitioned by date                                    │  │
-│  │  - Ready for ML pipeline                                  │  │
+│  │  - Lazy loading for large ranges                          │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -141,15 +159,20 @@ User Request (config.yml)
     │
     ▼
 ┌─────────────────┐
-│ Parse Config    │ ─── Validate date ranges, sources, memory limits
+│ Validate Config │ ─── Pydantic validation, fail fast on errors
 └─────────────────┘
     │
     ▼
 ┌─────────────────┐
-│ Check Cache     │ ─── Look for existing processed Parquet files
+│ Normalize Dates │ ─── Convert to UTC if local time specified
 └─────────────────┘
     │
-    ├─── Cache Hit ───▶ Load Parquet ───▶ Return DataFrame
+    ▼
+┌─────────────────┐
+│ Check Cache     │ ─── Acquire read lock, check manifest
+└─────────────────┘
+    │
+    ├─── Cache Hit ───▶ Verify integrity ───▶ Load Parquet (lazy)
     │
     ├─── Partial Hit ──▶ Fetch missing dates only
     │
@@ -157,26 +180,31 @@ User Request (config.yml)
                        │
                        ▼
                ┌─────────────────┐
-               │ List S3 Objects │ ─── Build file manifest
+               │ List S3 Objects │ ─── Handle empty results gracefully
                └─────────────────┘
                        │
                        ▼
                ┌─────────────────┐
-               │ Download Files  │ ─── Parallel, resumable
+               │ Download Files  │ ─── Parallel, with rate limiting
                └─────────────────┘
                        │
                        ▼
                ┌─────────────────┐
-               │ Parse & Clean   │ ─── Schema validation
+               │ Parse & Validate│ ─── Streaming, memory-bounded
                └─────────────────┘
                        │
                        ▼
                ┌─────────────────┐
-               │ Save to Parquet │ ─── Partitioned cache
+               │ Write Parquet   │ ─── Atomic: temp file → rename
                └─────────────────┘
                        │
                        ▼
-               Return DataFrame
+               ┌─────────────────┐
+               │ Update Manifest │ ─── Acquire write lock
+               └─────────────────┘
+                       │
+                       ▼
+               Return DataFrame (lazy for Dask)
 ```
 
 ---
@@ -196,6 +224,7 @@ class S3DataFetcher:
     - Date-range based queries
     - Parallel downloads with configurable concurrency
     - Resume support for interrupted downloads
+    - Rate limiting with exponential backoff
     - Integrity verification via ETag/MD5
     """
     
@@ -205,15 +234,34 @@ class S3DataFetcher:
         self.message_type = config.message_type
         self.cache_dir = config.cache_dir
         self.max_workers = config.max_workers
+        self._rate_limiter = RateLimiter(max_requests_per_second=10)
         
     def list_files(self, start_date: date, end_date: date) -> List[S3Object]:
-        """List all files in date range."""
+        """
+        List all files in date range.
         
-    def download_files(self, files: List[S3Object], 
-                       progress_callback: Callable = None) -> List[Path]:
-        """Download files with parallel execution and resume support."""
+        Returns empty list if no data exists (not an error).
+        """
         
-    def get_data(self, start_date: date, end_date: date) -> pd.DataFrame:
+    def download_files(
+        self, 
+        files: List[S3Object], 
+        progress_callback: Callable = None
+    ) -> List[Path]:
+        """
+        Download files with parallel execution and resume support.
+        
+        - Uses atomic writes (temp file + rename)
+        - Respects rate limits
+        - Retries with exponential backoff
+        """
+        
+    def get_data(
+        self, 
+        start_date: date, 
+        end_date: date,
+        force_refresh: bool = False  # Bypass cache
+    ) -> dd.DataFrame:  # Returns Dask DataFrame for lazy loading
         """Main entry point: fetch, parse, and return data."""
 ```
 
@@ -226,29 +274,59 @@ class CacheManager:
     """
     Manages local cache of downloaded and processed data.
     
+    Features:
+    - File locking for concurrent access
+    - Atomic manifest updates
+    - LRU eviction when disk full
+    - Tracks "no data" vs "not fetched"
+    
     Cache Structure:
     cache/
-    ├── raw/                    # Downloaded JSON files
-    │   └── wydot/BSM/2021/04/01/
-    ├── processed/              # Cleaned Parquet files
-    │   └── wydot_BSM_2021-04-01.parquet
-    └── manifest.json           # Tracking metadata
+    ├── manifest.json           # Tracking metadata (with lock)
+    ├── wydot/
+    │   └── BSM/
+    │       └── 2021/04/01.parquet
+    └── .locks/                 # Lock files for concurrent access
     """
     
-    def __init__(self, cache_dir: Path):
+    def __init__(self, cache_dir: Path, max_size_gb: float = 50.0):
         self.cache_dir = cache_dir
-        self.manifest = self._load_manifest()
+        self.max_size_gb = max_size_gb
+        self.lock_dir = cache_dir / ".locks"
+        self._manifest_lock = FileLock(self.lock_dir / "manifest.lock")
         
     def get_cached_dates(self, source: str, msg_type: str) -> Set[date]:
-        """Return set of dates already in cache."""
+        """Return set of dates already in cache (including 'no_data' entries)."""
         
     def get_missing_dates(self, source: str, msg_type: str,
                           start: date, end: date) -> List[date]:
         """Return dates not yet cached."""
         
-    def save_processed(self, df: pd.DataFrame, source: str, 
-                       msg_type: str, date: date) -> Path:
-        """Save processed DataFrame to Parquet cache."""
+    def save_processed(
+        self, 
+        df: pd.DataFrame, 
+        source: str, 
+        msg_type: str, 
+        date: date
+    ) -> Path:
+        """
+        Save processed DataFrame to Parquet cache.
+        
+        Uses atomic write: temp file → rename.
+        """
+        
+    def mark_no_data(self, source: str, msg_type: str, date: date):
+        """
+        Mark a date as having no data in S3.
+        
+        Prevents re-fetching empty dates.
+        """
+        
+    def evict_lru(self, bytes_needed: int):
+        """Evict least-recently-used entries to free space."""
+        
+    def clear_cache(self, source: str = None, msg_type: str = None):
+        """Clear cache entries (all, or filtered by source/type)."""
 ```
 
 ### 3.3 SchemaValidator Class
@@ -271,11 +349,25 @@ class BSMSchemaValidator:
         'payload.data.coreData.heading',
     ]
     
+    # Schema versions by date range
+    SCHEMA_VERSIONS = {
+        (date(2017, 1, 1), date(2018, 1, 17)): 2,
+        (date(2018, 1, 18), date(2020, 6, 30)): 3,
+        (date(2020, 7, 1), date(2099, 12, 31)): 6,
+    }
+    
     def validate(self, record: dict) -> Tuple[bool, List[str]]:
         """Validate single record, return (valid, errors)."""
         
     def batch_validate(self, records: List[dict]) -> ValidationReport:
         """Validate batch with statistics."""
+        
+    def get_canonical_schema(self) -> pa.Schema:
+        """
+        Return the canonical PyArrow schema.
+        
+        Used to ensure all parquet files have consistent columns.
+        """
 ```
 
 ### 3.4 DataSourceConfig Dataclass
@@ -283,40 +375,87 @@ class BSMSchemaValidator:
 **Location:** `DataSources/config.py`
 
 ```python
-@dataclass
-class DataSourceConfig:
-    """Configuration for data source access."""
+from pydantic import BaseModel, validator, Field
+from datetime import date
+from pathlib import Path
+from typing import Optional, Literal
+
+class DateRangeConfig(BaseModel):
+    """Date range configuration with validation."""
+    
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    days_back: Optional[int] = None  # Relative to today
+    timezone: str = "UTC"  # Input timezone
+    
+    @validator('end_date')
+    def end_after_start(cls, v, values):
+        if v and values.get('start_date') and v < values['start_date']:
+            raise ValueError('end_date must be >= start_date')
+        return v
+    
+    @validator('days_back')
+    def days_back_positive(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError('days_back must be positive')
+        return v
+
+class DataSourceConfig(BaseModel):
+    """Configuration for data source access with full validation."""
     
     # Source identification
     bucket: str = "usdot-its-cvpilot-publicdata"
-    source: str = "wydot"  # wydot, thea, nycdot
-    message_type: str = "BSM"  # BSM, TIM, SPAT, EVENT
+    source: Literal["wydot", "wydot_backup", "thea", "nycdot"]
+    message_type: str
     
     # Date range
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    date_range: DateRangeConfig
     
     # Cache settings
     cache_dir: Path = Path("data/cache")
-    cache_ttl_days: int = 30  # Re-download after N days
+    cache_ttl_days: int = Field(default=30, ge=1)
+    cache_max_size_gb: float = Field(default=50.0, ge=1.0)
     
     # Download settings
-    max_workers: int = 4
-    chunk_size: int = 8192
-    retry_attempts: int = 3
-    retry_delay: float = 1.0
+    max_workers: int = Field(default=4, ge=1, le=16)
+    retry_attempts: int = Field(default=3, ge=1)
+    retry_delay: float = Field(default=1.0, ge=0.1)
+    timeout_seconds: int = Field(default=300, ge=30)
     
-    # Memory settings (for 32GB config)
-    max_memory_gb: float = 24.0
-    partition_size_mb: int = 128
+    # Memory settings
+    max_memory_gb: float = Field(default=24.0, ge=4.0)
+    partition_size_mb: int = Field(default=128, ge=16)
     
     # Processing settings
     validate_schema: bool = True
     drop_invalid: bool = True
     
+    @validator('message_type')
+    def valid_message_type_for_source(cls, v, values):
+        source = values.get('source')
+        valid_types = {
+            'wydot': {'BSM', 'TIM'},
+            'wydot_backup': {'BSM', 'TIM'},
+            'thea': {'BSM', 'TIM', 'SPAT'},
+            'nycdot': {'EVENT'},
+        }
+        if source and v not in valid_types.get(source, set()):
+            raise ValueError(
+                f"Invalid message_type '{v}' for source '{source}'. "
+                f"Valid: {valid_types[source]}"
+            )
+        return v
+    
     @classmethod
     def from_yaml(cls, path: Path) -> 'DataSourceConfig':
-        """Load configuration from YAML file."""
+        """Load and validate configuration from YAML file."""
+        import yaml
+        
+        with open(path) as f:
+            raw = yaml.safe_load(f)
+        
+        # Pydantic validates on construction
+        return cls(**raw)
 ```
 
 ---
@@ -329,60 +468,40 @@ class DataSourceConfig:
 
 ```yaml
 # WYDOT BSM Data Source Configuration
-# Use this to fetch BSM data from Wyoming CV Pilot
+# All fields are validated by Pydantic on load
 
-data_source:
-  bucket: "usdot-its-cvpilot-publicdata"
-  source: "wydot"
-  message_type: "BSM"
-  region: "us-east-1"
+source: "wydot"
+message_type: "BSM"
+bucket: "usdot-its-cvpilot-publicdata"
 
-# Date range for data fetch
-# Use relative dates or absolute dates
 date_range:
-  # Option 1: Relative (for testing/development)
-  relative:
-    days_back: 30  # Fetch last 30 days
+  # Option 1: Relative dates (for testing)
+  days_back: 30
+  timezone: "America/Denver"  # Converted to UTC internally
   
-  # Option 2: Absolute (for production runs)
+  # Option 2: Absolute dates (for production)
   # start_date: "2021-04-01"
   # end_date: "2021-04-30"
+  # timezone: "UTC"
 
-# Caching configuration
 cache:
   directory: "data/cache"
   ttl_days: 30
   max_size_gb: 50
-  
-# Download configuration
+
 download:
   max_workers: 4
-  chunk_size_bytes: 8192
-  retry:
-    attempts: 3
-    delay_seconds: 1.0
-    backoff_multiplier: 2.0
+  retry_attempts: 3
+  retry_delay_seconds: 1.0
   timeout_seconds: 300
-  
-# Memory configuration (32GB system)
+
 memory:
   max_usage_gb: 24
   partition_size_mb: 128
-  spill_to_disk: true
-  spill_directory: "/tmp/wydot-spill"
 
-# Schema validation
 validation:
   enabled: true
   drop_invalid_records: true
-  log_invalid_records: true
-  invalid_records_file: "data/logs/invalid_records.jsonl"
-
-# Output configuration
-output:
-  format: "parquet"
-  compression: "snappy"
-  partition_by: ["year", "month", "day"]
 ```
 
 ### 4.2 Experiment Configuration
@@ -397,16 +516,18 @@ experiment:
   description: "Validate 32GB config with one month of WYDOT BSM data"
   
 data:
-  source_config: "configs/data_sources/wydot_bsm.yml"
+  source: "wydot"
+  message_type: "BSM"
   date_range:
     start_date: "2021-04-01"
     end_date: "2021-04-30"
+    timezone: "UTC"
   
   # Limit for testing (optional)
   max_rows: 1000000  # 1M rows for quick test
   
 processing:
-  engine: "dask"  # or "spark"
+  engine: "dask"
   config: "configs/dask/32gb-production.yml"
   
   cleaning:
@@ -418,70 +539,11 @@ processing:
       lat_max: 45.0
       lon_min: -112.0
       lon_max: -104.0
-      
-  features:
-    include_timestamps: true
-    include_path_history: false  # Reduces memory
-    
-pipeline:
-  attack_simulation:
-    enabled: true
-    attacker_percentage: 30
-    attack_type: "random_offset"
-    offset_range: [100, 200]  # meters
-    
-  ml_model:
-    type: "random_forest"
-    n_estimators: 100
-    
+
 output:
   results_dir: "results/test_32gb_april_2021"
   save_model: true
   save_predictions: true
-```
-
-### 4.3 Multi-Source Configuration
-
-**File:** `configs/experiments/multi_source_comparison.yml`
-
-```yaml
-# Experiment: Compare data from multiple sources
-
-experiment:
-  name: "multi_source_comparison"
-  description: "Compare BSM patterns across WYDOT, THEA, and backup"
-
-sources:
-  - name: "wydot_primary"
-    config:
-      source: "wydot"
-      message_type: "BSM"
-    date_range:
-      start_date: "2021-04-01"
-      end_date: "2021-04-07"
-      
-  - name: "wydot_backup"
-    config:
-      source: "wydot_backup"
-      message_type: "BSM"
-    date_range:
-      start_date: "2021-04-01"
-      end_date: "2021-04-07"
-      
-  - name: "thea"
-    config:
-      source: "thea"
-      message_type: "BSM"
-    date_range:
-      start_date: "2021-04-01"
-      end_date: "2021-04-07"
-
-comparison:
-  metrics:
-    - record_count
-    - unique_vehicles
-    - geographic_coverage
-    - temporal_distribution
 ```
 
 ---
@@ -493,63 +555,40 @@ comparison:
 | Task | Priority | Effort | Dependencies |
 |------|----------|--------|--------------|
 | Create `DataSources/` module structure | P0 | 2h | None |
-| Implement `S3DataFetcher` base class | P0 | 8h | boto3 |
-| Implement `CacheManager` | P0 | 6h | None |
-| Create configuration dataclasses | P0 | 4h | pydantic |
-| Write unit tests for core classes | P0 | 6h | pytest |
-
-**Deliverables:**
-- `DataSources/S3DataFetcher.py`
-- `DataSources/CacheManager.py`
-- `DataSources/config.py`
-- `Test/Tests/test_data_sources.py`
+| Implement Pydantic config models | P0 | 4h | pydantic |
+| Implement `S3DataFetcher` with rate limiting | P0 | 8h | boto3 |
+| Implement `CacheManager` with file locking | P0 | 8h | filelock |
+| Implement atomic file writes | P0 | 2h | None |
+| Write unit tests for core classes | P0 | 6h | pytest, moto |
 
 ### 5.2 Phase 2: Data Processing (Week 2)
 
 | Task | Priority | Effort | Dependencies |
 |------|----------|--------|--------------|
-| Implement JSON parser for BSM format | P0 | 6h | Phase 1 |
-| Implement `SchemaValidator` | P0 | 6h | Phase 1 |
-| Create Dask integration for processing | P0 | 8h | Phase 1 |
-| Create Spark integration (optional) | P1 | 6h | Phase 1 |
-| Implement Parquet caching layer | P0 | 4h | Phase 1 |
-
-**Deliverables:**
-- `DataSources/parsers/BSMParser.py`
-- `DataSources/SchemaValidator.py`
-- `DataSources/processors/DaskProcessor.py`
-- `DataSources/processors/SparkProcessor.py`
+| Implement streaming JSON parser | P0 | 6h | Phase 1 |
+| Implement `SchemaValidator` with versioning | P0 | 6h | Phase 1 |
+| Implement schema merging for Parquet | P0 | 4h | pyarrow |
+| Create Dask lazy loading integration | P0 | 8h | dask |
+| Create Spark integration (optional) | P1 | 6h | pyspark |
 
 ### 5.3 Phase 3: Pipeline Integration (Week 3)
 
 | Task | Priority | Effort | Dependencies |
 |------|----------|--------|--------------|
 | Create adapter for `DataGatherer` interface | P0 | 4h | Phase 2 |
-| Update `DaskDataGatherer` to use new source | P0 | 6h | Phase 2 |
-| Update `SparkDataGatherer` to use new source | P1 | 6h | Phase 2 |
-| Create configuration loader for experiments | P0 | 4h | Phase 2 |
-| Integration testing with existing pipelines | P0 | 8h | All above |
+| Update existing gatherers | P0 | 6h | Phase 2 |
+| Handle time zone conversion | P0 | 4h | pytz |
+| Integration testing | P0 | 8h | All above |
 
-**Deliverables:**
-- Updated `Gatherer/DaskDataGatherer.py`
-- Updated `Gatherer/SparkDataGatherer.py`
-- `configs/experiments/*.yml` templates
-
-### 5.4 Phase 4: CLI & Documentation (Week 4)
+### 5.4 Phase 4: CLI & Polish (Week 4)
 
 | Task | Priority | Effort | Dependencies |
 |------|----------|--------|--------------|
-| Create CLI for data fetching | P1 | 6h | Phase 3 |
+| Create CLI for data fetching | P1 | 6h | click, rich |
 | Create CLI for cache management | P1 | 4h | Phase 3 |
+| Add progress bars and logging | P0 | 4h | rich |
 | Write user documentation | P0 | 6h | All above |
-| Create example notebooks | P1 | 4h | Phase 3 |
 | Performance benchmarking | P1 | 4h | Phase 3 |
-
-**Deliverables:**
-- `scripts/fetch_data.py`
-- `scripts/manage_cache.py`
-- `docs/DATA_FETCHING_GUIDE.md`
-- `examples/wydot_data_access.ipynb`
 
 ---
 
@@ -567,49 +606,32 @@ pandas>=1.5.0
 pyarrow>=11.0.0
 dask[complete]>=2024.1.0
 
-# Configuration
+# Configuration & Validation
 pyyaml>=6.0
 pydantic>=2.0.0
 
+# Concurrency & Safety
+filelock>=3.12.0
+
+# Time Zones
+pytz>=2023.3
+
 # CLI
 click>=8.0.0
-rich>=13.0.0  # For progress bars
+rich>=13.0.0
 
 # Testing
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
-moto>=4.0.0  # S3 mocking
+moto>=4.0.0
 ```
 
-### 6.2 AWS Configuration
-
-**Option A: Anonymous Access (Recommended for Public Data)**
-```python
-import boto3
-from botocore import UNSIGNED
-from botocore.config import Config
-
-s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-```
-
-**Option B: AWS Credentials (for private data/higher rate limits)**
-```bash
-# ~/.aws/credentials
-[default]
-aws_access_key_id = YOUR_KEY
-aws_secret_access_key = YOUR_SECRET
-
-# ~/.aws/config
-[default]
-region = us-east-1
-```
-
-### 6.3 System Requirements
+### 6.2 System Requirements
 
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
 | RAM | 8 GB | 32+ GB |
-| Storage | 50 GB | 200+ GB (for full cache) |
+| Storage | 50 GB SSD | 200+ GB SSD |
 | Network | 10 Mbps | 100+ Mbps |
 | Python | 3.10+ | 3.11+ |
 
@@ -621,112 +643,211 @@ region = us-east-1
 
 | Error Type | Handling Strategy |
 |------------|-------------------|
-| Connection timeout | Retry with exponential backoff (max 3 attempts) |
-| Rate limiting (429) | Pause 60s, then retry with reduced concurrency |
-| S3 access denied | Log error, skip file, continue with others |
-| Incomplete download | Track progress, resume from last byte |
+| Connection timeout | Retry with exponential backoff (1s, 2s, 4s, max 3 attempts) |
+| Rate limiting (429/503) | Pause based on Retry-After header, reduce concurrency |
+| S3 access denied | Log error, fail explicitly (don't silently skip) |
+| Incomplete download | Track bytes downloaded, resume from last position |
+| DNS failure | Retry after 30s, max 3 attempts |
 
 ### 7.2 Data Errors
 
 | Error Type | Handling Strategy |
 |------------|-------------------|
-| Malformed JSON | Log to invalid records file, skip record |
-| Missing required field | Apply default if available, else skip |
-| Out-of-range values | Flag for review, include in output with warning |
-| Schema version mismatch | Use version-specific parser |
+| Malformed JSON | Log record to invalid.jsonl, skip, continue |
+| Missing required field | Apply null/default if safe, else skip record |
+| Out-of-range values | Include with `_warning` flag column |
+| Unexpected schema | Log warning, use flexible parsing |
+| Empty S3 prefix | Mark date as `no_data` in manifest (not an error) |
 
-### 7.3 Recovery Mechanisms
+### 7.3 Disk Errors
+
+| Error Type | Handling Strategy |
+|------------|-------------------|
+| Disk full during write | Evict LRU cache entries, retry |
+| Permission denied | Fail explicitly with clear error message |
+| Corrupted file | Detect via checksum, remove and re-fetch |
+
+---
+
+## 8. Concurrency & Safety
+
+### 8.1 File Locking Strategy
 
 ```python
-class DownloadState:
-    """Persistent state for resumable downloads."""
+from filelock import FileLock
+
+class CacheManager:
+    def __init__(self, cache_dir: Path):
+        self.lock_dir = cache_dir / ".locks"
+        self.lock_dir.mkdir(exist_ok=True)
+        
+    def _get_lock(self, key: str) -> FileLock:
+        """Get a lock for a specific cache key."""
+        lock_file = self.lock_dir / f"{key.replace('/', '_')}.lock"
+        return FileLock(lock_file, timeout=60)
     
-    def __init__(self, state_file: Path):
-        self.state_file = state_file
-        self.state = self._load_state()
+    def save_processed(self, df, source, msg_type, date_val):
+        key = f"{source}/{msg_type}/{date_val.year}/{date_val.month:02d}/{date_val.day:02d}"
         
-    def mark_complete(self, s3_key: str, local_path: Path):
-        """Mark file as successfully downloaded."""
-        
-    def get_incomplete(self) -> List[str]:
-        """Get list of files that were started but not completed."""
-        
-    def save(self):
-        """Persist state to disk."""
+        with self._get_lock(key):
+            # Atomic write: temp file → rename
+            temp_path = self.cache_dir / f".tmp_{uuid.uuid4()}.parquet"
+            final_path = self.cache_dir / f"{key}.parquet"
+            
+            try:
+                df.to_parquet(temp_path, compression='snappy')
+                temp_path.rename(final_path)  # Atomic on POSIX
+            finally:
+                temp_path.unlink(missing_ok=True)
+            
+            # Update manifest atomically
+            self._update_manifest(key, final_path)
+```
+
+### 8.2 Manifest Updates
+
+```python
+def _update_manifest(self, key: str, path: Path):
+    """Update manifest with file locking."""
+    manifest_lock = FileLock(self.lock_dir / "manifest.lock", timeout=60)
+    
+    with manifest_lock:
+        manifest = self._load_manifest()
+        manifest['entries'][key] = {
+            'status': 'complete',
+            'file_path': str(path.relative_to(self.cache_dir)),
+            'checksum_sha256': compute_sha256(path),
+            'updated_at': datetime.utcnow().isoformat(),
+            # ... other metadata
+        }
+        self._save_manifest(manifest)
+```
+
+### 8.3 Rate Limiting
+
+```python
+import time
+from threading import Lock
+
+class RateLimiter:
+    """Token bucket rate limiter for S3 requests."""
+    
+    def __init__(self, max_requests_per_second: float = 10.0):
+        self.rate = max_requests_per_second
+        self.tokens = max_requests_per_second
+        self.last_update = time.monotonic()
+        self.lock = Lock()
+    
+    def acquire(self):
+        with self.lock:
+            now = time.monotonic()
+            elapsed = now - self.last_update
+            self.tokens = min(self.rate, self.tokens + elapsed * self.rate)
+            self.last_update = now
+            
+            if self.tokens < 1:
+                sleep_time = (1 - self.tokens) / self.rate
+                time.sleep(sleep_time)
+                self.tokens = 0
+            else:
+                self.tokens -= 1
+```
+
+### 8.4 Time Zone Handling
+
+```python
+import pytz
+from datetime import date, datetime
+
+def normalize_to_utc(dt: date, timezone: str) -> date:
+    """
+    Convert a date from local timezone to UTC.
+    
+    S3 data is stored in UTC, so all queries must use UTC dates.
+    """
+    if timezone == "UTC":
+        return dt
+    
+    local_tz = pytz.timezone(timezone)
+    # Treat date as start of day in local timezone
+    local_dt = local_tz.localize(datetime.combine(dt, datetime.min.time()))
+    utc_dt = local_dt.astimezone(pytz.UTC)
+    return utc_dt.date()
+
+# In config loading:
+config.start_date = normalize_to_utc(config.start_date, config.timezone)
+config.end_date = normalize_to_utc(config.end_date, config.timezone)
 ```
 
 ---
 
-## 8. Testing Strategy
+## 9. Testing Strategy
 
-### 8.1 Unit Tests
+### 9.1 Unit Tests
 
 ```python
-# Test/Tests/test_s3_data_fetcher.py
+class TestConfigValidation:
+    def test_invalid_source_rejected(self):
+        with pytest.raises(ValueError, match="Invalid source"):
+            DataSourceConfig(source="invalid", message_type="BSM", ...)
+    
+    def test_invalid_message_type_for_source(self):
+        with pytest.raises(ValueError, match="Invalid message_type"):
+            DataSourceConfig(source="nycdot", message_type="BSM", ...)
+    
+    def test_end_date_before_start_rejected(self):
+        with pytest.raises(ValueError, match="end_date must be >= start_date"):
+            DateRangeConfig(start_date=date(2021, 4, 30), end_date=date(2021, 4, 1))
 
-class TestS3DataFetcher:
-    
-    @pytest.fixture
-    def mock_s3(self):
-        """Create mocked S3 bucket with sample data."""
-        with moto.mock_s3():
-            conn = boto3.resource('s3')
-            conn.create_bucket(Bucket='usdot-its-cvpilot-publicdata')
-            # Add sample files...
-            yield conn
-    
-    def test_list_files_single_day(self, mock_s3):
-        """Test listing files for a single day."""
+class TestCacheManager:
+    def test_concurrent_writes_safe(self):
+        """Test that concurrent writes don't corrupt cache."""
         
-    def test_list_files_date_range(self, mock_s3):
-        """Test listing files across multiple days."""
+    def test_atomic_write_on_failure(self):
+        """Test that failed writes don't leave partial files."""
         
-    def test_download_with_retry(self, mock_s3):
-        """Test download retry on failure."""
-        
-    def test_resume_interrupted_download(self, mock_s3):
-        """Test resuming after interruption."""
+    def test_no_data_marked_correctly(self):
+        """Test that empty S3 prefixes are cached as 'no_data'."""
 ```
 
-### 8.2 Integration Tests
+### 9.2 Integration Tests
 
 ```python
-# Test/Integration/test_wydot_integration.py
-
 @pytest.mark.integration
-class TestWYDOTIntegration:
-    
-    def test_fetch_one_hour_data(self):
-        """Test fetching one hour of real WYDOT data."""
-        config = DataSourceConfig(
-            source="wydot",
-            message_type="BSM",
-            start_date=date(2021, 4, 1),
-            end_date=date(2021, 4, 1),
-        )
-        fetcher = S3DataFetcher(config)
-        df = fetcher.get_data()
+class TestS3Integration:
+    def test_fetch_one_hour_real_data(self):
+        """Test fetching real WYDOT data."""
         
-        assert len(df) > 0
-        assert 'coreData_position_lat' in df.columns
-        
-    def test_pipeline_integration(self):
-        """Test full pipeline with fetched data."""
+    def test_rate_limiting_respected(self):
+        """Test that rate limits are honored."""
 ```
 
-### 8.3 Performance Tests
+---
 
-```python
-# Test/Performance/test_download_performance.py
+## 10. CLI Commands
 
-@pytest.mark.performance
-class TestDownloadPerformance:
-    
-    def test_parallel_download_throughput(self):
-        """Measure download throughput with varying concurrency."""
-        
-    def test_memory_usage_during_processing(self):
-        """Verify memory stays within 32GB limit."""
+```bash
+# Fetch data
+python -m datasources fetch \
+  --source wydot \
+  --type BSM \
+  --start 2021-04-01 \
+  --end 2021-04-07 \
+  --timezone America/Denver
+
+# Show cache status
+python -m datasources cache status
+
+# Clear cache
+python -m datasources cache clear --source wydot
+
+# Force refresh (bypass cache)
+python -m datasources fetch \
+  --source wydot \
+  --type BSM \
+  --start 2021-04-01 \
+  --end 2021-04-01 \
+  --force-refresh
 ```
 
 ---
@@ -735,8 +856,6 @@ class TestDownloadPerformance:
 
 ### A. S3 Bucket Contents Summary
 
-Based on sandbox analysis:
-
 | Source | Start Date | Data Types | Est. Total Size |
 |--------|------------|------------|-----------------|
 | wydot | 2017-11 | BSM, TIM | ~500 GB |
@@ -744,53 +863,11 @@ Based on sandbox analysis:
 | thea | 2018-06 | BSM, TIM, SPAT | ~200 GB |
 | nycdot | 2020-01 | EVENT | ~50 GB |
 
-### B. Sample BSM Record Structure
+### B. Related Documents
 
-```json
-{
-  "metadata": {
-    "logFileName": "bsmTx_1511786692_fe80::226:adff:fe05:14c1.csv",
-    "recordType": "bsmTx",
-    "payloadType": "us.dot.its.jpo.ode.model.OdeBsmPayload",
-    "serialId": {
-      "streamId": "5df4d384-dae1-4dcc-b662-95cd7e7bde5f",
-      "bundleSize": 1,
-      "bundleId": 4096,
-      "recordId": 2,
-      "serialNumber": 0
-    },
-    "odeReceivedAt": "2017-11-27T12:50:16.377Z[UTC]",
-    "schemaVersion": 3,
-    "recordGeneratedAt": "2017-11-20T12:13:36.398Z[UTC]",
-    "recordGeneratedBy": "OBU",
-    "validSignature": true,
-    "sanitized": true
-  },
-  "payload": {
-    "dataType": "us.dot.its.jpo.ode.plugin.j2735.J2735Bsm",
-    "data": {
-      "coreData": {
-        "msgCnt": 66,
-        "id": "3DEF0000",
-        "secMark": 36400,
-        "position": {
-          "latitude": 41.1135612,
-          "longitude": -104.8557380,
-          "elevation": 1856.8
-        },
-        "accelSet": {"accelYaw": 0.00},
-        "accuracy": {"semiMajor": 1.90, "semiMinor": 2.90},
-        "transmission": "NEUTRAL",
-        "speed": 19.44,
-        "heading": 259.7250,
-        "brakes": {...},
-        "size": {"width": 490, "length": 1190}
-      },
-      "partII": [...]
-    }
-  }
-}
-```
+- [Cache Key Specification](./CACHE_KEY_SPECIFICATION.md)
+- [32GB Config](../configs/spark/32gb-single-node.yml)
+- [Dask 32GB Config](../configs/dask/32gb-production.yml)
 
 ### C. Useful AWS CLI Commands
 
@@ -798,23 +875,13 @@ Based on sandbox analysis:
 # List all sources
 aws s3 ls s3://usdot-its-cvpilot-publicdata/ --no-sign-request
 
-# List data for specific date
+# Check if date has data
 aws s3 ls s3://usdot-its-cvpilot-publicdata/wydot/BSM/2021/04/01/ --no-sign-request
 
-# Download one day of data
-aws s3 cp s3://usdot-its-cvpilot-publicdata/wydot/BSM/2021/04/01/ ./data/wydot/BSM/2021/04/01/ --recursive --no-sign-request
-
-# Get size of one month
-aws s3 ls s3://usdot-its-cvpilot-publicdata/wydot/BSM/2021/04/ --recursive --no-sign-request --summarize | tail -2
+# Download one day
+aws s3 cp s3://usdot-its-cvpilot-publicdata/wydot/BSM/2021/04/01/ \
+  ./data/wydot/BSM/2021/04/01/ --recursive --no-sign-request
 ```
-
-### D. Related Resources
-
-- [ITS DataHub](https://www.its.dot.gov/data/)
-- [CV Pilot Sandbox README](https://github.com/usdot-its-jpo-data-portal/sandbox)
-- [Sandbox Exporter Tool](https://github.com/usdot-its-jpo-data-portal/sandbox_exporter)
-- [J2735 Standard Documentation](https://www.sae.org/standards/content/j2735_200911/)
-- [Known Data Gaps](https://github.com/usdot-its-jpo-data-portal/sandbox/wiki/ITS-CV-Pilot-Data-Sandbox-Known-Data-Gaps-and-Caveats)
 
 ---
 
@@ -823,11 +890,18 @@ aws s3 ls s3://usdot-its-cvpilot-publicdata/wydot/BSM/2021/04/ --recursive --no-
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-28 | Sophie (AI) | Initial draft |
+| 1.1 | 2026-01-28 | Sophie (AI) | Audit: Added concurrency, time zones, disk management, validation |
 
 ---
 
-**Next Steps:**
-1. Review and approve this plan
-2. Set up AWS credentials (optional, for higher rate limits)
-3. Begin Phase 1 implementation
-4. Create initial test configuration for April 2021 data
+**Audit Checklist:**
+- [x] Concurrency handling (file locking)
+- [x] Disk space management (LRU eviction)
+- [x] Time zone handling (UTC normalization)
+- [x] Rate limiting (token bucket)
+- [x] Atomic file writes (temp + rename)
+- [x] Empty data handling (no_data status)
+- [x] Config validation (Pydantic)
+- [x] Schema consistency (canonical schema)
+- [x] Error propagation (fail fast)
+- [x] Cache invalidation (force_refresh, clear)

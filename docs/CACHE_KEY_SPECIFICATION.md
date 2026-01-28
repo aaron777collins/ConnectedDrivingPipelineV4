@@ -1,9 +1,10 @@
 # Cache Key Specification
 ## Preventing Data Confusion in Multi-Source CV Pilot Data
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** 2026-01-28  
-**Status:** Design Document  
+**Status:** Reviewed & Audited  
+**Related:** [WYDOT Data Infrastructure Plan](./WYDOT_DATA_INFRASTRUCTURE_PLAN.md)  
 
 ---
 
@@ -475,3 +476,104 @@ def test_invalid_message_type_for_source():
 | Inference errors | NEVER infer, ALWAYS require explicit params |
 
 **Key Principle:** The cache key `{source}/{message_type}/{year}/{month}/{day}` makes it *structurally impossible* to confuse data from different sources or message types.
+
+---
+
+## Additional Safeguards (Added in Audit)
+
+### Case 8: Empty S3 Prefix (No Data for Date)
+
+**Scenario:** April 15, 2021 has no BSM data in S3 (system was down).
+
+**Problem:** Without tracking, we'd re-fetch every time.
+
+**Solution:**
+```python
+# Manifest tracks "no data" explicitly:
+{
+  "wydot/BSM/2021/04/15": {
+    "status": "no_data",  # Not "complete", not missing
+    "checked_at": "2026-01-28T22:00:00Z",
+    "s3_files_found": 0
+  }
+}
+
+# On cache check:
+if entry.status == "no_data":
+    # Return empty DataFrame, don't re-fetch
+    return pd.DataFrame()
+```
+
+### Case 9: Concurrent Access
+
+**Scenario:** Two processes try to fetch the same date simultaneously.
+
+**Solution:** File locking per cache key.
+```python
+from filelock import FileLock
+
+def save_processed(self, key, df):
+    lock = FileLock(f".locks/{key.replace('/', '_')}.lock", timeout=60)
+    with lock:
+        # Only one process writes at a time
+        temp = f".tmp_{uuid4()}.parquet"
+        df.to_parquet(temp)
+        os.rename(temp, f"{key}.parquet")  # Atomic
+```
+
+### Case 10: Disk Full During Write
+
+**Solution:** Atomic writes prevent partial files.
+```python
+def save_processed(self, key, df):
+    temp_path = self.cache_dir / f".tmp_{uuid.uuid4()}.parquet"
+    final_path = self.cache_dir / f"{key}.parquet"
+    
+    try:
+        df.to_parquet(temp_path)
+        temp_path.rename(final_path)
+    except OSError as e:
+        temp_path.unlink(missing_ok=True)  # Clean up temp file
+        if "No space left" in str(e):
+            self.evict_lru(bytes_needed=temp_path.stat().st_size)
+            raise  # Let caller retry
+        raise
+```
+
+### Case 11: Time Zone Confusion
+
+**Scenario:** User specifies April 1 in local time (America/Denver), but S3 uses UTC.
+
+**Solution:** Always normalize to UTC before cache key generation.
+```python
+import pytz
+from datetime import datetime
+
+def normalize_date(dt: date, tz: str) -> date:
+    """Convert local date to UTC date."""
+    if tz == "UTC":
+        return dt
+    local_tz = pytz.timezone(tz)
+    local_dt = local_tz.localize(datetime.combine(dt, datetime.min.time()))
+    return local_dt.astimezone(pytz.UTC).date()
+
+# Cache key always uses UTC date:
+cache_key = f"{source}/{msg_type}/{utc_date.year}/..."
+```
+
+---
+
+## Audit Checklist
+
+- [x] Source isolation (FIRST path component)
+- [x] Message type isolation (SECOND path component)
+- [x] Partial downloads (status tracking)
+- [x] Corrupted files (SHA256 checksums)
+- [x] Schema changes (version in manifest)
+- [x] Config changes (config hash)
+- [x] Invalid sources (strict validation)
+- [x] Never infer (always explicit params)
+- [x] Empty data (no_data status)
+- [x] Concurrent access (file locking)
+- [x] Disk full (atomic writes)
+- [x] Time zones (UTC normalization)
