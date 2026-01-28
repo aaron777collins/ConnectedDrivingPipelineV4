@@ -1,0 +1,118 @@
+# Spark Configuration for 32GB RAM Single-Node System
+# Optimized to leave 4-6GB for Linux kernel and system processes
+# Use this configuration for development/testing with memory constraints
+
+spark_config:
+  # Application Settings
+  app_name: "ConnectedDrivingPipeline-32GB"
+
+  # Master Configuration
+  master: "local[4]"  # Single-node with 4 cores (conservative for 32GB)
+
+  # Memory Configuration (CRITICAL - Conservative allocation for 32GB system)
+  driver_memory: "4g"           # Driver JVM heap (+ 0.4GB overhead = 4.4GB total)
+  executor_memory: "18g"        # Executor JVM heap (+ 1.8GB overhead = 19.8GB total)
+  executor_memoryOverhead: "2g" # Off-heap memory for Python UDFs, network buffers, etc.
+
+  # Execution Configuration
+  executor_cores: 4  # Optimal parallelism for single-node (matches local[4])
+
+  # Memory Management (Fine-tuned for memory-constrained environments)
+  memory_fraction: 0.7           # 70% for Spark execution/storage, 30% for safety margin
+  memory_storage_fraction: 0.3   # 30% for caching DataFrames, 70% for execution
+
+  # Shuffle and Partition Settings
+  sql_shuffle_partitions: 100    # Reduced for 32GB (vs 200 for 128GB)
+  default_parallelism: 8         # 2x executor cores for task parallelism
+
+  # Adaptive Query Execution (Essential for performance)
+  sql_adaptive_enabled: true
+  sql_adaptive_coalesce_partitions_enabled: true
+  sql_adaptive_skewJoin_enabled: true
+
+  # Arrow Integration (Critical for pandas UDF performance)
+  sql_execution_arrow_pyspark_enabled: true
+  sql_execution_arrow_pyspark_fallback_enabled: true
+  sql_execution_arrow_maxRecordsPerBatch: 5000  # Reduced batch size for memory
+
+  # Compression (Snappy for balanced speed/compression)
+  sql_parquet_compression_codec: "snappy"
+  io_compression_codec: "snappy"
+
+  # Dynamic Allocation (Keep single executor in local mode)
+  dynamicAllocation_enabled: true
+  dynamicAllocation_minExecutors: 1
+  dynamicAllocation_maxExecutors: 1  # Single-node = single executor
+
+  # Result Size Limit (Prevent OOM from collect() operations)
+  driver_maxResultSize: "2g"  # Maximum size for actions like collect()
+
+  # Broadcast Join Threshold
+  sql_autoBroadcastJoinThreshold: 26214400  # 25MB (reduced from 50MB for memory)
+
+  # Serialization (Kryo for better performance)
+  serializer: "org.apache.spark.serializer.KryoSerializer"
+  kryoserializer_buffer_max: "512m"
+
+  # Network and Timeout Settings
+  network_timeout: 300s
+  executor_heartbeatInterval: 30s
+
+  # UI and Logging
+  ui_port: 4040
+  ui_showConsoleProgress: true
+  ui_retainedJobs: 50
+  ui_retainedStages: 50
+  log_level: "WARN"  # Reduce logging overhead
+
+  # Event Logging (for profiling and debugging)
+  eventLog_enabled: true
+  eventLog_dir: "/tmp/spark-events"
+
+  # Local Directory (for spill files - CRITICAL for 32GB)
+  local_dir: "/tmp/spark-temp"
+
+  # File Output Settings
+  sql_files_maxPartitionBytes: 67108864  # 64MB per output partition (reduced)
+
+  # Python Worker Configuration (Important for UDF performance)
+  python_worker_memory: "1g"    # Memory per Python worker process (reduced)
+  python_worker_reuse: true     # Reuse workers across tasks
+
+  # Storage
+  storage_memoryMapThreshold: 2m
+
+  # Spill settings for memory-constrained environment
+  shuffle_spill_compress: true
+  shuffle_compress: true
+
+comments:
+  - "**Target System:** 32GB RAM single-node workstation/server"
+  - "**Memory Breakdown:**"
+  - "  - Driver: 4GB + 0.4GB overhead = 4.4GB"
+  - "  - Executor: 18GB + 2GB overhead = 20GB"
+  - "  - Python UDF workers (4 cores): 2-3GB"
+  - "  - Linux kernel + OS: 4-6GB"
+  - "  - **Total allocation: ~30-32GB** (tight but safe margin)"
+  - ""
+  - "**Use Cases:**"
+  - "  - Processing 1M-10M rows on a memory-constrained machine"
+  - "  - Development and testing before cluster deployment"
+  - "  - Small-to-medium BSM datasets (partial day of messages)"
+  - ""
+  - "**Performance Characteristics:**"
+  - "  - Can cache 1 large DataFrame at a time"
+  - "  - Some shuffle operations may spill to disk under heavy load"
+  - "  - Efficient pandas UDF execution with 4 parallel workers"
+  - ""
+  - "**Tuning Guidelines:**"
+  - "  - Monitor system memory with: watch -n 1 free -h"
+  - "  - If OOM detected: reduce executor_memory to 14g"
+  - "  - If UDF-heavy: reduce memory_fraction to 0.6"
+  - "  - If shuffle spilling: increase executor_memoryOverhead to 3g"
+  - "  - Check Spark UI at http://localhost:4040 during execution"
+  - ""
+  - "**CRITICAL NOTES:**"
+  - "  - This config is tight on memory - expect some disk spilling"
+  - "  - Avoid running other memory-heavy applications concurrently"
+  - "  - For datasets > 10M rows, consider using the 64GB or 128GB config"

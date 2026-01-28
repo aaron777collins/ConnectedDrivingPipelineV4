@@ -4,6 +4,46 @@ This directory contains Spark configuration templates for different deployment s
 
 ## Configuration Files
 
+### `32gb-single-node.yml` 🧪 **DEVELOPMENT/TESTING**
+**Use for:** Development, testing, or memory-constrained environments (32GB RAM systems)
+
+**Characteristics:**
+- **Target System:** 32GB RAM (conservatively allocates ~26-28GB, leaves 4-6GB for OS/kernel)
+- Single-node execution with 4 cores (`local[4]`)
+- **Driver memory:** 4GB (+ 0.4GB overhead = 4.4GB total)
+- **Executor memory:** 18GB (+ 2GB overhead = 20GB total)
+- Aggressive spill configuration for memory constraints
+- Shuffle partitions: 100 (reduced for 32GB)
+- Suitable for datasets: 1M-10M rows
+- Some shuffle operations may spill to disk under heavy load
+
+**Memory Breakdown:**
+```
+Driver JVM:            4.4 GB
+Executor JVM:         20.0 GB
+Python UDF workers:    2-3 GB
+Linux kernel + OS:     4-6 GB
+─────────────────────────────
+TOTAL:               ~30-32 GB
+```
+
+**Example usage:**
+```python
+from Helpers.SparkSessionManager import SparkSessionManager
+
+# Load 32GB configuration from YAML
+spark = SparkSessionManager.get_session_from_config_file(
+    custom_path='configs/spark/32gb-single-node.yml'
+)
+```
+
+**⚠️ NOTES:**
+- Expect some disk spilling under heavy load
+- Avoid running other memory-heavy applications concurrently
+- For datasets > 10M rows, consider using 64GB or 128GB configs
+
+---
+
 ### `128gb-single-node.yml` ⭐ **RECOMMENDED FOR PRODUCTION**
 **Use for:** Processing large BSM datasets on a 128GB RAM single-node workstation/server
 

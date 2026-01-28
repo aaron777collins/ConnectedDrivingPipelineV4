@@ -1,0 +1,85 @@
+# Dask Configuration for 32GB RAM System
+# Optimized for memory-constrained production workloads
+# Conservative settings to prevent OOM while maximizing throughput
+
+distributed:
+  version: 2
+
+  scheduler:
+    allowed-failures: 5       # More retries for memory-constrained environment
+    work-stealing: true
+    bandwidth: 100000000      # 100MB/s network bandwidth assumption
+    worker-ttl: 300s          # Worker time-to-live
+    idle-timeout: 60s         # Close idle connections
+
+  worker:
+    memory:
+      target: 0.40      # Start spilling at 40% (~2.4GB per 6GB worker) - aggressive for 32GB
+      spill: 0.50       # Spill to disk at 50% (~3.0GB per worker)
+      pause: 0.65       # Pause at 65% (~3.9GB per worker)
+      terminate: 0.85   # Kill worker at 85% (~5.1GB per worker)
+
+    # Spill configuration
+    profile:
+      interval: 10ms
+      cycle: 1000ms
+
+    # Resource limits per worker
+    resources: {}
+
+  client:
+    heartbeat: 5s
+
+dataframe:
+  shuffle:
+    method: disk        # Use disk-based shuffle for 32GB (safer than 'tasks')
+    compression: lz4    # Fast compression for spilling
+
+  backend-kwargs:
+    engine: pyarrow     # For Parquet I/O
+
+# Array chunking - critical for memory management
+array:
+  chunk-size: 32MiB     # Reduced from 64MiB for lower memory usage on 32GB
+
+# Optimize task scheduling to reduce peak memory
+optimization:
+  fuse:
+    active: true        # Enable task fusion to reduce intermediate results
+    ave-width: 1        # Very conservative fusion width for 32GB
+    subgraphs: null
+
+# Temporary storage configuration
+temporary-directory: /tmp/dask-scratch
+
+# Logging
+logging:
+  distributed: warning
+  distributed.scheduler: warning
+  distributed.worker: warning
+
+# Comments for users
+# **Target System:** 32GB RAM
+# **Recommended Setup:**
+#   - 4 workers with 6GB each = 24GB for Dask
+#   - 5-8GB for OS/system processes
+#   - Use LocalCluster(n_workers=4, threads_per_worker=2, memory_limit='6GB')
+#
+# **Example Usage:**
+#   from dask.distributed import Client, LocalCluster
+#   cluster = LocalCluster(
+#       n_workers=4,
+#       threads_per_worker=2,
+#       memory_limit='6GB',
+#       local_directory='/tmp/dask-scratch'
+#   )
+#   client = Client(cluster)
+#
+# **Performance Notes:**
+#   - Aggressive spilling to disk is expected
+#   - Process datasets in smaller chunks when possible
+#   - Monitor with: client.dashboard_link (default: http://localhost:8787)
+#
+# **For larger datasets:**
+#   - Consider using Spark config instead (better memory management)
+#   - Or use 64GB/128GB configs on larger hardware
