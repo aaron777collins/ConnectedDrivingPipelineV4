@@ -58,3 +58,10 @@ pytest>=7.0.0
 pytest-cov>=4.0.0
 pytest-spark>=0.6.0
 
+
+# DataSources module dependencies
+boto3>=1.26.0
+botocore>=1.29.0
+pydantic>=2.0.0
+filelock>=3.12.0
+pytz>=2023.3
