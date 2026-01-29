@@ -15,13 +15,14 @@ import pytz
 
 
 # Valid sources and their message types
-VALID_SOURCES: Set[str] = {"wydot", "wydot_backup", "thea", "nycdot"}
+VALID_SOURCES: Set[str] = {"wydot", "wydot_backup", "thea", "nycdot", "wyomingsample"}
 
 VALID_MESSAGE_TYPES: Dict[str, Set[str]] = {
     "wydot": {"BSM", "TIM"},
     "wydot_backup": {"BSM", "TIM"},
     "thea": {"BSM", "TIM", "SPAT"},
     "nycdot": {"EVENT"},
+    "wyomingsample": {"BSM"},  # Local sample data from data.transportation.gov
 }
 
 
