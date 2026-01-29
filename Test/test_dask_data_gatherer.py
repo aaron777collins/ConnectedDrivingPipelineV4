@@ -447,3 +447,99 @@ class TestDaskDataGathererEdgeCases:
         split_df = dd.read_parquet(split_path)
         assert split_df.npartitions == 1
         assert len(split_df.compute()) == 5
+
+
+@pytest.mark.dask
+@pytest.mark.integration
+class TestDaskDataGathererS3Delegation:
+    """Tests for S3 data source delegation functionality."""
+
+    def test_detects_s3_config(self, setup_providers, temp_data_dir, dask_client):
+        """Test that DaskDataGatherer detects S3 configuration."""
+        # Setup providers with S3 configuration
+        PathProvider(
+            model="test",
+            contexts={
+                "Logger.logpath": lambda model: os.path.join(temp_data_dir, "logs", "test.log"),
+            }
+        )
+
+        InitialGathererPathProvider(
+            model="test",
+            contexts={
+                "DataGatherer.filepath": lambda model: os.path.join(temp_data_dir, "data.csv"),
+                "DataGatherer.subsectionpath": lambda model: os.path.join(temp_data_dir, "cache.csv"),
+                "DataGatherer.splitfilespath": lambda model: os.path.join(temp_data_dir, "split.csv"),
+                "S3DataGatherer.subsectionpath": lambda model: os.path.join(temp_data_dir, "s3_cache.parquet"),
+            }
+        )
+
+        # Setup context with S3 configuration
+        GeneratorContextProvider(contexts={
+            "DataGatherer.numrows": None,
+            "S3DataGatherer.source": "wydot",
+            "S3DataGatherer.message_type": "BSM",
+            "S3DataGatherer.start_date": "2017-08-01",
+            "S3DataGatherer.end_date": "2017-08-01",
+            "S3DataGatherer.timezone": "UTC",
+            "S3DataGatherer.cache_dir": temp_data_dir,
+        })
+
+        # Create gatherer - should detect S3 config and delegate
+        gatherer = DaskDataGatherer()
+
+        # Verify S3 delegation is enabled
+        assert gatherer._use_s3_source is True
+        assert hasattr(gatherer, '_s3_gatherer')
+
+    def test_no_s3_config_uses_csv(self, setup_providers, sample_csv_file, temp_data_dir, dask_client):
+        """Test that DaskDataGatherer uses CSV mode when no S3 config present."""
+        # Setup providers WITHOUT S3 configuration
+        setup_providers(csv_path=sample_csv_file, numrows=100)
+
+        # Create gatherer - should use CSV mode
+        gatherer = DaskDataGatherer()
+
+        # Verify CSV mode is active
+        assert gatherer._use_s3_source is False
+        assert not hasattr(gatherer, '_s3_gatherer')
+        assert gatherer.filepath == sample_csv_file
+
+    def test_split_large_data_skips_for_s3(self, temp_data_dir, dask_client):
+        """Test that split_large_data is skipped when using S3 source."""
+        # Setup providers with S3 configuration
+        PathProvider(
+            model="test",
+            contexts={
+                "Logger.logpath": lambda model: os.path.join(temp_data_dir, "logs", "test.log"),
+            }
+        )
+
+        InitialGathererPathProvider(
+            model="test",
+            contexts={
+                "DataGatherer.filepath": lambda model: os.path.join(temp_data_dir, "data.csv"),
+                "DataGatherer.subsectionpath": lambda model: os.path.join(temp_data_dir, "cache.csv"),
+                "DataGatherer.splitfilespath": lambda model: os.path.join(temp_data_dir, "split.csv"),
+            }
+        )
+
+        GeneratorContextProvider(contexts={
+            "DataGatherer.numrows": None,
+            "DataGatherer.lines_per_file": 1000,
+            "S3DataGatherer.source": "wydot",
+            "S3DataGatherer.message_type": "BSM",
+            "S3DataGatherer.start_date": "2017-08-01",
+            "S3DataGatherer.end_date": "2017-08-01",
+            "S3DataGatherer.cache_dir": temp_data_dir,
+        })
+
+        gatherer = DaskDataGatherer()
+
+        # This should return self without error and not create split files
+        result = gatherer.split_large_data()
+        assert result is gatherer
+
+        # Verify no split files created
+        split_path = os.path.join(temp_data_dir, "split.parquet")
+        assert not os.path.exists(split_path)

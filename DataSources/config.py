@@ -113,6 +113,10 @@ class DownloadConfig(BaseModel):
     retry_delay: float = Field(default=1.0, ge=0.1)
     timeout_seconds: int = Field(default=300, ge=30)
     rate_limit_per_second: float = Field(default=10.0, ge=1.0)
+    
+    # AWS authentication - required since bucket policy change
+    aws_profile: Optional[str] = None  # Use specific profile from ~/.aws/credentials
+    use_anonymous: bool = False  # Set True to try anonymous access (may not work)
 
 
 class MemoryConfig(BaseModel):

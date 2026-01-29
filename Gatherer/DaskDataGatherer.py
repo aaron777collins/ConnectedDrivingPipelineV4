@@ -11,10 +11,17 @@ Key Features:
 - Compatible with existing dependency injection framework
 - Maintains same interface as DataGatherer for easy migration
 - Memory-safe for 64GB systems with 15M+ row datasets
+- Can delegate to S3DataGatherer for S3-based data sources (WYDOT integration)
 
 Usage:
+    # CSV mode (traditional)
     gatherer = DaskDataGatherer()
     data = gatherer.gather_data()  # Returns dask.dataframe.DataFrame
+
+    # S3 mode (when S3DataGatherer configuration is present)
+    # Set S3DataGatherer.source and S3DataGatherer.message_type in config
+    gatherer = DaskDataGatherer()
+    data = gatherer.gather_data()  # Automatically delegates to S3DataGatherer
 
     # Convert to pandas for small datasets
     pandas_df = data.compute()
@@ -50,6 +57,10 @@ class DaskDataGatherer(IDataGatherer):
         """
         Initialize DaskDataGatherer with dependency injection.
 
+        Automatically detects if S3 configuration is present (S3DataGatherer.source)
+        and delegates to S3DataGatherer when appropriate. Otherwise, uses traditional
+        CSV file reading.
+
         Args:
             pathprovider: Provider for file paths (injected)
             contextprovider: Provider for configuration context (injected)
@@ -57,6 +68,22 @@ class DaskDataGatherer(IDataGatherer):
         self._initialGathererPathProvider = pathprovider()
         self._generatorContextProvider = contextprovider()
         self.logger = Logger("DaskDataGatherer")
+
+        # Check if S3 data source configuration is present
+        self._use_s3_source = self._check_s3_config()
+
+        if self._use_s3_source:
+            self.logger.log("Detected S3 configuration - delegating to S3DataGatherer")
+            # Import here to avoid circular dependencies
+            from Gatherer.S3DataGatherer import S3DataGatherer
+            self._s3_gatherer = S3DataGatherer(
+                pathprovider=pathprovider,
+                contextprovider=contextprovider
+            )
+            # Delegate client and data references
+            self.client = self._s3_gatherer.client
+            self.data = None
+            return
 
         # Get or create Dask client
         self.client = DaskSessionManager.get_client()
@@ -94,6 +121,20 @@ class DaskDataGatherer(IDataGatherer):
             self.column_dtypes = self._generatorContextProvider.get("DataGatherer.dtypes")
         except:
             self.column_dtypes = self._get_default_dtypes()
+
+    def _check_s3_config(self) -> bool:
+        """
+        Check if S3 data source configuration is present.
+
+        Returns:
+            bool: True if S3 configuration exists, False otherwise
+        """
+        try:
+            # Check for S3DataGatherer.source - the key indicator
+            source = self._generatorContextProvider.get("S3DataGatherer.source")
+            return source is not None
+        except:
+            return False
 
     def _get_default_dtypes(self):
         """
@@ -133,9 +174,16 @@ class DaskDataGatherer(IDataGatherer):
         """
         Gather data from source file (with caching).
 
+        If S3 configuration is present, delegates to S3DataGatherer.
+        Otherwise, reads from local CSV files.
+
         Returns:
             dask.dataframe.DataFrame: The gathered dataset (lazy)
         """
+        if self._use_s3_source:
+            self.data = self._s3_gatherer.gather_data()
+            return self.data
+
         self.data = self._gather_data(full_file_cache_path=self.subsectionpath)
         return self.data
 
@@ -182,9 +230,15 @@ class DaskDataGatherer(IDataGatherer):
         Unlike pandas version which splits into multiple CSV files, this version
         uses Dask's built-in partitioning to write data as partitioned Parquet.
 
+        Note: Not applicable when using S3 source (data is already partitioned).
+
         Returns:
             DaskDataGatherer: Self for method chaining
         """
+        if self._use_s3_source:
+            self.logger.log("split_large_data not applicable for S3 sources (already partitioned)")
+            return self
+
         lines_per_file = self._generatorContextProvider.get("DataGatherer.lines_per_file")
         os.makedirs(path.dirname(self.splitfilespath), exist_ok=True)
 
@@ -229,6 +283,8 @@ class DaskDataGatherer(IDataGatherer):
         Returns:
             dask.dataframe.DataFrame: The gathered dataset (lazy)
         """
+        if self._use_s3_source:
+            return self._s3_gatherer.get_gathered_data()
         return self.data
 
     def compute_data(self):
@@ -241,6 +297,9 @@ class DaskDataGatherer(IDataGatherer):
         Returns:
             pandas.DataFrame: The computed dataset
         """
+        if self._use_s3_source:
+            return self._s3_gatherer.compute_data()
+
         if self.data is None:
             raise ValueError("No data gathered yet. Call gather_data() first.")
 
@@ -260,6 +319,10 @@ class DaskDataGatherer(IDataGatherer):
         Returns:
             DaskDataGatherer: Self for method chaining
         """
+        if self._use_s3_source:
+            self._s3_gatherer.persist_data()
+            return self
+
         if self.data is None:
             raise ValueError("No data gathered yet. Call gather_data() first.")
 
@@ -276,12 +339,18 @@ class DaskDataGatherer(IDataGatherer):
         Returns:
             dict: Memory usage information
         """
+        if self._use_s3_source:
+            return self._s3_gatherer.get_memory_usage()
         return DaskSessionManager.get_memory_usage()
 
     def log_memory_usage(self):
         """
         Log current memory usage of the Dask cluster.
         """
+        if self._use_s3_source:
+            self._s3_gatherer.log_memory_usage()
+            return
+
         memory_info = self.get_memory_usage()
 
         if 'total' in memory_info:

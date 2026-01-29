@@ -154,18 +154,10 @@ class S3DataFetcher:
             max_requests_per_second=config.download.rate_limit_per_second
         )
         
-        # Create S3 client with anonymous access
+        # Create S3 client
+        # NOTE: As of 2024+, the bucket requires AWS credentials (no longer public anonymous access)
         # The bucket is in us-east-1 region
-        self._s3_client = boto3.client(
-            's3',
-            region_name='us-east-1',
-            config=BotoConfig(
-                signature_version=UNSIGNED,
-                connect_timeout=30,
-                read_timeout=60,
-                retries={'max_attempts': 0}  # We handle retries ourselves
-            )
-        )
+        self._s3_client = self._create_s3_client(config)
         
         # Track download progress for resume support
         self._download_progress: Dict[str, int] = {}
@@ -175,6 +167,72 @@ class S3DataFetcher:
             f"Initialized S3DataFetcher for {self.source}/{self.message_type} "
             f"(bucket: {self.bucket})"
         )
+    
+    def _create_s3_client(self, config: DataSourceConfig):
+        """
+        Create boto3 S3 client with appropriate authentication.
+        
+        The USDOT ITS CV Pilot bucket now requires AWS credentials (as of 2024+).
+        Anonymous access is no longer supported by default.
+        
+        Authentication methods (in order of preference):
+        1. AWS profile from config (config.download.aws_profile)
+        2. Default AWS credentials from ~/.aws/credentials or environment
+        3. Anonymous access (only if config.download.use_anonymous=True)
+        
+        Raises:
+            RuntimeError: If no valid credentials are found
+        """
+        boto_config = BotoConfig(
+            connect_timeout=30,
+            read_timeout=60,
+            retries={'max_attempts': 0}  # We handle retries ourselves
+        )
+        
+        # Try anonymous access if explicitly requested
+        if config.download.use_anonymous:
+            logger.warning(
+                "Using anonymous S3 access. This may fail if bucket requires authentication. "
+                "Set use_anonymous=False and configure AWS credentials if access is denied."
+            )
+            return boto3.client(
+                's3',
+                region_name='us-east-1',
+                config=BotoConfig(
+                    signature_version=UNSIGNED,
+                    connect_timeout=30,
+                    read_timeout=60,
+                    retries={'max_attempts': 0}
+                )
+            )
+        
+        # Use specific AWS profile if provided
+        if config.download.aws_profile:
+            logger.info(f"Using AWS profile: {config.download.aws_profile}")
+            session = boto3.Session(profile_name=config.download.aws_profile)
+            return session.client('s3', region_name='us-east-1', config=boto_config)
+        
+        # Use default credentials (from ~/.aws/credentials, env vars, or IAM role)
+        try:
+            client = boto3.client('s3', region_name='us-east-1', config=boto_config)
+            # Test credentials by trying to get caller identity
+            sts = boto3.client('sts', region_name='us-east-1')
+            identity = sts.get_caller_identity()
+            logger.info(f"Using AWS credentials for account: {identity.get('Account', 'unknown')}")
+            return client
+        except Exception as e:
+            logger.error(
+                f"No valid AWS credentials found: {e}. "
+                "The USDOT ITS CV Pilot S3 bucket requires AWS credentials. "
+                "Please configure credentials in ~/.aws/credentials or set AWS_ACCESS_KEY_ID "
+                "and AWS_SECRET_ACCESS_KEY environment variables. "
+                "You can get free AWS credentials at https://aws.amazon.com"
+            )
+            raise RuntimeError(
+                "AWS credentials required for S3 access. "
+                "Configure ~/.aws/credentials or environment variables. "
+                "See: https://github.com/usdot-its-jpo-data-portal/sandbox#prerequisites-for-using-aws-cli"
+            ) from e
     
     def _build_s3_prefix(self, dt: date) -> str:
         """
