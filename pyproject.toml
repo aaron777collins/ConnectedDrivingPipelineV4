@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ConnectedDrivingPipelineV4"
+version = "4.0.0"
+description = "Connected Driving ML Pipeline"
+requires-python = ">=3.8"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["Test"]
+python_files = ["test_*.py", "*_test.py", "Test*.py"]
+
+[tool.setuptools.packages.find]
+include = ["*"]
+exclude = ["Test*", "tests*", "docs*", "htmlcov*"]

@@ -340,49 +340,58 @@ class TestCacheManagerIntegration:
             }
     
     def test_cache_workflow(self, setup_dirs):
-        """Test full cache workflow: add, get, verify."""
+        """Test full cache workflow: save, get entry, load."""
+        import pandas as pd
+        
         cache = CacheManager(
             cache_dir=setup_dirs['cache_dir'],
-            max_size_bytes=100 * 1024 * 1024  # 100MB
+            max_size_gb=0.1  # 100MB
         )
         
-        # Create test data
-        test_data = b'{"test": "data"}\n' * 100
-        cache_key = generate_cache_key("wydot", "BSM", date(2021, 4, 1))
+        # Create test DataFrame
+        test_df = pd.DataFrame({
+            'test': ['data'] * 100,
+            'value': range(100)
+        })
+        test_date = date(2021, 4, 1)
         
-        # Add to cache
-        entry = cache.put(cache_key, test_data)
+        # Save to cache
+        cache.save_processed(test_df, "wydot", "BSM", test_date)
         
+        # Verify entry exists
+        entry = cache.get_entry("wydot", "BSM", test_date)
         assert entry is not None
-        assert entry.key == cache_key
-        assert entry.size == len(test_data)
+        assert entry.status == "complete"
+        assert entry.row_count == 100
         
-        # Verify in cache
-        assert cache.contains(cache_key)
-        
-        # Get from cache
-        retrieved = cache.get(cache_key)
-        assert retrieved is not None
-        assert retrieved == test_data
+        # Load from cache
+        loaded_df = cache.load_parquet("wydot", "BSM", test_date)
+        assert loaded_df is not None
+        assert len(loaded_df) == 100
     
     def test_cache_isolation_by_source(self, setup_dirs):
         """Test that different sources have isolated caches."""
+        import pandas as pd
+        
         cache = CacheManager(cache_dir=setup_dirs['cache_dir'])
+        test_date = date(2021, 4, 1)
         
-        # Add data for wydot
-        wydot_key = generate_cache_key("wydot", "BSM", date(2021, 4, 1))
-        cache.put(wydot_key, b'wydot data')
+        # Save data for wydot
+        wydot_df = pd.DataFrame({'source': ['wydot'] * 10, 'value': range(10)})
+        cache.save_processed(wydot_df, "wydot", "BSM", test_date)
         
-        # Add data for thea
-        thea_key = generate_cache_key("thea", "BSM", date(2021, 4, 1))
-        cache.put(thea_key, b'thea data')
+        # Save data for thea
+        thea_df = pd.DataFrame({'source': ['thea'] * 5, 'value': range(5)})
+        cache.save_processed(thea_df, "thea", "BSM", test_date)
         
-        # Verify isolation
-        assert cache.get(wydot_key) == b'wydot data'
-        assert cache.get(thea_key) == b'thea data'
+        # Verify isolation - different sources, same date
+        wydot_loaded = cache.load_parquet("wydot", "BSM", test_date)
+        thea_loaded = cache.load_parquet("thea", "BSM", test_date)
         
-        # Keys should be different
-        assert wydot_key != thea_key
+        assert len(wydot_loaded) == 10
+        assert len(thea_loaded) == 5
+        assert wydot_loaded['source'].iloc[0] == 'wydot'
+        assert thea_loaded['source'].iloc[0] == 'thea'
 
 
 class TestSchemaValidation:
@@ -481,6 +490,8 @@ class TestEndToEndPipeline:
     
     def test_full_pipeline_fetch_validate_cache(self, pipeline_setup):
         """Test complete pipeline: fetch → validate → cache."""
+        import pandas as pd
+        
         config = DataSourceConfig(
             source="wydot",
             message_type="BSM",
@@ -505,24 +516,24 @@ class TestEndToEndPipeline:
         assert len(all_records) == 7200
         assert report.valid_count == 7200
         
-        # 4. Cache results
+        # 4. Cache results using proper CacheManager API
         cache = CacheManager(cache_dir=pipeline_setup['cache_dir'])
         
         current_date = pipeline_setup['start_date']
         while current_date <= pipeline_setup['end_date']:
-            day_records = [r for r in all_records 
-                         if pipeline_setup['start_date'].isoformat() in r['metadata']['recordGeneratedAt']]
+            # Filter records for this day and convert to DataFrame
+            day_records = [r for r in all_records[:100]]  # Use sample for test
+            df = pd.DataFrame(day_records)
             
-            cache_key = generate_cache_key("wydot", "BSM", current_date)
-            
-            # Would normally cache as parquet, but for test just cache JSON
-            json_data = '\n'.join(json.dumps(r) for r in day_records[:100])
-            cache.put(cache_key, json_data.encode())
+            # Save as parquet via CacheManager
+            cache.save_processed(df, "wydot", "BSM", current_date)
             
             current_date += timedelta(days=1)
         
-        # Verify cache
-        assert cache.contains(generate_cache_key("wydot", "BSM", date(2021, 4, 1)))
+        # Verify cache using proper API
+        entry = cache.get_entry("wydot", "BSM", date(2021, 4, 1))
+        assert entry is not None
+        assert entry.status == "complete"
     
     def test_pipeline_with_missing_days(self, pipeline_setup):
         """Test pipeline handles missing days gracefully."""

@@ -99,9 +99,9 @@ def create_valid_bsm_record(
                 "coreData": {
                     "position": {
                         "latitude": lat,
-                        "longitude": lon
+                        "longitude": lon,
+                        "elevation": elevation  # Elevation is nested inside position
                     },
-                    "elevation": elevation,
                     "speed": speed,
                     "heading": heading,
                     "id": "ABCD1234",
