@@ -1,0 +1,277 @@
+# ML Pipeline Configuration for 32GB RAM System
+# Optimized for memory-constrained production workloads
+
+version: "1.0"
+
+# =============================================================================
+# DATA PREPROCESSING
+# =============================================================================
+preprocessing:
+  # Feature scaling
+  scaler:
+    type: "StandardScaler"  # Options: StandardScaler, MinMaxScaler, RobustScaler
+    with_mean: true
+    with_std: true
+  
+  # Missing value handling
+  imputation:
+    strategy: "mean"  # Options: mean, median, most_frequent, constant
+    fill_value: null  # Only used when strategy=constant
+  
+  # Feature selection
+  feature_selection:
+    enabled: true
+    method: "variance"  # Options: variance, mutual_info, recursive
+    threshold: 0.01     # Variance threshold
+    n_features: null    # Max features (null = auto)
+  
+  # Train/test split
+  split:
+    test_size: 0.2
+    validation_size: 0.1  # From training set
+    random_state: 42
+    stratify: true  # Stratify by target if classification
+
+# =============================================================================
+# FEATURE ENGINEERING
+# =============================================================================
+features:
+  # Core BSM features to use
+  core_features:
+    - "latitude"
+    - "longitude"
+    - "elevation"
+    - "speed"
+    - "heading"
+  
+  # Derived features (computed from core)
+  derived_features:
+    enabled: true
+    features:
+      - name: "speed_change"
+        type: "diff"
+        source: "speed"
+        window: 1
+      
+      - name: "heading_change"
+        type: "diff"
+        source: "heading"
+        window: 1
+      
+      - name: "distance_traveled"
+        type: "haversine"
+        lat: "latitude"
+        lon: "longitude"
+      
+      - name: "acceleration"
+        type: "derivative"
+        source: "speed"
+        time_col: "timestamp"
+  
+  # Temporal features
+  temporal_features:
+    enabled: true
+    features:
+      - "hour_of_day"
+      - "day_of_week"
+      - "is_weekend"
+      - "is_rush_hour"
+  
+  # Geospatial features
+  geo_features:
+    enabled: true
+    features:
+      - "road_segment_id"  # If available
+      - "distance_to_poi"  # Points of interest
+
+# =============================================================================
+# MODEL CONFIGURATION
+# =============================================================================
+models:
+  # Random Forest (default)
+  random_forest:
+    enabled: true
+    params:
+      n_estimators: 100
+      max_depth: 15
+      min_samples_split: 5
+      min_samples_leaf: 2
+      n_jobs: -1
+      random_state: 42
+      # Memory optimization for 32GB
+      max_samples: 0.8  # Use 80% of samples per tree
+    
+    # Hyperparameter tuning
+    tuning:
+      enabled: true
+      method: "random"  # Options: grid, random, bayesian
+      n_iter: 20
+      cv: 3
+      scoring: "accuracy"
+      param_grid:
+        n_estimators: [50, 100, 150]
+        max_depth: [10, 15, 20, null]
+        min_samples_split: [2, 5, 10]
+  
+  # Gradient Boosting
+  gradient_boosting:
+    enabled: true
+    params:
+      n_estimators: 100
+      learning_rate: 0.1
+      max_depth: 5
+      subsample: 0.8
+      random_state: 42
+  
+  # XGBoost (if available)
+  xgboost:
+    enabled: false  # Disable by default - requires xgboost package
+    params:
+      n_estimators: 100
+      learning_rate: 0.1
+      max_depth: 6
+      tree_method: "hist"  # Memory efficient
+      n_jobs: -1
+  
+  # Neural Network
+  neural_network:
+    enabled: false  # Disable by default - requires more memory
+    params:
+      hidden_layer_sizes: [128, 64, 32]
+      activation: "relu"
+      solver: "adam"
+      max_iter: 200
+      early_stopping: true
+      validation_fraction: 0.1
+
+# =============================================================================
+# TRAINING CONFIGURATION
+# =============================================================================
+training:
+  # Batch processing for memory efficiency
+  batch_size: 10000  # Process in batches for 32GB RAM
+  
+  # Cross-validation
+  cross_validation:
+    enabled: true
+    folds: 5
+    shuffle: true
+    stratified: true
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 10
+    min_delta: 0.001
+  
+  # Checkpointing
+  checkpointing:
+    enabled: true
+    save_best_only: true
+    save_freq: 5  # Save every N epochs/iterations
+  
+  # Metrics to compute
+  metrics:
+    classification:
+      - "accuracy"
+      - "precision"
+      - "recall"
+      - "f1"
+      - "roc_auc"
+      - "confusion_matrix"
+    regression:
+      - "mse"
+      - "rmse"
+      - "mae"
+      - "r2"
+
+# =============================================================================
+# ATTACK DETECTION SPECIFIC
+# =============================================================================
+attack_detection:
+  # Task type
+  task: "classification"  # Options: classification, anomaly_detection
+  
+  # Target variable
+  target_column: "attack_label"  # Column indicating attack (0/1)
+  
+  # Attack types to detect
+  attack_types:
+    - "speed_manipulation"
+    - "position_spoofing"
+    - "heading_deviation"
+    - "replay_attack"
+  
+  # Class balancing
+  class_balance:
+    enabled: true
+    method: "smote"  # Options: smote, random_oversample, random_undersample, class_weight
+    sampling_strategy: "auto"
+  
+  # Threshold tuning
+  threshold_tuning:
+    enabled: true
+    method: "roc"  # Options: roc, precision_recall
+    target_metric: "f1"
+
+# =============================================================================
+# OUTPUT CONFIGURATION  
+# =============================================================================
+output:
+  # Model artifacts
+  model_dir: "models/"
+  
+  # Predictions
+  predictions_dir: "predictions/"
+  
+  # Reports
+  reports_dir: "reports/"
+  
+  # Formats
+  model_format: "joblib"  # Options: joblib, pickle, onnx
+  
+  # Logging
+  log_level: "INFO"
+  log_file: "logs/ml_pipeline.log"
+
+# =============================================================================
+# MEMORY OPTIMIZATION (32GB SPECIFIC)
+# =============================================================================
+memory:
+  # Limit concurrent model training
+  max_concurrent_models: 2
+  
+  # Use memory-mapped files for large datasets
+  use_mmap: true
+  
+  # Chunk size for data loading
+  chunk_size: 50000
+  
+  # Garbage collection frequency
+  gc_frequency: 10  # Collect every N batches
+  
+  # Data types optimization
+  dtype_optimization:
+    enabled: true
+    downcast_int: true
+    downcast_float: true
+    category_threshold: 0.5  # Convert to category if unique ratio < threshold
+
+# =============================================================================
+# DASK INTEGRATION
+# =============================================================================
+dask:
+  # Use Dask for parallel processing
+  enabled: true
+  
+  # Scheduler
+  scheduler: "distributed"  # Options: synchronous, threads, processes, distributed
+  
+  # LocalCluster settings (32GB optimized)
+  cluster:
+    n_workers: 2
+    threads_per_worker: 2
+    memory_limit: "6GB"
+  
+  # Persist intermediate results
+  persist: true
