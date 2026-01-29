@@ -144,7 +144,7 @@ class DataSourceConfig(BaseModel):
     
     # Source identification - ALWAYS EXPLICIT, NEVER INFERRED
     bucket: str = "usdot-its-cvpilot-publicdata"
-    source: Literal["wydot", "wydot_backup", "thea", "nycdot"]
+    source: Literal["wydot", "wydot_backup", "thea", "nycdot", "wyomingsample"]
     message_type: str
     
     # Date range
