@@ -155,8 +155,10 @@ class S3DataFetcher:
         )
         
         # Create S3 client with anonymous access
+        # The bucket is in us-east-1 region
         self._s3_client = boto3.client(
             's3',
+            region_name='us-east-1',
             config=BotoConfig(
                 signature_version=UNSIGNED,
                 connect_timeout=30,
@@ -224,11 +226,18 @@ class S3DataFetcher:
                         if obj['Key'].endswith('/'):
                             continue
                         
+                        # Handle LastModified which might be datetime or string
+                        last_mod = obj.get('LastModified')
+                        if last_mod:
+                            last_mod_str = last_mod.isoformat() if hasattr(last_mod, 'isoformat') else str(last_mod)
+                        else:
+                            last_mod_str = None
+                        
                         objects.append(S3Object(
                             key=obj['Key'],
                             size=obj['Size'],
                             etag=obj['ETag'].strip('"'),
-                            last_modified=obj.get('LastModified', '').isoformat() if obj.get('LastModified') else None
+                            last_modified=last_mod_str
                         ))
                 
                 return objects

@@ -39,7 +39,7 @@ from .config import (
     normalize_date_to_utc,
 )
 
-from .CacheManager import CacheManager
+from .CacheManager import CacheManager, CacheEntry, compute_sha256, MANIFEST_VERSION
 
 from .S3DataFetcher import (
     S3DataFetcher,
@@ -75,6 +75,9 @@ __all__ = [
     "normalize_date_to_utc",
     # Cache
     "CacheManager",
+    "CacheEntry",
+    "compute_sha256",
+    "MANIFEST_VERSION",
     # S3
     "S3DataFetcher",
     "S3Object",
