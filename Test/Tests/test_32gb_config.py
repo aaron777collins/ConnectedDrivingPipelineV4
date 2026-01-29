@@ -201,15 +201,18 @@ class TestConfigIntegration:
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
 
-            # Apply config to dask (note: dask.config.set uses nested dict)
-            dask.config.set(config)
+            # Merge our config with dask defaults (don't replace)
+            current = dict(dask.config.config)
+            dask.config.update(current, config)
+            dask.config.refresh()
 
             # Create a minimal cluster to test (1 worker, 1 thread)
             cluster = LocalCluster(
                 n_workers=1,
                 threads_per_worker=1,
                 memory_limit='1GB',  # Small for test
-                processes=False  # Faster for tests
+                processes=False,  # Faster for tests
+                silence_logs=30  # Reduce log noise
             )
             client = Client(cluster)
 
