@@ -40,7 +40,7 @@ S3DataGatherer:
   # Cache settings - CRITICAL for avoiding S3 egress fees
   cache_dir: "data/cache/wydot"
   cache_enabled: true
-  cache_ttl_days: 30
+  # NO TTL - historical data is cached permanently once fetched
   
   # Processing settings
   validate_schema: true
@@ -193,7 +193,7 @@ Cache:
     enabled: true
     directory: "data/cache/raw"
     max_size_gb: 50
-    ttl_days: 30
+    # NO TTL - once fetched, data is cached permanently
     verify_checksums: true
   
   # Results cache

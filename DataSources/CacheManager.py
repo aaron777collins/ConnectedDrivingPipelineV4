@@ -141,7 +141,7 @@ class CacheManager:
         self,
         cache_dir: Path,
         max_size_gb: float = 50.0,
-        ttl_days: int = 30,
+        ttl_days: Optional[int] = None,
         verify_checksums: bool = True,
         lock_timeout: int = 60,
         schema_version: str = "6",
@@ -152,7 +152,8 @@ class CacheManager:
         Args:
             cache_dir: Root directory for cache storage
             max_size_gb: Maximum cache size in GB (triggers LRU eviction)
-            ttl_days: Time-to-live for cache entries in days (default 30)
+            ttl_days: Time-to-live for cache entries in days (default None = never expire)
+                      For historical data analysis, use None to cache permanently.
             verify_checksums: Whether to verify SHA256 checksums on load (default True)
             lock_timeout: Timeout for lock acquisition in seconds (default 60)
             schema_version: Current schema version for cache entries
@@ -176,7 +177,8 @@ class CacheManager:
         # Initialize manifest if needed
         self._init_manifest()
         
-        logger.info(f"Initialized CacheManager at {self.cache_dir} (max: {max_size_gb}GB, ttl: {ttl_days}d)")
+        ttl_str = f"{ttl_days}d" if ttl_days else "never"
+        logger.info(f"Initialized CacheManager at {self.cache_dir} (max: {max_size_gb}GB, ttl: {ttl_str})")
     
     def _init_manifest(self) -> None:
         """Initialize manifest file if it doesn't exist."""
@@ -351,17 +353,26 @@ class CacheManager:
         return sorted(missing)
     
     def _is_entry_expired(self, entry_data: Dict) -> bool:
-        """Check if a cache entry has expired based on TTL."""
+        """
+        Check if a cache entry has expired based on TTL.
+        
+        For historical data analysis, TTL should be None (never expire).
+        Once data is cached, it stays cached forever unless manually cleared.
+        """
+        # If TTL is None or 0, cache never expires (correct for historical data)
+        if self.ttl_days is None or self.ttl_days <= 0:
+            return False
+        
         updated_at = entry_data.get('updated_at') or entry_data.get('fetched_at')
         if not updated_at:
-            return True
+            return False  # Don't expire entries without timestamp
         
         try:
             fetched_time = datetime.fromisoformat(updated_at.rstrip('Z'))
             expiry = fetched_time + timedelta(days=self.ttl_days)
             return datetime.utcnow() > expiry
         except (ValueError, TypeError):
-            return True
+            return False  # Don't expire on parse errors
     
     def _verify_entry_integrity(self, entry_data: Dict) -> bool:
         """Verify that a cache entry file exists and has valid checksum."""

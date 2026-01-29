@@ -100,7 +100,7 @@ class CacheConfig(BaseModel):
     """Cache configuration."""
     
     directory: Path = Path("data/cache")
-    ttl_days: int = Field(default=30, ge=1)
+    ttl_days: Optional[int] = Field(default=None)  # None = never expire (for historical data)
     max_size_gb: float = Field(default=50.0, ge=1.0)
     verify_checksums: bool = True
 
