@@ -123,6 +123,15 @@ class SyntheticBSMGenerator:
         state["latitude"] += speed_mps * dt * lat_deg_per_m * 0.1 * self.rng.uniform(0.8, 1.2)
         state["longitude"] += speed_mps * dt * lon_deg_per_m * state["direction"] * self.rng.uniform(0.9, 1.1)
         
+        # Clamp to valid Wyoming I-80 corridor bounds
+        # This prevents vehicles from drifting outside valid coordinate ranges
+        state["latitude"] = max(40.5, min(42.5, state["latitude"]))
+        state["longitude"] = max(-108.0, min(-104.0, state["longitude"]))
+        
+        # If vehicle hits boundary, reverse direction (bounce back)
+        if state["longitude"] <= -107.9 or state["longitude"] >= -104.1:
+            state["direction"] *= -1
+        
         # Vary speed slightly
         state["speed"] += self.rng.uniform(-2, 2)
         state["speed"] = max(5, min(40, state["speed"]))  # Clamp to 5-40 m/s

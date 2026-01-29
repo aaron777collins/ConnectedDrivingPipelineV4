@@ -1,0 +1,227 @@
+# WYDOT Synthetic Data ML Pipeline Configuration
+# Uses local synthetic data for testing full pipeline integration
+# 
+# Usage:
+#   python run_ml_pipeline.py --config configs/dask/wydot-synthetic-ml.yml
+#
+# This config tests:
+# - Data loading from synthetic S3-like structure
+# - Schema validation
+# - Dask DataFrame processing
+# - Parquet caching (to avoid repeated data fetching)
+# - Feature extraction
+# - ML model training
+
+# ============================================================
+# Pipeline Metadata
+# ============================================================
+pipeline:
+  name: "WYDOT-Synthetic-ML-Test"
+  version: "1.0.0"
+  description: "ML pipeline test using synthetic WYDOT BSM data"
+
+# ============================================================
+# Data Source Configuration
+# ============================================================
+S3DataGatherer:
+  # Use mock data source (local synthetic data)
+  use_mock: true
+  mock_data_dir: "test_data/synthetic_wydot"
+  
+  # Source configuration
+  source: "wydot"
+  message_type: "BSM"
+  
+  # Date range
+  start_date: "2021-04-01"
+  end_date: "2021-04-03"
+  timezone: "UTC"
+  
+  # Cache settings - CRITICAL for avoiding S3 egress fees
+  cache_dir: "data/cache/wydot"
+  cache_enabled: true
+  cache_ttl_days: 30
+  
+  # Processing settings
+  validate_schema: true
+  drop_invalid_records: true
+
+# Fallback for traditional CSV loading
+DataGatherer:
+  numrows: null  # All rows
+  filepath: "test_data/synthetic_wydot/wydot/BSM"
+  subsectionpath: "data/cache/wydot/bsm_processed.parquet"
+  splitfilespath: null
+
+# ============================================================
+# Dask Cluster Configuration
+# ============================================================
+DaskCluster:
+  n_workers: 4
+  threads_per_worker: 2
+  memory_limit: "6GB"
+  local_directory: "/tmp/dask-scratch"
+  dashboard_address: ":8787"
+
+# ============================================================
+# Feature Extraction Configuration
+# ============================================================
+FeatureExtraction:
+  # Core BSM features to extract
+  position_features:
+    - latitude
+    - longitude
+    - elevation
+  
+  motion_features:
+    - speed
+    - heading
+    - accel_long
+    - accel_lat
+    - accel_yaw
+  
+  derived_features:
+    - speed_delta          # Change in speed
+    - heading_delta        # Change in heading
+    - position_delta       # Distance from previous point
+    - time_gap             # Time since last message
+  
+  # Spatial filtering (Wyoming I-80 corridor)
+  spatial_bounds:
+    lat_min: 40.0
+    lat_max: 43.0
+    lon_min: -109.0
+    lon_max: -103.0
+  
+  # Temporal features
+  extract_time_features: true
+  time_features:
+    - hour_of_day
+    - day_of_week
+    - is_weekend
+
+# ============================================================
+# Data Cleaning Configuration
+# ============================================================
+DataCleaning:
+  # Remove invalid values
+  drop_null_positions: true
+  drop_zero_speed: false  # Stopped vehicles are valid
+  
+  # Speed limits (m/s)
+  min_speed: 0.0
+  max_speed: 50.0  # ~112 mph
+  
+  # Position accuracy filters
+  min_accuracy: 0.1
+  max_accuracy: 10.0
+
+# ============================================================
+# ML Model Configuration
+# ============================================================
+MLModel:
+  # Model type
+  type: "RandomForest"
+  
+  # Target variable
+  target: "is_anomaly"  # Binary classification for anomaly detection
+  
+  # Features for ML
+  features:
+    - speed
+    - heading
+    - accel_long
+    - accel_lat
+    - speed_delta
+    - heading_delta
+    - hour_of_day
+  
+  # Train/test split
+  train_ratio: 0.8
+  test_ratio: 0.2
+  random_state: 42
+  
+  # Model hyperparameters
+  params:
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    n_jobs: -1  # Use all cores
+  
+  # Evaluation
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - roc_auc
+
+# ============================================================
+# Attack Simulation (for ML training)
+# ============================================================
+AttackSimulation:
+  enabled: true
+  attack_ratio: 0.30  # 30% of vehicles are attackers
+  
+  attack_types:
+    # Position offset attack
+    - type: "position_offset"
+      offset_range: [50, 200]  # meters
+      direction: "random"
+    
+    # Speed manipulation
+    - type: "speed_manipulation"
+      delta_range: [5, 15]  # m/s
+    
+    # Constant position (stationary spoof)
+    - type: "constant_position"
+      enabled: true
+
+# ============================================================
+# Caching Configuration (IMPORTANT for cost control)
+# ============================================================
+Cache:
+  # Parquet cache for processed data
+  parquet_cache:
+    enabled: true
+    directory: "data/cache/parquet"
+    compression: "snappy"
+    row_group_size: 100000
+  
+  # Raw data cache from S3
+  raw_cache:
+    enabled: true
+    directory: "data/cache/raw"
+    max_size_gb: 50
+    ttl_days: 30
+    verify_checksums: true
+  
+  # Results cache
+  results_cache:
+    enabled: true
+    directory: "data/cache/results"
+
+# ============================================================
+# Output Configuration
+# ============================================================
+Output:
+  # Model output
+  model_dir: "models/wydot"
+  save_model: true
+  model_format: "joblib"
+  
+  # Metrics output
+  metrics_dir: "results/metrics"
+  save_metrics: true
+  
+  # Predictions output
+  predictions_dir: "results/predictions"
+  save_predictions: false  # Large, only enable when needed
+
+# ============================================================
+# Logging Configuration
+# ============================================================
+Logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/wydot_ml_pipeline.log"
