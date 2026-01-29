@@ -337,7 +337,7 @@ class BSMSchemaValidator(BaseSchemaValidator):
         'metadata.recordGeneratedAt',
         'payload.data.coreData.position.latitude',
         'payload.data.coreData.position.longitude',
-        'payload.data.coreData.elevation',
+        'payload.data.coreData.position.elevation',  # Elevation is nested under position
         'payload.data.coreData.speed',
         'payload.data.coreData.heading',
     ]

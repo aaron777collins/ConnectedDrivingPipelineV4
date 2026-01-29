@@ -17,7 +17,20 @@ sys.path.insert(0, str(project_root))
 
 # Import PySpark and Dask fixtures to make them available globally
 # These fixtures are defined in Test/Fixtures/SparkFixtures.py and Test/Fixtures/DaskFixtures.py
-pytest_plugins = ['Test.Fixtures.SparkFixtures', 'Test.Fixtures.DaskFixtures']
+# Made optional to allow running tests without heavy dependencies
+pytest_plugins = []
+
+try:
+    import pyspark
+    pytest_plugins.append('Test.Fixtures.SparkFixtures')
+except ImportError:
+    pass  # PySpark not available, skip Spark fixtures
+
+try:
+    import dask
+    pytest_plugins.append('Test.Fixtures.DaskFixtures')
+except ImportError:
+    pass  # Dask not available, skip Dask fixtures
 
 
 @pytest.fixture(scope="session")
