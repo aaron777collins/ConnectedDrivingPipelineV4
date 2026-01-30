@@ -15,6 +15,9 @@ slurms/
 slurm*
 site/
 
+# Pip artifacts (created from malformed pip install commands)
+=*
+
 # C extensions
 *.so
 
