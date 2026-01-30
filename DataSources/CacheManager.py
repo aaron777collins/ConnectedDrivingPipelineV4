@@ -434,10 +434,11 @@ class CacheManager:
         cache_path = self._get_cache_path(source, msg_type, date_val)
         temp_path = cache_path.parent / f".tmp_{uuid.uuid4()}.parquet"
         
-        # Ensure directory exists
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        
         with self._get_lock(key):
+            # Ensure directory exists inside the lock to prevent race conditions
+            # The parent directory creation must be atomic with file write
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            
             try:
                 # Check if we need to evict before writing
                 estimated_size = len(df) * 500  # Rough estimate

@@ -597,7 +597,6 @@ class TestValidation:
 class TestConcurrency:
     """Test concurrent access safety."""
     
-    @pytest.mark.xfail(reason="Race condition in directory creation - known flaky test")
     def test_concurrent_writes_safe(self, temp_cache_dir, sample_df):
         """Test that concurrent writes don't corrupt the cache."""
         cm = CacheManager(temp_cache_dir)
@@ -631,7 +630,6 @@ class TestConcurrency:
         cached = cm.get_cached_dates("wydot", "BSM")
         assert len(cached) == 5
     
-    @pytest.mark.xfail(reason="Race condition in directory creation - known flaky test")
     def test_concurrent_manifest_updates_safe(self, temp_cache_dir, sample_df):
         """Test that concurrent manifest updates are safe."""
         cm = CacheManager(temp_cache_dir)
