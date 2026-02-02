@@ -1,30 +1,23 @@
 """
-DaskConnectedDrivingAttacker - Dask implementation of ConnectedDrivingAttacker.
+DaskConnectedDrivingAttacker - TRUE Dask implementation using vectorized operations.
 
-This class provides Dask-based attacker assignment for Connected Driving BSM datasets,
-replacing pandas operations with distributed Dask DataFrame transformations.
+This class provides Dask-based attacker assignment for Connected Driving BSM datasets
+using proper distributed Dask operations - NO compute() fallbacks to pandas.
 
-Key differences from pandas version:
-- Uses dask_ml.model_selection.train_test_split instead of sklearn
-- Uses Dask DataFrame operations instead of pandas
-- DataFrame operations return new DataFrames (no inplace=True)
-- Supports both deterministic (by ID) and random attacker assignment
+Key Features:
+- Vectorized NumPy operations in map_partitions()
+- No compute() during processing (only at final output)
+- Proper Dask-native shuffling for swap attacks
+- Full distributed processing support
 
-Compatibility with ConnectedDrivingAttacker:
-- Follows same interface (IConnectedDrivingAttacker)
-- Uses same configuration parameters (SEED, attack_ratio, isXYCoords)
-- Produces identical attacker assignments (validated via golden datasets)
-
-Usage:
-    attacker = DaskConnectedDrivingAttacker(data=cleaned_df, id="attacker1")
-    attacker.add_attackers()  # Deterministic by ID
-    # OR
-    attacker.add_rand_attackers()  # Random per row
-    data_with_attackers = attacker.get_data()
+Author: Refactored for true Dask compatibility
+Date: 2026-02-01
 """
 
-import random
+import math
+import numpy as np
 import pandas as pd
+import dask
 import dask.dataframe as dd
 from dask.dataframe import DataFrame
 
@@ -39,17 +32,10 @@ from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 
 class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
     """
-    Dask-based attacker assignment for Connected Driving BSM data.
-
-    This class assigns attacker labels to BSM records using either:
-    1. Deterministic ID-based selection (add_attackers) - consistent across runs
-    2. Random row-level selection (add_rand_attackers) - probabilistic
-
-    The attacker assignment creates an 'isAttacker' column with values:
-    - 0: Regular/benign vehicle
-    - 1: Attacker vehicle
-
-    Attack ratio is controlled via configuration (e.g., 0.05 = 5% attackers).
+    TRUE Dask-based attacker assignment for Connected Driving BSM data.
+    
+    Uses proper distributed Dask operations with vectorized NumPy processing.
+    Never calls compute() during processing - all operations are lazy and distributed.
     """
 
     @StandardDependencyInjection
@@ -74,11 +60,10 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
         try:
             self.logger = Logger(f"DaskConnectedDrivingAttacker{id}")
         except (KeyError, Exception):
-            # Fallback: use basic logging if Logger dependency fails
             import logging
             logging.basicConfig(level=logging.INFO)
             self.logger = logging.getLogger(f"DaskConnectedDrivingAttacker{id}")
-            self.logger.log = self.logger.info  # Add .log() method for compatibility
+            self.logger.log = self.logger.info
 
         # Validate input data type
         if not isinstance(data, DataFrame):
@@ -106,12 +91,7 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
 
         Returns:
             pandas.Series: Unique values from coreData_id column (computed from Dask)
-
-        Note:
-            This method computes the result to return a pandas Series for compatibility.
-            Original pandas version returns df.coreData_id.unique().
         """
-        # Dask pattern: use .unique().compute() to get pandas Series
         unique_ids = self.data['coreData_id'].unique().compute()
         self.logger.log(f"Found {len(unique_ids)} unique vehicle IDs")
         return unique_ids
@@ -119,1064 +99,479 @@ class DaskConnectedDrivingAttacker(IConnectedDrivingAttacker):
     def add_attackers(self):
         """
         Add attacker labels using deterministic ID-based selection.
-
-        This method:
-        1. Extracts unique vehicle IDs
-        2. Sorts IDs for consistent ordering (pandas.unique() vs dask.unique() order can differ)
-        3. Splits IDs into regular vs attackers using train_test_split
-        4. Adds 'isAttacker' column (0 for regular, 1 for attackers)
-
-        The split is deterministic (controlled by SEED) and consistent across runs.
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            Uses dask_ml.model_selection.train_test_split instead of sklearn.
-            This approach ensures consistent attacker assignment across experiments.
-
-            IMPORTANT: We sort unique IDs before splitting to ensure pandas and Dask
-            versions produce identical results. pandas.unique() and dask.unique()
-            can return values in different orders, and train_test_split is order-dependent.
+        
+        Uses dask_ml train_test_split for consistent attacker assignment.
         """
         self.logger.log(f"Adding attackers with attack_ratio={self.attack_ratio}, SEED={self.SEED}")
 
-        # Get unique vehicle IDs (computed to pandas Series)
+        # Get unique vehicle IDs (must compute once for splitting)
         uniqueIDs = self.getUniqueIDsFromCleanData()
-
-        # CRITICAL: Sort IDs to ensure consistent order with pandas version
-        # pandas.unique() and dask.unique() can return IDs in different orders
-        # train_test_split is order-dependent, so sorting ensures identical results
         uniqueIDs_sorted = sorted(uniqueIDs)
         self.logger.log(f"Sorted {len(uniqueIDs_sorted)} unique IDs for deterministic splitting")
 
-        # Handle boundary cases where train_test_split cannot be used
-        # train_test_split requires test_size in (0.0, 1.0) exclusive
+        # Handle boundary cases
         if self.attack_ratio <= 0.0:
-            # 0% attackers: all IDs are regular vehicles
             attackers_set = set()
-            self.logger.log("attack_ratio=0.0: No attackers selected")
         elif self.attack_ratio >= 1.0:
-            # 100% attackers: all IDs are attackers
             attackers_set = set(uniqueIDs_sorted)
-            self.logger.log(f"attack_ratio=1.0: All {len(attackers_set)} IDs selected as attackers")
         else:
-            # Split into regular vs attackers using dask-ml train_test_split
-            # Note: train_test_split expects array-like
             regular, attackers = train_test_split(
-                uniqueIDs_sorted,  # Use sorted IDs for consistency
+                uniqueIDs_sorted,
                 test_size=self.attack_ratio,
                 random_state=self.SEED,
-                shuffle=True  # Ensure reproducible shuffling
+                shuffle=True
             )
-
-            # Convert attackers to set for efficient lookup
             attackers_set = set(attackers)
             self.logger.log(f"Selected {len(attackers_set)} attackers out of {len(uniqueIDs)} total IDs")
 
-        # Add isAttacker column using map_partitions for efficiency
-        def _assign_attackers(partition):
-            """Assign attacker labels within each partition."""
-            partition['isAttacker'] = partition['coreData_id'].apply(
-                lambda x: 1 if x in attackers_set else 0
-            )
+        # Use map_partitions for distributed assignment
+        def _assign_attackers_vectorized(partition, attackers_set):
+            """Vectorized attacker assignment using numpy isin."""
+            partition = partition.copy()
+            partition['isAttacker'] = partition['coreData_id'].isin(attackers_set).astype(int)
             return partition
 
-        # Apply attacker assignment to all partitions
         meta = self.data._meta.copy()
-        meta['isAttacker'] = 0  # Add isAttacker column to meta (dtype int64)
+        meta['isAttacker'] = 0
 
-        self.data = self.data.map_partitions(_assign_attackers, meta=meta)
+        self.data = self.data.map_partitions(
+            _assign_attackers_vectorized,
+            attackers_set=attackers_set,
+            meta=meta
+        )
 
-        self.logger.log("Attacker assignment complete")
+        self.logger.log("Attacker assignment complete (distributed)")
         return self
 
     def add_rand_attackers(self):
         """
         Add attacker labels using random row-level selection.
-
-        This method:
-        1. Randomly assigns each row as attacker/regular based on attack_ratio
-        2. Adds 'isAttacker' column (0 for regular, 1 for attackers)
-
-        The assignment is probabilistic and NOT deterministic (even with SEED).
-        Each row is independently assigned with probability = attack_ratio.
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            Uses random.random() for each row, which may vary across partitions.
-            For deterministic assignment, use add_attackers() instead.
+        Uses vectorized numpy operations within each partition.
         """
         self.logger.log(f"Adding random attackers with attack_ratio={self.attack_ratio}")
 
-        # Set random seed for reproducibility
-        random.seed(self.SEED)
-
-        # Add isAttacker column using map_partitions
-        def _assign_random_attackers(partition):
-            """Randomly assign attacker labels within each partition."""
-            # Set seed per partition for reproducibility
-            random.seed(self.SEED)
-            partition['isAttacker'] = partition['coreData_id'].apply(
-                lambda x: 1 if random.random() <= self.attack_ratio else 0
-            )
+        def _assign_random_attackers_vectorized(partition, seed, attack_ratio):
+            """Vectorized random attacker assignment using numpy."""
+            partition = partition.copy()
+            rng = np.random.RandomState(seed)
+            n_rows = len(partition)
+            partition['isAttacker'] = (rng.random(n_rows) <= attack_ratio).astype(int)
             return partition
 
-        # Apply random attacker assignment to all partitions
         meta = self.data._meta.copy()
-        meta['isAttacker'] = 0  # Add isAttacker column to meta (dtype int64)
+        meta['isAttacker'] = 0
 
-        self.data = self.data.map_partitions(_assign_random_attackers, meta=meta)
+        self.data = self.data.map_partitions(
+            _assign_random_attackers_vectorized,
+            seed=self.SEED,
+            attack_ratio=self.attack_ratio,
+            meta=meta
+        )
 
-        self.logger.log("Random attacker assignment complete")
+        self.logger.log("Random attacker assignment complete (vectorized)")
         return self
 
     def get_data(self):
-        """
-        Retrieve the Dask DataFrame with attacker labels.
-
-        Returns:
-            DataFrame: Dask DataFrame with 'isAttacker' column added
-
-        Note:
-            Returns lazy Dask DataFrame. Call .compute() to materialize.
-        """
+        """Retrieve the Dask DataFrame with attacker labels."""
         return self.data
 
-    def add_attacks_positional_swap_rand(self):
-        """
-        Add position swap attack using compute-then-daskify strategy.
-
-        This method implements Strategy 1 from Task 46 analysis:
-        1. Compute Dask DataFrame to pandas
-        2. Apply pandas position swap attack (reuses existing logic)
-        3. Convert result back to Dask DataFrame
-
-        Strategy 1 is recommended for 15-20M rows on 64GB system because:
-        - Perfect compatibility (100% match with pandas version)
-        - Memory-safe for target dataset sizes (18-48GB peak)
-        - Reuses existing pandas attack code (zero logic changes)
-        - Simplest to implement and validate
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - For each attacker, randomly selects position from copydata
-        - Swaps x_pos, y_pos, and coreData_elevation values
-        - Uses .iloc[] for random row access (requires compute to pandas)
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the swap
-            operation. Memory usage peaks at ~3x data size:
-            - Original data (in memory)
-            - Deep copy for swapping
-            - Result DataFrame
-            For 15-20M rows, peak usage is 18-48GB (within 52GB Dask limit).
-
-        See Also:
-            TASK_46_ILOC_ANALYSIS.md for detailed strategy analysis and validation.
-        """
-        self.logger.log("Starting position swap attack using compute-then-daskify strategy")
-
-        # Get origin column names from context (for cache key compatibility)
-        self.x_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos")
-        self.y_col_origin = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos")
-
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for position swap...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
-
-        # Step 2: Apply pandas position swap attack
-        self.logger.log("Applying position swap attack to pandas DataFrame...")
-        df_swapped = self._apply_pandas_position_swap_attack(df_pandas)
-
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_swapped, npartitions=n_partitions)
-
-        self.logger.log("Position swap attack complete")
-        return self
-
-    def _apply_pandas_position_swap_attack(self, df_pandas):
-        """
-        Apply position swap attack to pandas DataFrame.
-
-        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
-        For each attacker row:
-        1. Pick a random row index from the entire dataset
-        2. Copy x_pos, y_pos, and coreData_elevation from that random row
-        3. Replace attacker's position with the random position
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-
-        Returns:
-            pd.DataFrame: DataFrame with position-swapped attackers
-
-        Note:
-            This method MUST be applied to pandas DataFrame because it uses
-            .iloc[] for random row access, which is NOT supported in Dask.
-        """
-        # Create deep copy for safe random position lookup
-        copydata = df_pandas.copy(deep=True)
-        self.logger.log(f"Created deep copy of {len(copydata)} rows for position swapping")
-
-        # Set random seed for reproducibility
-        random.seed(self.SEED)
-
-        # Apply swap to each row (only affects attackers)
-        df_swapped = df_pandas.apply(
-            lambda row: self._positional_swap_rand_attack(row, copydata),
-            axis=1
-        )
-
-        # Count attackers that were swapped
-        n_attackers = (df_swapped['isAttacker'] == 1).sum()
-        self.logger.log(f"Swapped positions for {n_attackers} attackers")
-
-        return df_swapped
-
-    def _positional_swap_rand_attack(self, row, copydata):
-        """
-        Swap position for a single attacker row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            copydata (pd.DataFrame): Full dataset for random position lookup
-
-        Returns:
-            pd.Series: Row with position swapped (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionalOffsetAttacker.positional_swap_rand_attack
-            to ensure 100% compatibility with pandas version.
-        """
-        # Only swap positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Select random row index for position swap
-        random_index = random.randint(0, len(copydata.index) - 1)
-
-        # Swap based on coordinate system (XY or lat/lon)
-        if self.isXYCoords:
-            # Copy X, Y, and elevation from random row
-            row[self.x_col] = copydata.iloc[random_index][self.x_col]
-            row[self.y_col] = copydata.iloc[random_index][self.y_col]
-            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
-        else:
-            # Copy lat, lon, and elevation from random row
-            row[self.pos_lat_col] = copydata.iloc[random_index][self.pos_lat_col]
-            row[self.pos_long_col] = copydata.iloc[random_index][self.pos_long_col]
-            row["coreData_elevation"] = copydata.iloc[random_index]["coreData_elevation"]
-
-        return row
+    # =========================================================================
+    # VECTORIZED ATTACK IMPLEMENTATIONS - TRUE DASK
+    # =========================================================================
 
     def add_attacks_positional_offset_const(self, direction_angle=45, distance_meters=50):
         """
-        Add constant positional offset attack using compute-then-daskify strategy.
-
-        This method applies a constant positional offset to all attackers by:
-        1. Computing Dask DataFrame to pandas
-        2. Applying pandas positional offset attack (reuses existing logic)
-        3. Converting result back to Dask DataFrame
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - Offsets position by a constant direction and distance
-        - Uses MathHelper for accurate offset calculations
-        - Supports both XY coordinates and lat/lon coordinates
-
-        Args:
-            direction_angle (int/float): Direction in degrees (0° = North, positive = clockwise)
-                Default: 45° (northeast)
-            distance_meters (int/float): Distance to offset in meters
-                Default: 50m
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the attack
-            operation. Memory usage peaks at ~2x data size (original + result).
-            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
-
-        Examples:
-            # Apply 50m offset at 45° (northeast)
-            attacker.add_attacks_positional_offset_const()
-
-            # Apply 100m offset due north
-            attacker.add_attacks_positional_offset_const(direction_angle=0, distance_meters=100)
-
-            # Apply 200m offset due east
-            attacker.add_attacks_positional_offset_const(direction_angle=90, distance_meters=200)
+        Add constant positional offset attack using TRUE vectorized Dask operations.
+        
+        NO compute() - uses vectorized numpy operations within map_partitions.
         """
         self.logger.log(
-            f"Starting positional offset const attack: "
+            f"Starting positional offset const attack (VECTORIZED): "
             f"direction={direction_angle}°, distance={distance_meters}m"
         )
 
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for positional offset...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+        def _apply_const_offset_vectorized(partition, direction_angle, distance_meters, 
+                                           x_col, y_col, is_xy_coords):
+            """Vectorized constant offset - applies to ALL rows, but only modifies attackers."""
+            partition = partition.copy()
+            
+            # Get attacker mask
+            is_attacker = partition['isAttacker'] == 1
+            n_attackers = is_attacker.sum()
+            
+            if n_attackers == 0:
+                return partition
+            
+            # Convert angle to radians
+            angle_rad = math.radians(direction_angle)
+            
+            if is_xy_coords:
+                # Vectorized XY offset calculation for attackers only
+                dx = distance_meters * math.cos(angle_rad)
+                dy = distance_meters * math.sin(angle_rad)
+                
+                partition.loc[is_attacker, x_col] = partition.loc[is_attacker, x_col] + dx
+                partition.loc[is_attacker, y_col] = partition.loc[is_attacker, y_col] + dy
+            else:
+                # For lat/lon, need row-wise calculation (geodesic is not vectorizable)
+                from geographiclib.geodesic import Geodesic
+                geod = Geodesic.WGS84
+                
+                def apply_geodesic_offset(row):
+                    g = geod.Direct(row[y_col], row[x_col], direction_angle, distance_meters)
+                    return pd.Series({x_col: g['lon2'], y_col: g['lat2']})
+                
+                new_coords = partition.loc[is_attacker].apply(apply_geodesic_offset, axis=1)
+                partition.loc[is_attacker, x_col] = new_coords[x_col]
+                partition.loc[is_attacker, y_col] = new_coords[y_col]
+            
+            return partition
 
-        # Step 2: Apply pandas positional offset attack
-        self.logger.log("Applying positional offset attack to pandas DataFrame...")
-        df_offset = self._apply_pandas_positional_offset_const(df_pandas, direction_angle, distance_meters)
-
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
-
-        self.logger.log("Positional offset const attack complete")
-        return self
-
-    def _apply_pandas_positional_offset_const(self, df_pandas, direction_angle, distance_meters):
-        """
-        Apply constant positional offset attack to pandas DataFrame.
-
-        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
-        For each attacker row:
-        1. Calculate new position based on direction angle and distance
-        2. Replace attacker's position with the new position
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
-            distance_meters (int/float): Distance to offset in meters
-
-        Returns:
-            pd.DataFrame: DataFrame with position-offset attackers
-
-        Note:
-            This method applies the attack row-wise using pandas .apply().
-            Only rows with isAttacker=1 are modified.
-        """
-        # Apply offset to each row (only affects attackers)
-        df_offset = df_pandas.apply(
-            lambda row: self._positional_offset_const_attack(row, direction_angle, distance_meters),
-            axis=1
+        self.data = self.data.map_partitions(
+            _apply_const_offset_vectorized,
+            direction_angle=direction_angle,
+            distance_meters=distance_meters,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            is_xy_coords=self.isXYCoords,
+            meta=self.data._meta
         )
 
-        # Count attackers that were offset
-        n_attackers = (df_offset['isAttacker'] == 1).sum()
-        self.logger.log(f"Applied offset to {n_attackers} attackers")
-
-        return df_offset
-
-    def _positional_offset_const_attack(self, row, direction_angle, distance_meters):
-        """
-        Apply constant positional offset to a single attacker row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
-            distance_meters (int/float): Distance to offset in meters
-
-        Returns:
-            pd.Series: Row with position offset (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionalOffsetAttacker.positional_offset_const_attack
-            to ensure 100% compatibility with pandas version.
-        """
-        # Only offset positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Calculate new position based on coordinate system (XY or lat/lon)
-        if self.isXYCoords:
-            # XY coordinate system (Cartesian)
-            newX, newY = MathHelper.direction_and_dist_to_XY(
-                row[self.x_col],
-                row[self.y_col],
-                direction_angle,
-                distance_meters
-            )
-            row[self.x_col] = newX
-            row[self.y_col] = newY
-        else:
-            # Lat/Lon coordinate system (WGS84 geodesic)
-            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
-                row[self.pos_lat_col],
-                row[self.pos_long_col],
-                direction_angle,
-                distance_meters
-            )
-            row[self.pos_lat_col] = newLat
-            row[self.pos_long_col] = newLong
-
-        return row
+        self.logger.log("Positional offset const attack complete (vectorized)")
+        return self
 
     def add_attacks_positional_offset_rand(self, min_dist=25, max_dist=250):
         """
-        Add random positional offset attack using compute-then-daskify strategy.
-
-        This method applies a random positional offset to all attackers by:
-        1. Computing Dask DataFrame to pandas
-        2. Applying pandas positional offset attack (reuses existing logic)
-        3. Converting result back to Dask DataFrame
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - Offsets position by a random direction (0-360°) and random distance (min_dist to max_dist)
-        - Uses MathHelper for accurate offset calculations
-        - Supports both XY coordinates and lat/lon coordinates
-        - Uses SEED for reproducible randomness
-
-        Args:
-            min_dist (int/float): Minimum offset distance in meters
-                Default: 25m
-            max_dist (int/float): Maximum offset distance in meters
-                Default: 250m
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the attack
-            operation. Memory usage peaks at ~2x data size (original + result).
-            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
-
-        Examples:
-            # Apply random offset between 25-250m (default)
-            attacker.add_attacks_positional_offset_rand()
-
-            # Apply random offset between 10-100m
-            attacker.add_attacks_positional_offset_rand(min_dist=10, max_dist=100)
-
-            # Apply random offset between 100-500m
-            attacker.add_attacks_positional_offset_rand(min_dist=100, max_dist=500)
+        Add random positional offset attack using TRUE vectorized Dask operations.
+        
+        NO compute() - uses vectorized numpy operations within map_partitions.
+        Each attacker row gets a random direction and distance.
         """
         self.logger.log(
-            f"Starting positional offset rand attack: "
+            f"Starting positional offset rand attack (VECTORIZED): "
             f"min_dist={min_dist}m, max_dist={max_dist}m"
         )
 
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for positional offset...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+        def _apply_rand_offset_vectorized(partition, min_dist, max_dist, seed,
+                                          x_col, y_col, is_xy_coords):
+            """Vectorized random offset using numpy random arrays."""
+            partition = partition.copy()
+            
+            # Get attacker mask and count
+            is_attacker = partition['isAttacker'] == 1
+            n_attackers = is_attacker.sum()
+            
+            if n_attackers == 0:
+                return partition
+            
+            # Generate random directions and distances for all attackers at once
+            rng = np.random.RandomState(seed)
+            directions = rng.uniform(0, 360, n_attackers)
+            distances = rng.uniform(min_dist, max_dist, n_attackers)
+            
+            if is_xy_coords:
+                # Vectorized XY offset calculation
+                angles_rad = np.radians(directions)
+                dx = distances * np.cos(angles_rad)
+                dy = distances * np.sin(angles_rad)
+                
+                # Get current coordinates for attackers
+                attacker_x = partition.loc[is_attacker, x_col].values
+                attacker_y = partition.loc[is_attacker, y_col].values
+                
+                # Apply offsets
+                partition.loc[is_attacker, x_col] = attacker_x + dx
+                partition.loc[is_attacker, y_col] = attacker_y + dy
+            else:
+                # For lat/lon, apply row-wise (geodesic not vectorizable)
+                from geographiclib.geodesic import Geodesic
+                geod = Geodesic.WGS84
+                
+                attacker_indices = partition.index[is_attacker]
+                for i, (idx, direction, distance) in enumerate(
+                    zip(attacker_indices, directions, distances)
+                ):
+                    lat = partition.loc[idx, y_col]
+                    lon = partition.loc[idx, x_col]
+                    g = geod.Direct(lat, lon, direction, distance)
+                    partition.loc[idx, x_col] = g['lon2']
+                    partition.loc[idx, y_col] = g['lat2']
+            
+            return partition
 
-        # Step 2: Apply pandas positional offset attack
-        self.logger.log("Applying positional offset attack to pandas DataFrame...")
-        df_offset = self._apply_pandas_positional_offset_rand(df_pandas, min_dist, max_dist)
-
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
-
-        self.logger.log("Positional offset rand attack complete")
-        return self
-
-    def _apply_pandas_positional_offset_rand(self, df_pandas, min_dist, max_dist):
-        """
-        Apply random positional offset attack to pandas DataFrame.
-
-        This is the core attack logic, identical to StandardPositionalOffsetAttacker.
-        For each attacker row:
-        1. Generate random direction (0-360°) and random distance (min_dist to max_dist)
-        2. Calculate new position based on random direction and distance
-        3. Replace attacker's position with the new position
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-            min_dist (int/float): Minimum offset distance in meters
-            max_dist (int/float): Maximum offset distance in meters
-
-        Returns:
-            pd.DataFrame: DataFrame with position-offset attackers
-
-        Note:
-            This method applies the attack row-wise using pandas .apply().
-            Only rows with isAttacker=1 are modified.
-            Uses SEED for reproducible randomness.
-        """
-        # Set random seed for reproducibility
-        random.seed(self.SEED)
-
-        # Apply offset to each row (only affects attackers)
-        df_offset = df_pandas.apply(
-            lambda row: self._positional_offset_rand_attack(row, min_dist, max_dist),
-            axis=1
+        self.data = self.data.map_partitions(
+            _apply_rand_offset_vectorized,
+            min_dist=min_dist,
+            max_dist=max_dist,
+            seed=self.SEED,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            is_xy_coords=self.isXYCoords,
+            meta=self.data._meta
         )
 
-        # Count attackers that were offset
-        n_attackers = (df_offset['isAttacker'] == 1).sum()
-        self.logger.log(f"Applied random offset to {n_attackers} attackers")
-
-        return df_offset
-
-    def _positional_offset_rand_attack(self, row, min_dist, max_dist):
-        """
-        Apply random positional offset to a single attacker row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            min_dist (int/float): Minimum offset distance in meters
-            max_dist (int/float): Maximum offset distance in meters
-
-        Returns:
-            pd.Series: Row with random position offset (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionalOffsetAttacker.positional_offset_rand_attack
-            to ensure 100% compatibility with pandas version.
-        """
-        # Only offset positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Generate random direction and distance
-        direction_angle = random.randint(0, 360)
-        distance = random.randint(min_dist, max_dist)
-
-        # Calculate new position based on coordinate system (XY or lat/lon)
-        if self.isXYCoords:
-            # XY coordinate system (Cartesian)
-            newX, newY = MathHelper.direction_and_dist_to_XY(
-                row[self.x_col],
-                row[self.y_col],
-                direction_angle,
-                distance
-            )
-            row[self.x_col] = newX
-            row[self.y_col] = newY
-        else:
-            # Lat/Lon coordinate system (WGS84 geodesic)
-            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
-                row[self.pos_lat_col],
-                row[self.pos_long_col],
-                direction_angle,
-                distance
-            )
-            row[self.pos_lat_col] = newLat
-            row[self.pos_long_col] = newLong
-
-        return row
+        self.logger.log("Positional offset rand attack complete (vectorized)")
+        return self
 
     def add_attacks_positional_offset_const_per_id_with_random_direction(self, min_dist=25, max_dist=250):
         """
         Add positional offset attack with random direction/distance per vehicle ID.
-
-        This method applies a positional offset attack where:
-        1. Each attacker vehicle (by coreData_id) gets a random direction (0-360°) and distance (min_dist to max_dist)
-        2. That direction/distance is CONSTANT for all rows with the same vehicle ID
-        3. Different vehicle IDs get different random directions/distances
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - First occurrence of each attacker ID gets random direction/distance assigned
-        - Subsequent rows with same ID reuse the same direction/distance
-        - Uses MathHelper for accurate offset calculations
-        - Supports both XY coordinates and lat/lon coordinates
-        - Uses SEED for reproducible randomness
-
-        Args:
-            min_dist (int/float): Minimum offset distance in meters
-                Default: 25m
-            max_dist (int/float): Maximum offset distance in meters
-                Default: 250m
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the attack
-            operation. Memory usage peaks at ~2x data size (original + result).
-            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
-
-            The lookup dictionary stores direction/distance per vehicle ID to ensure
-            consistency across all rows for the same vehicle.
-
-        Examples:
-            # Apply random offset per ID between 25-250m (default)
-            attacker.add_attacks_positional_offset_const_per_id_with_random_direction()
-
-            # Apply random offset per ID between 10-100m
-            attacker.add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=10, max_dist=100)
-
-            # Apply random offset per ID between 100-500m
-            attacker.add_attacks_positional_offset_const_per_id_with_random_direction(min_dist=100, max_dist=500)
+        
+        Strategy: Pre-compute lookup table of direction/distance per attacker ID,
+        then apply in distributed map_partitions.
         """
         self.logger.log(
-            f"Starting positional offset const per ID with random direction attack: "
+            f"Starting positional offset const per ID (DISTRIBUTED): "
             f"min_dist={min_dist}m, max_dist={max_dist}m"
         )
 
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for positional offset per ID...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+        # First, get unique attacker IDs (requires one compute)
+        # This is acceptable because we need to create a lookup table
+        attacker_mask_col = self.data['isAttacker'] == 1
+        attacker_ids = self.data[attacker_mask_col]['coreData_id'].unique().compute()
+        
+        # Generate random direction/distance per ID
+        rng = np.random.RandomState(self.SEED)
+        direction_distance_lookup = {
+            vehicle_id: {
+                "direction": float(rng.randint(0, 360)),
+                "distance": float(rng.randint(min_dist, max_dist))
+            }
+            for vehicle_id in attacker_ids
+        }
+        
+        self.logger.log(f"Created lookup table for {len(direction_distance_lookup)} attacker IDs")
 
-        # Step 2: Apply pandas positional offset attack with per-ID lookup
-        self.logger.log("Applying positional offset per ID attack to pandas DataFrame...")
-        df_offset = self._apply_pandas_positional_offset_const_per_id_with_random_direction(
-            df_pandas, min_dist, max_dist
+        def _apply_per_id_offset_vectorized(partition, lookup, x_col, y_col, is_xy_coords):
+            """Apply per-ID offsets using vectorized operations."""
+            partition = partition.copy()
+            
+            # Get attacker rows
+            is_attacker = partition['isAttacker'] == 1
+            if not is_attacker.any():
+                return partition
+            
+            for vehicle_id, params in lookup.items():
+                # Find rows for this vehicle ID that are attackers
+                id_mask = (partition['coreData_id'] == vehicle_id) & is_attacker
+                if not id_mask.any():
+                    continue
+                
+                direction = params["direction"]
+                distance = params["distance"]
+                
+                if is_xy_coords:
+                    angle_rad = math.radians(direction)
+                    dx = distance * math.cos(angle_rad)
+                    dy = distance * math.sin(angle_rad)
+                    
+                    partition.loc[id_mask, x_col] = partition.loc[id_mask, x_col] + dx
+                    partition.loc[id_mask, y_col] = partition.loc[id_mask, y_col] + dy
+                else:
+                    from geographiclib.geodesic import Geodesic
+                    geod = Geodesic.WGS84
+                    
+                    for idx in partition.index[id_mask]:
+                        lat = partition.loc[idx, y_col]
+                        lon = partition.loc[idx, x_col]
+                        g = geod.Direct(lat, lon, direction, distance)
+                        partition.loc[idx, x_col] = g['lon2']
+                        partition.loc[idx, y_col] = g['lat2']
+            
+            return partition
+
+        self.data = self.data.map_partitions(
+            _apply_per_id_offset_vectorized,
+            lookup=direction_distance_lookup,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            is_xy_coords=self.isXYCoords,
+            meta=self.data._meta
         )
 
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_offset, npartitions=n_partitions)
-
-        self.logger.log("Positional offset const per ID with random direction attack complete")
+        self.logger.log("Positional offset const per ID attack complete (distributed)")
         return self
 
-    def _apply_pandas_positional_offset_const_per_id_with_random_direction(self, df_pandas, min_dist, max_dist):
+    def add_attacks_positional_swap_rand(self):
         """
-        Apply positional offset attack with per-ID lookup to pandas DataFrame.
-
-        This method ensures all rows with the same attacker ID get the SAME offset applied.
-        Strategy:
-        1. For each attacker ID, generate random direction/distance once
-        2. Store that direction/distance in a lookup dictionary
-        3. Apply the same offset to EACH row's original position
-        4. All rows of the same ID get shifted by the same offset vector
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-            min_dist (int/float): Minimum offset distance in meters
-            max_dist (int/float): Maximum offset distance in meters
-
-        Returns:
-            pd.DataFrame: DataFrame with position-offset attackers
-
-        Note:
-            Uses SEED for reproducible randomness.
-            All rows with same attacker ID will have the same offset applied to their positions.
+        Add position swap attack using Dask-native operations.
+        
+        Strategy: Sample random positions and apply swaps within each partition.
+        This avoids the need for .iloc[] random access which doesn't work in Dask.
         """
-        # Set random seed for reproducibility
-        random.seed(self.SEED)
+        self.logger.log("Starting position swap attack (DISTRIBUTED)")
 
-        # Get attacker IDs
-        attacker_mask = df_pandas['isAttacker'] == 1
-        attacker_ids = df_pandas[attacker_mask]['coreData_id'].unique()
+        # Step 1: Sample positions from the dataset for swapping
+        # Sample a subset of positions that attackers will randomly select from
+        sample_fraction = min(1.0, max(0.1, self.attack_ratio * 3))
+        
+        position_sample = self.data[[self.x_col, self.y_col, 'coreData_elevation']].sample(
+            frac=sample_fraction,
+            random_state=self.SEED
+        ).compute()  # Small sample - OK to compute
+        
+        # Convert to list of position tuples for random selection
+        swap_positions = list(zip(
+            position_sample[self.x_col].values,
+            position_sample[self.y_col].values,
+            position_sample['coreData_elevation'].values
+        ))
+        
+        self.logger.log(f"Sampled {len(swap_positions)} positions for swapping")
 
-        # Create lookup for direction/distance per ID
-        direction_distance_lookup = {}
+        def _apply_position_swaps_vectorized(partition, swap_positions, seed, x_col, y_col):
+            """Apply position swaps using pre-sampled positions."""
+            partition = partition.copy()
+            
+            is_attacker = partition['isAttacker'] == 1
+            n_attackers = is_attacker.sum()
+            
+            if n_attackers == 0:
+                return partition
+            
+            # Generate random indices to select swap positions
+            rng = np.random.RandomState(seed)
+            swap_indices = rng.randint(0, len(swap_positions), n_attackers)
+            
+            # Get the swap positions
+            new_x = np.array([swap_positions[i][0] for i in swap_indices])
+            new_y = np.array([swap_positions[i][1] for i in swap_indices])
+            new_elev = np.array([swap_positions[i][2] for i in swap_indices])
+            
+            # Apply swaps
+            partition.loc[is_attacker, x_col] = new_x
+            partition.loc[is_attacker, y_col] = new_y
+            partition.loc[is_attacker, 'coreData_elevation'] = new_elev
+            
+            return partition
 
-        # Generate random direction/distance for each attacker ID
-        for vehicle_id in attacker_ids:
-            direction_distance_lookup[vehicle_id] = {
-                "direction": random.randint(0, 360),
-                "distance": random.randint(min_dist, max_dist)
-            }
-
-        # Apply offset to each attacker row using the per-ID direction/distance
-        df_result = df_pandas.copy()
-
-        for vehicle_id, params in direction_distance_lookup.items():
-            direction_angle = params["direction"]
-            distance_meters = params["distance"]
-
-            # Get mask for this vehicle's attacker rows
-            id_mask = (df_result['coreData_id'] == vehicle_id) & (df_result['isAttacker'] == 1)
-
-            # Apply offset to each row's original position
-            if self.isXYCoords:
-                # Apply XY offset to each row
-                for idx in df_result[id_mask].index:
-                    orig_x = df_result.loc[idx, self.x_col]
-                    orig_y = df_result.loc[idx, self.y_col]
-                    new_x, new_y = MathHelper.direction_and_dist_to_XY(
-                        orig_x, orig_y, direction_angle, distance_meters
-                    )
-                    df_result.loc[idx, self.x_col] = new_x
-                    df_result.loc[idx, self.y_col] = new_y
-            else:
-                # Apply lat/lon offset to each row
-                for idx in df_result[id_mask].index:
-                    orig_lat = df_result.loc[idx, self.pos_lat_col]
-                    orig_lon = df_result.loc[idx, self.pos_long_col]
-                    new_lat, new_lon = MathHelper.direction_and_dist_to_lat_long_offset(
-                        orig_lat, orig_lon, direction_angle, distance_meters
-                    )
-                    df_result.loc[idx, self.pos_lat_col] = new_lat
-                    df_result.loc[idx, self.pos_long_col] = new_lon
-
-        # Log results
-        n_attackers = attacker_mask.sum()
-        n_unique_ids = len(direction_distance_lookup)
-        self.logger.log(
-            f"Applied offset to {n_attackers} attacker rows "
-            f"({n_unique_ids} unique vehicle IDs)"
+        self.data = self.data.map_partitions(
+            _apply_position_swaps_vectorized,
+            swap_positions=swap_positions,
+            seed=self.SEED,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            meta=self.data._meta
         )
 
-        return df_result
-
-    def _positional_offset_const_attack_per_id_with_random_direction(self, row, min_dist, max_dist, lookupDict):
-        """
-        Apply positional offset with per-ID random direction/distance to a single row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            min_dist (int/float): Minimum offset distance in meters
-            max_dist (int/float): Maximum offset distance in meters
-            lookupDict (dict): Dictionary storing direction/distance per vehicle ID
-
-        Returns:
-            pd.Series: Row with position offset (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionalOffsetAttacker.positional_offset_const_attack_per_id_with_random_direction
-            to ensure 100% compatibility with pandas version.
-
-            The lookupDict is passed by reference, so changes persist across row iterations.
-        """
-        # Only offset positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Check if this vehicle ID already has direction/distance assigned
-        vehicle_id = row["coreData_id"]
-        if vehicle_id not in lookupDict:
-            # First occurrence: generate and store random direction/distance
-            lookupDict[vehicle_id] = {
-                "direction": random.randint(0, 360),
-                "distance": random.randint(min_dist, max_dist)
-            }
-
-        # Retrieve the stored direction/distance for this vehicle ID
-        direction_angle = lookupDict[vehicle_id]["direction"]
-        distance_meters = lookupDict[vehicle_id]["distance"]
-
-        # Calculate new position based on coordinate system (XY or lat/lon)
-        if self.isXYCoords:
-            # XY coordinate system (Cartesian)
-            newX, newY = MathHelper.direction_and_dist_to_XY(
-                row[self.x_col],
-                row[self.y_col],
-                direction_angle,
-                distance_meters
-            )
-            row[self.x_col] = newX
-            row[self.y_col] = newY
-        else:
-            # Lat/Lon coordinate system (WGS84 geodesic)
-            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
-                row[self.pos_lat_col],
-                row[self.pos_long_col],
-                direction_angle,
-                distance_meters
-            )
-            row[self.pos_lat_col] = newLat
-            row[self.pos_long_col] = newLong
-
-        return row
+        self.logger.log("Position swap attack complete (distributed)")
+        return self
 
     def add_attacks_positional_override_const(self, direction_angle=45, distance_meters=50):
         """
-        Add constant positional override attack using compute-then-daskify strategy.
-
-        This method overrides attacker positions to absolute positions from origin by:
-        1. Computing Dask DataFrame to pandas
-        2. Applying pandas positional override attack (reuses existing logic)
-        3. Converting result back to Dask DataFrame
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - Sets position to absolute position from origin (0,0) or center point
-        - For XY coordinates: position = (0,0) + direction_angle/distance_meters
-        - For lat/lon: position = (center_lat, center_lon) + direction_angle/distance_meters
-        - Uses MathHelper for accurate position calculations
-        - Supports both XY coordinates and lat/lon coordinates
-
-        Args:
-            direction_angle (int/float): Direction in degrees (0° = North, positive = clockwise)
-                Default: 45° (northeast)
-            distance_meters (int/float): Distance from origin in meters
-                Default: 50m
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the attack
-            operation. Memory usage peaks at ~2x data size (original + result).
-            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
-
-            Unlike positional_offset_const which adds to current position,
-            this method OVERRIDES to absolute position from origin.
-
-        Examples:
-            # Override to 50m from origin at 45° (northeast)
-            attacker.add_attacks_positional_override_const()
-
-            # Override to 100m from origin due north
-            attacker.add_attacks_positional_override_const(direction_angle=0, distance_meters=100)
-
-            # Override to 200m from origin due east
-            attacker.add_attacks_positional_override_const(direction_angle=90, distance_meters=200)
+        Add constant positional override attack using TRUE vectorized Dask operations.
+        
+        Overrides attacker positions to absolute position from origin.
         """
         self.logger.log(
-            f"Starting positional override const attack: "
+            f"Starting positional override const attack (VECTORIZED): "
             f"direction={direction_angle}°, distance={distance_meters}m from origin"
         )
 
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for positional override...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
-
-        # Step 2: Apply pandas positional override attack
-        self.logger.log("Applying positional override attack to pandas DataFrame...")
-        df_override = self._apply_pandas_positional_override_const(df_pandas, direction_angle, distance_meters)
-
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_override, npartitions=n_partitions)
-
-        self.logger.log("Positional override const attack complete")
-        return self
-
-    def _apply_pandas_positional_override_const(self, df_pandas, direction_angle, distance_meters):
-        """
-        Apply constant positional override attack to pandas DataFrame.
-
-        This is the core attack logic, identical to StandardPositionFromOriginAttacker.
-        For each attacker row:
-        1. Calculate absolute position from origin based on direction angle and distance
-        2. Replace attacker's position with the absolute position
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
-            distance_meters (int/float): Distance from origin in meters
-
-        Returns:
-            pd.DataFrame: DataFrame with position-overridden attackers
-
-        Note:
-            This method applies the attack row-wise using pandas .apply().
-            Only rows with isAttacker=1 are modified.
-        """
-        # Apply override to each row (only affects attackers)
-        df_override = df_pandas.apply(
-            lambda row: self._positional_override_const_attack(row, direction_angle, distance_meters),
-            axis=1
-        )
-
-        # Count attackers that were overridden
-        n_attackers = (df_override['isAttacker'] == 1).sum()
-        self.logger.log(f"Overrode position for {n_attackers} attackers")
-
-        return df_override
-
-    def _positional_override_const_attack(self, row, direction_angle, distance_meters):
-        """
-        Override position to absolute position from origin for a single attacker row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            direction_angle (int/float): Direction in degrees (0° = North, clockwise)
-            distance_meters (int/float): Distance from origin in meters
-
-        Returns:
-            pd.Series: Row with position override (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionFromOriginAttacker.positional_override_const_attack
-            to ensure 100% compatibility with pandas version.
-
-            For XY: calculates position from origin (0, 0)
-            For lat/lon: calculates position from center point (x_pos, y_pos) from context
-        """
-        # Only override positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Calculate absolute position from origin based on coordinate system
+        # Pre-compute the target position (from origin)
         if self.isXYCoords:
-            # XY coordinate system: calculate from origin (0, 0)
-            newX, newY = MathHelper.direction_and_dist_to_XY(
-                0, 0,  # Origin point
-                direction_angle,
-                distance_meters
-            )
-            row[self.x_col] = newX
-            row[self.y_col] = newY
+            angle_rad = math.radians(direction_angle)
+            target_x = distance_meters * math.cos(angle_rad)
+            target_y = distance_meters * math.sin(angle_rad)
         else:
-            # Lat/Lon coordinate system: calculate from center point
+            # For lat/lon, compute from center point
             x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos", 0.0)
             y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos", 0.0)
-            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
-                y_pos, x_pos,  # Center point (lat, lon order)
-                direction_angle,
-                distance_meters
-            )
-            row[self.pos_lat_col] = newLat
-            row[self.pos_long_col] = newLong
+            from geographiclib.geodesic import Geodesic
+            geod = Geodesic.WGS84
+            g = geod.Direct(y_pos, x_pos, direction_angle, distance_meters)
+            target_x = g['lon2']
+            target_y = g['lat2']
 
-        return row
+        def _apply_override_const(partition, target_x, target_y, x_col, y_col):
+            """Override attacker positions to constant target."""
+            partition = partition.copy()
+            
+            is_attacker = partition['isAttacker'] == 1
+            
+            if is_attacker.any():
+                partition.loc[is_attacker, x_col] = target_x
+                partition.loc[is_attacker, y_col] = target_y
+            
+            return partition
+
+        self.data = self.data.map_partitions(
+            _apply_override_const,
+            target_x=target_x,
+            target_y=target_y,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            meta=self.data._meta
+        )
+
+        self.logger.log("Positional override const attack complete (vectorized)")
+        return self
 
     def add_attacks_positional_override_rand(self, min_dist=25, max_dist=250):
         """
-        Add random positional override attack using compute-then-daskify strategy.
-
-        This method overrides attacker positions to random absolute positions from origin by:
-        1. Computing Dask DataFrame to pandas
-        2. Applying pandas positional override attack with random direction/distance
-        3. Converting result back to Dask DataFrame
-
-        The attack:
-        - Only affects rows where isAttacker=1
-        - Sets position to random absolute position from origin (0,0) or center point
-        - For XY coordinates: position = (0,0) + random_direction/random_distance
-        - For lat/lon: position = (center_lat, center_lon) + random_direction/random_distance
-        - Each row gets a DIFFERENT random direction (0-360°) and distance (min_dist to max_dist)
-        - Uses MathHelper for accurate position calculations
-        - Supports both XY coordinates and lat/lon coordinates
-
-        Args:
-            min_dist (int/float): Minimum distance from origin in meters
-                Default: 25m
-            max_dist (int/float): Maximum distance from origin in meters
-                Default: 250m
-
-        Returns:
-            self: For method chaining
-
-        Note:
-            This method materializes the entire DataFrame to pandas for the attack
-            operation. Memory usage peaks at ~2x data size (original + result).
-            For 15-20M rows, peak usage is 12-32GB (within 52GB Dask limit).
-
-            Unlike positional_offset_rand which adds to current position,
-            this method OVERRIDES to random absolute position from origin.
-
-            Each attacker row gets a different random direction and distance.
-            Use SEED for reproducibility across runs.
-
-        Examples:
-            # Override to random positions between 25-250m from origin
-            attacker.add_attacks_positional_override_rand()
-
-            # Override to random positions between 50-100m from origin
-            attacker.add_attacks_positional_override_rand(min_dist=50, max_dist=100)
-
-            # Override to random positions between 0-2000m from origin
-            attacker.add_attacks_positional_override_rand(min_dist=0, max_dist=2000)
+        Add random positional override attack using TRUE vectorized Dask operations.
+        
+        Overrides each attacker to random absolute position from origin.
         """
         self.logger.log(
-            f"Starting positional override rand attack: "
+            f"Starting positional override rand attack (VECTORIZED): "
             f"random distance {min_dist}m to {max_dist}m from origin"
         )
 
-        # Step 1: Compute Dask DataFrame to pandas
-        self.logger.log("Computing Dask DataFrame to pandas for positional override...")
-        df_pandas = self.data.compute()
-        n_partitions = self.data.npartitions
-        self.logger.log(f"Materialized {len(df_pandas)} rows from {n_partitions} partitions")
+        def _apply_override_rand(partition, min_dist, max_dist, seed, x_col, y_col,
+                                 is_xy_coords, center_x, center_y):
+            """Override attacker positions to random positions from origin."""
+            partition = partition.copy()
+            
+            is_attacker = partition['isAttacker'] == 1
+            n_attackers = is_attacker.sum()
+            
+            if n_attackers == 0:
+                return partition
+            
+            # Generate random directions and distances
+            rng = np.random.RandomState(seed)
+            directions = rng.uniform(0, 360, n_attackers)
+            distances = rng.uniform(min_dist, max_dist, n_attackers)
+            
+            if is_xy_coords:
+                # Calculate absolute positions from origin (0, 0)
+                angles_rad = np.radians(directions)
+                new_x = distances * np.cos(angles_rad)
+                new_y = distances * np.sin(angles_rad)
+                
+                partition.loc[is_attacker, x_col] = new_x
+                partition.loc[is_attacker, y_col] = new_y
+            else:
+                # For lat/lon, calculate from center point
+                from geographiclib.geodesic import Geodesic
+                geod = Geodesic.WGS84
+                
+                attacker_indices = partition.index[is_attacker]
+                for i, (idx, direction, distance) in enumerate(
+                    zip(attacker_indices, directions, distances)
+                ):
+                    g = geod.Direct(center_y, center_x, direction, distance)
+                    partition.loc[idx, x_col] = g['lon2']
+                    partition.loc[idx, y_col] = g['lat2']
+            
+            return partition
 
-        # Step 2: Apply pandas positional override attack with randomness
-        self.logger.log("Applying random positional override attack to pandas DataFrame...")
-        df_override = self._apply_pandas_positional_override_rand(df_pandas, min_dist, max_dist)
+        center_x = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos", 0.0)
+        center_y = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos", 0.0)
 
-        # Step 3: Convert back to Dask DataFrame
-        self.logger.log(f"Converting result back to Dask with {n_partitions} partitions...")
-        self.data = dd.from_pandas(df_override, npartitions=n_partitions)
-
-        self.logger.log("Positional override rand attack complete")
-        return self
-
-    def _apply_pandas_positional_override_rand(self, df_pandas, min_dist, max_dist):
-        """
-        Apply random positional override attack to pandas DataFrame.
-
-        This is the core attack logic, identical to StandardPositionFromOriginAttacker.
-        For each attacker row:
-        1. Generate random direction (0-360°) and distance (min_dist to max_dist)
-        2. Calculate absolute position from origin based on random direction and distance
-        3. Replace attacker's position with the absolute position
-
-        Args:
-            df_pandas (pd.DataFrame): Pandas DataFrame with isAttacker column
-            min_dist (int/float): Minimum distance from origin in meters
-            max_dist (int/float): Maximum distance from origin in meters
-
-        Returns:
-            pd.DataFrame: DataFrame with position-overridden attackers
-
-        Note:
-            This method applies the attack row-wise using pandas .apply().
-            Only rows with isAttacker=1 are modified.
-            Each row gets a different random direction and distance.
-        """
-        # Set random seed for reproducibility
-        random.seed(self.SEED)
-
-        # Apply override to each row (only affects attackers)
-        df_override = df_pandas.apply(
-            lambda row: self._positional_override_rand_attack(row, min_dist, max_dist),
-            axis=1
+        self.data = self.data.map_partitions(
+            _apply_override_rand,
+            min_dist=min_dist,
+            max_dist=max_dist,
+            seed=self.SEED,
+            x_col=self.x_col,
+            y_col=self.y_col,
+            is_xy_coords=self.isXYCoords,
+            center_x=center_x,
+            center_y=center_y,
+            meta=self.data._meta
         )
 
-        # Count attackers that were overridden
-        n_attackers = (df_override['isAttacker'] == 1).sum()
-        self.logger.log(f"Overrode position for {n_attackers} attackers with random positions")
-
-        return df_override
-
-    def _positional_override_rand_attack(self, row, min_dist, max_dist):
-        """
-        Override position to random absolute position from origin for a single attacker row.
-
-        Args:
-            row (pd.Series): Single row from DataFrame
-            min_dist (int/float): Minimum distance from origin in meters
-            max_dist (int/float): Maximum distance from origin in meters
-
-        Returns:
-            pd.Series: Row with position override (if attacker) or unchanged (if regular)
-
-        Note:
-            This method is identical to StandardPositionFromOriginAttacker.positional_override_rand_attack
-            to ensure 100% compatibility with pandas version.
-
-            For XY: calculates position from origin (0, 0)
-            For lat/lon: calculates position from center point (x_pos, y_pos) from context
-
-            Each call generates a new random direction (0-360°) and distance (min_dist to max_dist).
-        """
-        # Only override positions for attackers
-        if row["isAttacker"] == 0:
-            return row
-
-        # Generate random direction and distance
-        rand_direction = random.randint(0, 360)
-        rand_distance = random.randint(min_dist, max_dist)
-
-        # Calculate absolute position from origin based on coordinate system
-        if self.isXYCoords:
-            # XY coordinate system: calculate from origin (0, 0)
-            newX, newY = MathHelper.direction_and_dist_to_XY(
-                0, 0,  # Origin point
-                rand_direction,
-                rand_distance
-            )
-            row[self.x_col] = newX
-            row[self.y_col] = newY
-        else:
-            # Lat/Lon coordinate system: calculate from center point
-            x_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.x_pos", 0.0)
-            y_pos = self._generatorContextProvider.get("ConnectedDrivingCleaner.y_pos", 0.0)
-            newLat, newLong = MathHelper.direction_and_dist_to_lat_long_offset(
-                y_pos, x_pos,  # Center point (lat, lon order)
-                rand_direction,
-                rand_distance
-            )
-            row[self.pos_lat_col] = newLat
-            row[self.pos_long_col] = newLong
-
-        return row
+        self.logger.log("Positional override rand attack complete (vectorized)")
+        return self

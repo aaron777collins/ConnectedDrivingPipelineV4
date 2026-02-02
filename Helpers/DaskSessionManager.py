@@ -43,9 +43,22 @@ class DaskSessionManager:
     defaults for 64GB systems. Supports both production and development configurations.
     """
 
+    _instance: Optional['DaskSessionManager'] = None
     _cluster: Optional[LocalCluster] = None
     _client: Optional[Client] = None
     _logger = logging.getLogger("DaskSessionManager")
+
+    @classmethod
+    def get_instance(cls) -> 'DaskSessionManager':
+        """
+        Get the singleton instance of DaskSessionManager.
+        
+        Returns:
+            DaskSessionManager: The singleton instance
+        """
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     @classmethod
     def get_cluster(cls,
