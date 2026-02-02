@@ -168,6 +168,11 @@ class DaskDataGatherer(IDataGatherer):
             'coreData_speed': 'float64',
             'coreData_heading': 'float64',
             'coreData_position': 'object',  # WKT POINT format
+            
+            # Part2 fields (often contain JSON strings - must be str)
+            'part2_vse_events': 'object',  # JSON string with vehicle events
+            'part2_spve_tr_units': 'object',  # JSON string with trailer units
+            'metadata_rmd_rxSource': 'object',  # May contain mixed types
         }
 
     def gather_data(self):
