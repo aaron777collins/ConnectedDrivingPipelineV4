@@ -206,14 +206,41 @@ class DaskDataGatherer(IDataGatherer):
         """
         self.logger.log("Didn't find file. Reading from full dataset with Dask.")
         self.logger.log(f"Blocksize: {self.blocksize}")
+        self.logger.log("Error tolerance enabled: on_bad_lines='skip' (malformed rows will be skipped)")
 
-        # Read CSV with Dask
+        # Read CSV with Dask - skip malformed rows (e.g., unterminated strings)
         df = dd.read_csv(
             self.filepath,
             dtype=self.column_dtypes,
             blocksize=self.blocksize,
-            assume_missing=self.assume_missing
+            assume_missing=self.assume_missing,
+            on_bad_lines='skip'  # Skip rows with parsing errors (e.g., EOF inside string)
         )
+
+        # Count loaded rows and estimate skipped lines
+        # Note: This triggers a compute, but necessary for accurate skip counting
+        try:
+            loaded_rows = len(df)
+            self.logger.log(f"Loaded {loaded_rows:,} rows from CSV")
+            
+            # Try to get source file line count for comparison
+            import subprocess
+            result = subprocess.run(
+                ['wc', '-l', self.filepath],
+                capture_output=True, text=True, timeout=300
+            )
+            if result.returncode == 0:
+                # wc -l output: "  12345 filename"
+                source_lines = int(result.stdout.strip().split()[0])
+                # Subtract 1 for header row
+                expected_data_rows = source_lines - 1
+                skipped_rows = expected_data_rows - loaded_rows
+                if skipped_rows > 0:
+                    self.logger.log(f"⚠️  SKIPPED {skipped_rows:,} malformed rows (source had {expected_data_rows:,} data rows)")
+                else:
+                    self.logger.log(f"✓ All {expected_data_rows:,} data rows loaded successfully (no rows skipped)")
+        except Exception as e:
+            self.logger.log(f"Could not count skipped rows: {e}")
 
         # Apply row limit if specified
         if self.numrows is not None and self.numrows > 0:

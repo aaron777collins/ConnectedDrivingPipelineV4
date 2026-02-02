@@ -1,0 +1,189 @@
+# Wyoming 100M Row E2E Test Configuration
+#
+# Test Configuration for:
+# - 30 percent attacker injection
+# - Random offset attack
+# - Within 2,000 meters of one location
+# - Within 30 days (April 2021)
+# - Using the cached 100M row dataset
+#
+# Usage:
+#   python scripts/run_wyoming_100m_e2e_test.py --config configs/dask/wyoming-100m-e2e-test.yml
+
+# ============================================================
+# Pipeline Metadata
+# ============================================================
+pipeline:
+  name: "Wyoming-100M-E2E-Test"
+  version: "1.0.0"
+  description: "E2E test with 100M row Wyoming CV dataset - 30% injection, random offset, 2000m distance"
+
+# ============================================================
+# Data Source Configuration
+# ============================================================
+Wyoming100MDataSource:
+  # Data generation mode
+  use_synthetic: true  # Set to false when S3 credentials available
+  num_rows: 100000000  # 100 million rows
+  
+  # Cache settings
+  cache_dir: "data/cache/wyoming100m"
+  
+  # Date range (April 2021 - 30 days)
+  start_date: "2021-04-01"
+  end_date: "2021-04-30"
+  
+  # Spatial filtering - center location
+  center_lat: 41.5430216
+  center_lon: -106.0831353
+  max_distance_meters: 2000
+  
+  # Reproducibility
+  random_seed: 42
+
+# Legacy DataGatherer config for pipeline compatibility
+DataGatherer:
+  numrows: null  # All rows from cache
+  filepath: "data/cache/wyoming100m/wyoming_100m.parquet"
+  subsectionpath: "data/cache/wyoming100m/processed/subsection.parquet"
+  splitfilespath: null
+
+# ============================================================
+# Data Cleaning Configuration  
+# ============================================================
+DataCleaning:
+  # Spatial filter - 2000 meters from center
+  x_pos: -106.0831353
+  y_pos: 41.5430216
+  max_dist: 2000
+  
+  # Date range filter - 30 days
+  startday: 1
+  startmonth: 4
+  startyear: 2021
+  endday: 30
+  endmonth: 4
+  endyear: 2021
+  
+  # Use coordinates
+  isXYCoords: true
+  shouldGatherAutomatically: false
+  
+  # Columns to use
+  columns:
+    - "metadata_generatedAt"
+    - "metadata_recordType"
+    - "metadata_serialId_streamId"
+    - "metadata_serialId_bundleSize"
+    - "metadata_serialId_bundleId"
+    - "metadata_serialId_recordId"
+    - "metadata_serialId_serialNumber"
+    - "metadata_receivedAt"
+    - "coreData_id"
+    - "coreData_secMark"
+    - "coreData_position_lat"
+    - "coreData_position_long"
+    - "coreData_accuracy_semiMajor"
+    - "coreData_accuracy_semiMinor"
+    - "coreData_elevation"
+    - "coreData_accelset_accelYaw"
+    - "coreData_speed"
+    - "coreData_heading"
+    - "coreData_position"
+
+# ============================================================
+# Attack Simulation Configuration
+# ============================================================
+AttackSimulation:
+  enabled: true
+  
+  # 30% attacker injection rate
+  attack_ratio: 0.30
+  
+  # Random seed for reproducibility
+  SEED: 42
+  
+  # Random offset attack type
+  attack_type: "rand_offset"
+  
+  # Offset range (meters)
+  min_distance: 100
+  max_distance: 200
+
+# ============================================================
+# ML Model Configuration
+# ============================================================
+MLModel:
+  # Features for ML (minimal XY + elevation)
+  columns:
+    - "coreData_elevation"
+    - "x_pos"
+    - "y_pos"
+    - "isAttacker"
+  
+  # Train/test split - 80/20 random split
+  train_ratio: 0.8
+  test_ratio: 0.2
+  split_type: "random"
+  random_seed: 42
+  
+  # Classifiers to test
+  classifiers:
+    - type: "RandomForestClassifier"
+      params: {}
+    - type: "DecisionTreeClassifier"
+      params: {}
+    - type: "KNeighborsClassifier"
+      params: {}
+
+# ============================================================
+# Dask Cluster Configuration
+# ============================================================
+DaskCluster:
+  n_workers: 8
+  threads_per_worker: 2
+  memory_limit: "8GB"
+  local_directory: "/tmp/dask-scratch-100m"
+  dashboard_address: ":8787"
+
+# ============================================================
+# Cache Configuration
+# ============================================================
+Cache:
+  parquet_cache:
+    enabled: true
+    directory: "data/cache/parquet"
+    compression: "snappy"
+  
+  raw_cache:
+    enabled: true
+    directory: "data/cache/wyoming100m"
+    max_size_gb: 200  # Large cache for 100M rows
+
+# ============================================================
+# Output Configuration
+# ============================================================
+Output:
+  results_dir: "results/wyoming_100m_e2e"
+  csv_file: "Wyoming100M_E2E_Results.csv"
+  save_model: true
+  model_dir: "models/wyoming100m"
+
+# ============================================================
+# Logging Configuration
+# ============================================================
+Logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/wyoming_100m_e2e_test.log"
+
+# ============================================================
+# Test Parameters Summary
+# ============================================================
+TestParameters:
+  injection_rate: "30%"
+  attack_type: "random_offset"
+  distance_filter: "2000 meters"
+  date_range: "30 days (April 2021)"
+  location: "(-106.0831353, 41.5430216)"
+  dataset_size: "100M rows"

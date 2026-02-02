@@ -33,7 +33,39 @@ class DataGatherer(IDataGatherer):
         @CSVCache
         def _gather_data(self, full_file_cache_path="REPLACE_ME") -> pd.DataFrame:
             self.logger.log("Didn't find file. Reading from full dataset.")
-            self.data = pd.read_csv(self.filepath, nrows=self.numrows)
+            self.logger.log("Error tolerance enabled: on_bad_lines='skip' (malformed rows will be skipped)")
+            
+            # Read CSV with error tolerance - skip malformed rows
+            self.data = pd.read_csv(
+                self.filepath,
+                nrows=self.numrows,
+                on_bad_lines='skip'  # Skip rows with parsing errors (e.g., EOF inside string)
+            )
+            
+            # Log loaded rows and estimate skipped lines
+            loaded_rows = len(self.data)
+            self.logger.log(f"Loaded {loaded_rows:,} rows from CSV")
+            
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ['wc', '-l', self.filepath],
+                    capture_output=True, text=True, timeout=300
+                )
+                if result.returncode == 0:
+                    source_lines = int(result.stdout.strip().split()[0])
+                    expected_data_rows = source_lines - 1  # Subtract header
+                    # Account for nrows limit
+                    if self.numrows and self.numrows > 0:
+                        expected_data_rows = min(expected_data_rows, self.numrows)
+                    skipped_rows = expected_data_rows - loaded_rows
+                    if skipped_rows > 0:
+                        self.logger.log(f"⚠️  SKIPPED {skipped_rows:,} malformed rows")
+                    else:
+                        self.logger.log(f"✓ All rows loaded successfully (no rows skipped)")
+            except Exception as e:
+                self.logger.log(f"Could not count skipped rows: {e}")
+            
             return self.data
 
         # splits the data for easier cleaning
