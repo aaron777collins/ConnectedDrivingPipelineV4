@@ -36,6 +36,9 @@ from Logger.Logger import Logger
 from ServiceProviders.IGeneratorContextProvider import IGeneratorContextProvider
 from ServiceProviders.IGeneratorPathProvider import IGeneratorPathProvider
 from ServiceProviders.IInitialGathererPathProvider import IInitialGathererPathProvider
+from ServiceProviders.GeneratorContextProvider import GeneratorContextProvider
+from ServiceProviders.GeneratorPathProvider import GeneratorPathProvider
+from ServiceProviders.InitialGathererPathProvider import InitialGathererPathProvider
 
 
 class DaskConnectedDrivingLargeDataCleaner:
@@ -61,25 +64,34 @@ class DaskConnectedDrivingLargeDataCleaner:
         df_all = cleaner.getAllRows()  # Get all cleaned data
     """
 
-    @StandardDependencyInjection
-    def __init__(self, generatorPathProvider: IGeneratorPathProvider,
-                 initialGathererPathProvider: IInitialGathererPathProvider,
-                 generatorContextProvider: IGeneratorContextProvider):
+    def __init__(self, generatorPathProvider: IGeneratorPathProvider = None,
+                 initialGathererPathProvider: IInitialGathererPathProvider = None,
+                 generatorContextProvider: IGeneratorContextProvider = None):
         """
         Initialize DaskConnectedDrivingLargeDataCleaner.
 
         Args:
-            generatorPathProvider: Provides generator file system paths
-            initialGathererPathProvider: Provides gatherer file system paths
-            generatorContextProvider: Provides configuration context
+            generatorPathProvider: Provides generator file system paths (instance or class)
+            initialGathererPathProvider: Provides gatherer file system paths (instance or class)
+            generatorContextProvider: Provides configuration context (instance or class)
         """
-        self._generatorPathProvider = generatorPathProvider()
-        self._initialgathererpathprovider = initialGathererPathProvider()
-        self._generatorContextProvider = generatorContextProvider()
+        # Support both class injection (from decorator pattern) and instance injection (from DaskPipelineRunner)
+        # Use defaults if not provided
+        if generatorPathProvider is None:
+            generatorPathProvider = GeneratorPathProvider
+        if initialGathererPathProvider is None:
+            initialGathererPathProvider = InitialGathererPathProvider
+        if generatorContextProvider is None:
+            generatorContextProvider = GeneratorContextProvider
+            
+        # Handle both class and instance - call if class, use directly if instance
+        self._generatorPathProvider = generatorPathProvider() if callable(generatorPathProvider) and not hasattr(generatorPathProvider, 'getPathWithModelName') else generatorPathProvider
+        self._initialgathererpathprovider = initialGathererPathProvider() if callable(initialGathererPathProvider) and not hasattr(initialGathererPathProvider, 'getPathWithModelName') else initialGathererPathProvider
+        self._generatorContextProvider = generatorContextProvider() if callable(generatorContextProvider) and not hasattr(generatorContextProvider, 'get') else generatorContextProvider
         self.logger = Logger("DaskConnectedDrivingLargeDataCleaner")
 
         # Get Dask client (initialize if needed)
-        self.client = DaskSessionManager.get_instance().get_client()
+        self.client = DaskSessionManager.get_client()
 
         # Path configuration - NOTE: For Dask, these are Parquet directories, not individual files
         # splitfilespath: Input data directory (partitioned Parquet from DaskDataGatherer)

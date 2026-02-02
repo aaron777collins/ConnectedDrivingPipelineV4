@@ -206,9 +206,9 @@ class MClassifierLargePipelineUserWithXYOffsetPos2000mDistRandSplit80PercentTrai
 
         # splitting into the features and the labels
         attacker_col_name = "isAttacker"
-        train_X = m_train.drop(columns=[attacker_col_name], axis=1)
+        train_X = m_train.drop(columns=[attacker_col_name])
         train_Y = m_train[attacker_col_name]
-        test_X = m_test.drop(columns=[attacker_col_name], axis=1)
+        test_X = m_test.drop(columns=[attacker_col_name])
         test_Y = m_test[attacker_col_name]
 
         # training the classifiers
