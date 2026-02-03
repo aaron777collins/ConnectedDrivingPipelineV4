@@ -1,0 +1,60 @@
+{
+  "pipeline_name": "wyoming40gb-RF-2000m-RandOffset100To200",
+  
+  "data": {
+    "source_file": "Full_Wyoming_Data.csv",
+    "num_subsection_rows": -1,
+    "lines_per_file": 1000000,
+    
+    "columns": [
+      "metadata_generatedAt", "metadata_recordType", "metadata_serialId_streamId",
+      "metadata_serialId_bundleSize", "metadata_serialId_bundleId", "metadata_serialId_recordId",
+      "metadata_serialId_serialNumber", "metadata_receivedAt",
+      "coreData_id", "coreData_secMark", "coreData_position_lat", "coreData_position_long",
+      "coreData_accuracy_semiMajor", "coreData_accuracy_semiMinor",
+      "coreData_elevation", "coreData_accelset_accelYaw", "coreData_speed",
+      "coreData_heading", "coreData_position"
+    ],
+    
+    "filtering": {
+      "type": "xy_offset_position",
+      "center_x": -106.0831353,
+      "center_y": 41.5430216,
+      "distance_meters": 2000,
+      "use_xy_coords": true
+    },
+    
+    "date_range": {
+      "start": "2021-04-01",
+      "end": "2021-04-30"
+    }
+  },
+  
+  "features": {
+    "columns": ["x_pos", "y_pos", "coreData_elevation", "isAttacker"]
+  },
+  
+  "attacks": {
+    "enabled": true,
+    "ratio": 0.3,
+    "seed": 42,
+    "type": "rand_offset",
+    "min_distance": 100,
+    "max_distance": 200
+  },
+  
+  "ml": {
+    "classifiers": ["RandomForest", "DecisionTree", "KNeighbors"],
+    "train_test_split": {
+      "type": "random",
+      "train_ratio": 0.8
+    }
+  },
+  
+  "dask": {
+    "config_file": "configs/dask/64gb-production.yml",
+    "n_workers": 6,
+    "threads_per_worker": 2,
+    "memory_limit": "8GB"
+  }
+}

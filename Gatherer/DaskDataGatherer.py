@@ -208,14 +208,56 @@ class DaskDataGatherer(IDataGatherer):
         self.logger.log(f"Blocksize: {self.blocksize}")
         self.logger.log("Error tolerance enabled: on_bad_lines='skip' (malformed rows will be skipped)")
 
-        # Read CSV with Dask - skip malformed rows (e.g., unterminated strings)
-        df = dd.read_csv(
-            self.filepath,
-            dtype=self.column_dtypes,
-            blocksize=self.blocksize,
-            assume_missing=self.assume_missing,
-            on_bad_lines='skip'  # Skip rows with parsing errors (e.g., EOF inside string)
-        )
+        # Read CSV with Dask
+        # For large CSV files with complex quoted fields (JSON arrays, etc.),
+        # check for pre-converted Parquet version first
+        parquet_path = self.filepath.replace('.csv', '.parquet')
+        if os.path.isdir(parquet_path):
+            self.logger.log(f"Found pre-converted Parquet at {parquet_path}, using it...")
+            df = dd.read_parquet(parquet_path)
+            self.logger.log(f"Loaded {df.npartitions} partitions from Parquet")
+        else:
+            # For large CSV files with complex quoting, convert to Parquet first
+            # This handles the quoting issues and provides better performance
+            self.logger.log("Converting CSV to Parquet for reliable parsing...")
+            self.logger.log(f"Output: {parquet_path}")
+            
+            import pandas as pd
+            chunk_size = 500000  # 500k rows per chunk
+            os.makedirs(parquet_path, exist_ok=True)
+            
+            try:
+                total_rows = 0
+                for i, chunk in enumerate(pd.read_csv(
+                    self.filepath,
+                    dtype=self.column_dtypes,
+                    chunksize=chunk_size,
+                    on_bad_lines='skip',
+                    low_memory=False
+                )):
+                    # Write each chunk as a separate parquet file
+                    chunk_path = os.path.join(parquet_path, f"part.{i:04d}.parquet")
+                    chunk.to_parquet(chunk_path, index=False)
+                    total_rows += len(chunk)
+                    if (i + 1) % 10 == 0:
+                        self.logger.log(f"Converted {total_rows:,} rows ({i + 1} chunks)...")
+                
+                self.logger.log(f"CSV to Parquet conversion complete: {total_rows:,} total rows")
+                
+                # Now read the parquet files with Dask
+                df = dd.read_parquet(parquet_path)
+                self.logger.log(f"Loaded {df.npartitions} partitions from converted Parquet")
+                
+            except Exception as e:
+                self.logger.log(f"Chunked conversion failed ({e}), trying dask.read_csv...")
+                # Fallback to dask's native reader
+                df = dd.read_csv(
+                    self.filepath,
+                    dtype=self.column_dtypes,
+                    blocksize=self.blocksize,
+                    assume_missing=self.assume_missing,
+                    on_bad_lines='skip'
+                )
 
         # Count loaded rows and estimate skipped lines
         # Note: This triggers a compute, but necessary for accurate skip counting
