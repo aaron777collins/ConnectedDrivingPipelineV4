@@ -62,9 +62,9 @@ class DaskSessionManager:
 
     @classmethod
     def get_cluster(cls,
-                   n_workers: int = 6,
-                   threads_per_worker: int = 1,
-                   memory_limit: str = '8GB',
+                   n_workers: int = 2,
+                   threads_per_worker: int = 2,
+                   memory_limit: str = '20GB',
                    config_path: Optional[str] = None,
                    env: str = 'production') -> LocalCluster:
         """

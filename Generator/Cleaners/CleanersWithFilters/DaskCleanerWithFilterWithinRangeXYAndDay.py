@@ -148,7 +148,7 @@ class DaskCleanerWithFilterWithinRangeXYAndDay(DaskConnectedDrivingLargeDataClea
         Returns:
             DataFrame: Filtered Dask DataFrame containing only points within range and matching date
         """
-        self.logger.info(
+        self.logger.log(
             f"Applying combined spatial-temporal filter: center=(0, 0), "
             f"max_dist={self.max_dist}, date={self.year}-{self.month:02d}-{self.day:02d}"
         )
@@ -167,6 +167,6 @@ class DaskCleanerWithFilterWithinRangeXYAndDay(DaskConnectedDrivingLargeDataClea
         )
 
         # Log filtering results
-        self.logger.info("Combined spatial-temporal filtering complete")
+        self.logger.log("Combined spatial-temporal filtering complete")
 
         return df_filtered

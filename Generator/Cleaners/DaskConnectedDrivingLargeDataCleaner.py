@@ -96,12 +96,32 @@ class DaskConnectedDrivingLargeDataCleaner:
         # Path configuration - NOTE: For Dask, these are Parquet directories, not individual files
         # splitfilespath: Input data directory (partitioned Parquet from DaskDataGatherer)
         self.splitfilespath = self._initialgathererpathprovider.getPathWithModelName("DataGatherer.splitfilespath")
+        # Convert to Parquet format (DaskDataGatherer outputs .parquet directories)
+        # Handle both file paths (.csv) and directory paths (ending with /)
+        if self.splitfilespath.endswith('.csv'):
+            self.splitfilespath = self.splitfilespath[:-4] + '.parquet'
+        elif self.splitfilespath.endswith('/'):
+            self.splitfilespath = self.splitfilespath.rstrip('/') + '.parquet'
+        elif not self.splitfilespath.endswith('.parquet'):
+            self.splitfilespath = self.splitfilespath + '.parquet'
 
         # cleanedfilespath: Output directory for cleaned partitions (intermediate)
         self.cleanedfilespath = self._generatorPathProvider.getPathWithModelName("ConnectedDrivingLargeDataCleaner.cleanedfilespath")
+        # Convert to Parquet format
+        if self.cleanedfilespath.endswith('.csv'):
+            self.cleanedfilespath = self.cleanedfilespath[:-4] + '.parquet'
+        elif self.cleanedfilespath.endswith('/'):
+            self.cleanedfilespath = self.cleanedfilespath.rstrip('/') + '.parquet'
+        elif not self.cleanedfilespath.endswith('.parquet'):
+            self.cleanedfilespath = self.cleanedfilespath + '.parquet'
 
         # combinedcleandatapath: Final combined cleaned data (Parquet directory)
         self.combinedcleandatapath = self._generatorPathProvider.getPathWithModelName("ConnectedDrivingLargeDataCleaner.combinedcleandatapath")
+        # Convert to Parquet format
+        if self.combinedcleandatapath.endswith('.csv'):
+            self.combinedcleandatapath = self.combinedcleandatapath[:-4] + '.parquet'
+        elif not self.combinedcleandatapath.endswith('.parquet'):
+            self.combinedcleandatapath = self.combinedcleandatapath + '.parquet'
 
         # Create directories if they don't exist
         os.makedirs(path.dirname(self.splitfilespath), exist_ok=True)
@@ -117,6 +137,12 @@ class DaskConnectedDrivingLargeDataCleaner:
         self.cleanerClass = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.cleanerClass")
         self.cleanFunc = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.cleanFunc")
         self.filterFunc = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.filterFunc")
+        
+        # Get filter class for instantiation (stores the class, not just the method)
+        try:
+            self.cleanerWithFilterClass = self._generatorContextProvider.get("ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass")
+        except:
+            self.cleanerWithFilterClass = None
 
         # Column names for position
         self.pos_lat_col = "y_pos"
@@ -171,15 +197,29 @@ class DaskConnectedDrivingLargeDataCleaner:
         # Apply optional filter function
         if self.filterFunc is not None:
             self.logger.log("Applying filter function...")
-            cleaned_df = self.filterFunc(self, cleaned_df)
+            # Instantiate the filter class properly if available
+            if self.cleanerWithFilterClass is not None:
+                # Create a filter instance - bypass StandardDependencyInjection by using object.__new__
+                # and manually initializing the required attributes
+                filter_instance = object.__new__(self.cleanerWithFilterClass)
+                filter_instance._generatorContextProvider = self._generatorContextProvider
+                filter_instance.start_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_day')
+                filter_instance.start_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_month')
+                filter_instance.start_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_year')
+                filter_instance.end_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_day')
+                filter_instance.end_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_month')
+                filter_instance.end_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_year')
+                filter_instance.max_dist = self.max_dist
+                filter_instance.x_col = self.x_col
+                filter_instance.y_col = self.y_col
+                filter_instance.logger = Logger("DaskCleanerWithFilterWithinRangeXYAndDateRange")
+                cleaned_df = self.filterFunc(filter_instance, cleaned_df)
+            else:
+                # Fallback to using self (may fail if filter needs special attributes)
+                cleaned_df = self.filterFunc(self, cleaned_df)
 
-        # Check if cleaned DataFrame is empty
-        cleaned_row_count = len(cleaned_df)
-        if cleaned_row_count == 0:
-            self.logger.log("Warning: Cleaned DataFrame is empty. No data to write.")
-            return self
-
-        # Write cleaned data as partitioned Parquet
+        # Write cleaned data as partitioned Parquet (this triggers computation)
+        # We write first and count after to avoid computing twice
         self.logger.log(f"Writing cleaned data to {self.combinedcleandatapath}")
         cleaned_df.to_parquet(
             self.combinedcleandatapath,
@@ -189,7 +229,14 @@ class DaskConnectedDrivingLargeDataCleaner:
             overwrite=True
         )
 
-        self.logger.log(f"Successfully cleaned {cleaned_row_count} rows")
+        # Count rows from written data (much cheaper than computing the filter again)
+        written_df = dd.read_parquet(self.combinedcleandatapath)
+        cleaned_row_count = len(written_df)
+        
+        if cleaned_row_count == 0:
+            self.logger.log("Warning: Cleaned DataFrame is empty after filtering.")
+        else:
+            self.logger.log(f"Successfully cleaned {cleaned_row_count} rows")
         return self
 
     def combine_data(self):

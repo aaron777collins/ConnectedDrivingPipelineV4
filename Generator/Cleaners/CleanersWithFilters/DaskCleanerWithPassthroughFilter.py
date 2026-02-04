@@ -65,5 +65,5 @@ class DaskCleanerWithPassthroughFilter(DaskConnectedDrivingLargeDataCleaner):
         Returns:
             DataFrame: The same DataFrame unchanged
         """
-        self.logger.info("Applying passthrough filter (no filtering)")
+        self.logger.log("Applying passthrough filter (no filtering)")
         return df

@@ -124,7 +124,7 @@ class DaskCleanerWithFilterWithinRangeXY(DaskConnectedDrivingLargeDataCleaner):
         Returns:
             DataFrame: Filtered Dask DataFrame containing only points within range
         """
-        self.logger.info(
+        self.logger.log(
             f"Applying Euclidean distance filter: center=(0, 0), "
             f"max_dist={self.max_dist}"
         )
@@ -140,6 +140,6 @@ class DaskCleanerWithFilterWithinRangeXY(DaskConnectedDrivingLargeDataCleaner):
         )
 
         # Log filtering results
-        self.logger.info("Euclidean distance filtering complete")
+        self.logger.log("Euclidean distance filtering complete")
 
         return df_filtered

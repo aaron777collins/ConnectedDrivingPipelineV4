@@ -23,3 +23,13 @@ class Logger:
         os.makedirs(os.path.dirname(self.logpath), exist_ok=True)
         with open(f"{self.logpath}{self.prefix}.txt", "a") as f:
             f.write(string + "\n")
+
+    # Alias for compatibility with standard Python logging interface
+    def info(self, *messages):
+        self.log(*messages, elevation=LogLevel.INFO)
+    
+    def warning(self, *messages):
+        self.log(*messages, elevation=LogLevel.WARNING)
+    
+    def error(self, *messages):
+        self.log(*messages, elevation=LogLevel.ERROR)

@@ -203,6 +203,14 @@ class DaskPipelineRunner:
             end_parts = date_range_config.get("end", "2021-01-01").split("-")
 
             generator_contexts.update({
+                # Config for DaskCleanerWithFilterWithinRangeXYAndDateRange
+                "CleanerWithFilterWithinRangeXYAndDateRange.start_year": int(start_parts[0]),
+                "CleanerWithFilterWithinRangeXYAndDateRange.start_month": int(start_parts[1]),
+                "CleanerWithFilterWithinRangeXYAndDateRange.start_day": int(start_parts[2]),
+                "CleanerWithFilterWithinRangeXYAndDateRange.end_year": int(end_parts[0]),
+                "CleanerWithFilterWithinRangeXYAndDateRange.end_month": int(end_parts[1]),
+                "CleanerWithFilterWithinRangeXYAndDateRange.end_day": int(end_parts[2]),
+                # Legacy config for CleanerWithFilterWithinRangeXYAndDay (backwards compatibility)
                 "CleanerWithFilterWithinRangeXYAndDay.startyear": int(start_parts[0]),
                 "CleanerWithFilterWithinRangeXYAndDay.startmonth": int(start_parts[1]),
                 "CleanerWithFilterWithinRangeXYAndDay.startday": int(start_parts[2]),
@@ -281,13 +289,21 @@ class DaskPipelineRunner:
 
         attack_type = attack_config.get("type", "none")
 
-        # Initialize attacker
-        attacker = DaskConnectedDrivingAttacker(
-            pathProvider=self._generatorPathProvider,
-            generatorContextProvider=self.generatorContextProvider,
-            data=data,
-            id=dataset_name
-        )
+        # Initialize attacker - bypass StandardDependencyInjection by using object.__new__
+        # and manually initializing the required attributes
+        attacker = object.__new__(DaskConnectedDrivingAttacker)
+        attacker.id = dataset_name
+        attacker._pathprovider = self._generatorPathProvider
+        attacker._generatorContextProvider = self.generatorContextProvider
+        attacker.logger = Logger(f"DaskConnectedDrivingAttacker{dataset_name}")
+        attacker.data = data
+        attacker.SEED = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED", 42)
+        attacker.isXYCoords = self.generatorContextProvider.get("ConnectedDrivingCleaner.isXYCoords", False)
+        attacker.attack_ratio = self.generatorContextProvider.get("ConnectedDrivingAttacker.attack_ratio", 0.05)
+        attacker.pos_lat_col = "y_pos"
+        attacker.pos_long_col = "x_pos"
+        attacker.x_col = "x_pos"
+        attacker.y_col = "y_pos"
 
         # Add attacker labels
         attacker = attacker.add_attackers()
@@ -361,8 +377,18 @@ class DaskPipelineRunner:
         num_rows_to_train = int(total_rows * train_ratio) if split_config.get("type") == "random" else split_config.get("num_train_rows", 100000)
 
         self.logger.log(f"Step 2: Splitting into train ({num_rows_to_train}) and test ({total_rows - num_rows_to_train}) sets...")
-        train = data.head(num_rows_to_train)
-        test = data.tail(total_rows - num_rows_to_train) if total_rows > num_rows_to_train else data.head(0)
+        # Use proper Dask operations to maintain Dask DataFrame type
+        # .head() returns pandas, so we need to convert back to Dask
+        import dask.dataframe as dd
+        
+        # Compute the full dataset first, then split
+        data_pd = data.compute()  # Materialize to pandas for splitting
+        train_pd = data_pd.head(num_rows_to_train)
+        test_pd = data_pd.tail(total_rows - num_rows_to_train) if total_rows > num_rows_to_train else data_pd.head(0)
+        
+        # Convert back to Dask DataFrames
+        train = dd.from_pandas(train_pd, npartitions=max(1, len(train_pd) // 1000 + 1))
+        test = dd.from_pandas(test_pd, npartitions=max(1, len(test_pd) // 1000 + 1)) if len(test_pd) > 0 else dd.from_pandas(train_pd.head(0), npartitions=1)
 
         # Step 3: Apply attacks
         attack_config = self.config.get("attacks", {})
@@ -372,18 +398,24 @@ class DaskPipelineRunner:
 
         # Step 4: ML feature preparation
         self.logger.log("Step 4: Preparing ML features...")
-        mdcleaner_train = DaskMConnectedDrivingDataCleaner(
-            data=train,
-            suffixName="train",
-            pathprovider=self._mlPathProvider,
-            contextprovider=self.MLContextProvider
-        )
-        mdcleaner_test = DaskMConnectedDrivingDataCleaner(
-            data=test,
-            suffixName="test",
-            pathprovider=self._mlPathProvider,
-            contextprovider=self.MLContextProvider
-        )
+        # Bypass StandardDependencyInjection by using object.__new__ and manual init
+        mdcleaner_train = object.__new__(DaskMConnectedDrivingDataCleaner)
+        mdcleaner_train._MLPathProvider = self._mlPathProvider
+        mdcleaner_train._MLContextprovider = self.MLContextProvider
+        mdcleaner_train.suffixName = "train"
+        mdcleaner_train.logger = Logger("DaskMConnectedDrivingDataCleanertrain")
+        mdcleaner_train.data = train
+        mdcleaner_train.cleandatapath = self._mlPathProvider.getPathWithModelName("MConnectedDrivingDataCleaner.cleandatapathtrain")
+        mdcleaner_train.columns = self.MLContextProvider.get("MConnectedDrivingDataCleaner.columns")
+        
+        mdcleaner_test = object.__new__(DaskMConnectedDrivingDataCleaner)
+        mdcleaner_test._MLPathProvider = self._mlPathProvider
+        mdcleaner_test._MLContextprovider = self.MLContextProvider
+        mdcleaner_test.suffixName = "test"
+        mdcleaner_test.logger = Logger("DaskMConnectedDrivingDataCleanertest")
+        mdcleaner_test.data = test
+        mdcleaner_test.cleandatapath = self._mlPathProvider.getPathWithModelName("MConnectedDrivingDataCleaner.cleandatapathtest")
+        mdcleaner_test.columns = self.MLContextProvider.get("MConnectedDrivingDataCleaner.columns")
 
         m_train = mdcleaner_train.clean_data().get_cleaned_data()
         m_test = mdcleaner_test.clean_data().get_cleaned_data()
@@ -398,14 +430,38 @@ class DaskPipelineRunner:
 
         # Step 6: Train classifiers
         self.logger.log("Step 6: Training classifiers...")
-        mcp = DaskMClassifierPipeline(
-            train_X=train_X,
-            train_Y=train_Y,
-            test_X=test_X,
-            test_Y=test_Y,
-            pathprovider=self._mlPathProvider,
-            contextprovider=self.MLContextProvider
+        # Bypass StandardDependencyInjection - initialize manually
+        mcp = object.__new__(DaskMClassifierPipeline)
+        mcp._pathprovider = self._mlPathProvider
+        mcp._MLContextProvider = self.MLContextProvider
+        mcp.logger = Logger("DaskMClassifierPipeline")
+        
+        # Get classifier instances from configuration
+        from MachineLearning.DaskMClassifierPipeline import DEFAULT_CLASSIFIER_INSTANCES
+        mcp.classifier_instances = self.MLContextProvider.get(
+            "MClassifierPipeline.classifier_instances",
+            DEFAULT_CLASSIFIER_INSTANCES
         )
+        
+        # Convert Dask DataFrames to pandas for sklearn
+        mcp.logger.log("Converting input data to pandas (if needed)...")
+        train_X_pd = train_X.compute() if hasattr(train_X, 'compute') else train_X
+        train_Y_pd = train_Y.compute() if hasattr(train_Y, 'compute') else train_Y
+        test_X_pd = test_X.compute() if hasattr(test_X, 'compute') else test_X
+        test_Y_pd = test_Y.compute() if hasattr(test_Y, 'compute') else test_Y
+        mcp.logger.log("Data conversion complete. Creating classifiers...")
+        
+        # Initialize storage and classifiers
+        mcp.classifiers_and_confusion_matrices = []
+        mcp.classifiers = []
+        from MachineLearning.MDataClassifier import MDataClassifier
+        for classifier_instance in mcp.classifier_instances:
+            classifier_name = classifier_instance.__class__.__name__
+            mcp.logger.log(f"Creating MDataClassifier for {classifier_name}...")
+            mcp.classifiers.append(
+                MDataClassifier(classifier_instance, train_X_pd, train_Y_pd, test_X_pd, test_Y_pd)
+            )
+        mcp.logger.log(f"Initialized {len(mcp.classifiers)} classifiers")
 
         mcp.train()
         mcp.test()

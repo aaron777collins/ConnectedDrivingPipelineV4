@@ -52,9 +52,9 @@
   },
   
   "dask": {
-    "config_file": "configs/dask/64gb-production.yml",
-    "n_workers": 6,
+    "config_file": "configs/dask/conservative.yml",
+    "n_workers": 2,
     "threads_per_worker": 2,
-    "memory_limit": "8GB"
+    "memory_limit": "20GB"
   }
 }

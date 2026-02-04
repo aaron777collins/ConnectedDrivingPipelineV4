@@ -163,7 +163,7 @@ class DaskCleanerWithFilterWithinRange(DaskConnectedDrivingLargeDataCleaner):
         Returns:
             DataFrame: Filtered Dask DataFrame containing only points within range
         """
-        self.logger.info(
+        self.logger.log(
             f"Applying geodesic distance filter: center=({self.x_pos}, {self.y_pos}), "
             f"max_dist={self.max_dist}m"
         )
@@ -181,6 +181,6 @@ class DaskCleanerWithFilterWithinRange(DaskConnectedDrivingLargeDataCleaner):
         )
 
         # Log filtering results
-        self.logger.info("Geodesic distance filtering complete")
+        self.logger.log("Geodesic distance filtering complete")
 
         return df_filtered

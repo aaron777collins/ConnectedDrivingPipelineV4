@@ -216,6 +216,12 @@ class DaskDataGatherer(IDataGatherer):
             self.logger.log(f"Found pre-converted Parquet at {parquet_path}, using it...")
             df = dd.read_parquet(parquet_path)
             self.logger.log(f"Loaded {df.npartitions} partitions from Parquet")
+            
+            # Convert problematic object columns to string for pyarrow compatibility
+            # This fixes "did not recognize Python value type when inferring an Arrow data type" errors
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].fillna('').astype(str)
         else:
             # For large CSV files with complex quoting, convert to Parquet first
             # This handles the quoting issues and provides better performance
@@ -249,15 +255,25 @@ class DaskDataGatherer(IDataGatherer):
                 self.logger.log(f"Loaded {df.npartitions} partitions from converted Parquet")
                 
             except Exception as e:
-                self.logger.log(f"Chunked conversion failed ({e}), trying dask.read_csv...")
-                # Fallback to dask's native reader
-                df = dd.read_csv(
-                    self.filepath,
-                    dtype=self.column_dtypes,
-                    blocksize=self.blocksize,
-                    assume_missing=self.assume_missing,
-                    on_bad_lines='skip'
-                )
+                self.logger.log(f"Chunked conversion encountered error: {e}")
+                
+                # Check if we have partial parquet files that are usable
+                existing_files = [f for f in os.listdir(parquet_path) if f.endswith('.parquet')] if os.path.isdir(parquet_path) else []
+                if existing_files:
+                    self.logger.log(f"Found {len(existing_files)} existing parquet files, using partial conversion...")
+                    df = dd.read_parquet(parquet_path)
+                    row_count = len(df)
+                    self.logger.log(f"Loaded {df.npartitions} partitions ({row_count:,} rows) from partial Parquet")
+                else:
+                    self.logger.log("No parquet files found, falling back to dask.read_csv...")
+                    # Fallback to dask's native reader with robust error handling
+                    df = dd.read_csv(
+                        self.filepath,
+                        dtype=self.column_dtypes,
+                        blocksize=self.blocksize,
+                        assume_missing=self.assume_missing,
+                        on_bad_lines='skip'
+                    )
 
         # Count loaded rows and estimate skipped lines
         # Note: This triggers a compute, but necessary for accurate skip counting
@@ -314,10 +330,18 @@ class DaskDataGatherer(IDataGatherer):
             return self
 
         lines_per_file = self._generatorContextProvider.get("DataGatherer.lines_per_file")
-        os.makedirs(path.dirname(self.splitfilespath), exist_ok=True)
+        os.makedirs(path.dirname(self.splitfilespath) if not self.splitfilespath.endswith('/') else self.splitfilespath, exist_ok=True)
 
         # Convert splitfilespath to Parquet format
-        split_parquet_path = self.splitfilespath.replace('.csv', '.parquet')
+        # Handle both file paths (.csv) and directory paths (ending with /)
+        if self.splitfilespath.endswith('.csv'):
+            split_parquet_path = self.splitfilespath[:-4] + '.parquet'
+        elif self.splitfilespath.endswith('/'):
+            split_parquet_path = self.splitfilespath.rstrip('/') + '.parquet'
+        elif self.splitfilespath.endswith('.parquet'):
+            split_parquet_path = self.splitfilespath
+        else:
+            split_parquet_path = self.splitfilespath + '.parquet'
 
         # Check if partitioned data already exists
         if path.isdir(split_parquet_path):
