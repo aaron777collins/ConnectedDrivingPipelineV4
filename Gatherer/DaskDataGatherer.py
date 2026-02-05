@@ -305,7 +305,7 @@ class DaskDataGatherer(IDataGatherer):
             self.logger.log(f"Limiting to {self.numrows} rows")
             # Use head() for row limiting in Dask
             # Note: This computes the first N rows, not lazy
-            df = df.head(self.numrows, npartitions=-1)
+            df = df.head(self.numrows, npartitions=1)
             # Convert back to Dask DataFrame
             df = dd.from_pandas(df, npartitions=max(1, self.numrows // 500000))
 
