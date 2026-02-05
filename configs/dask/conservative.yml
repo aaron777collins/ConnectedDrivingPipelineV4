@@ -1,0 +1,33 @@
+distributed:
+  version: 2
+
+  scheduler:
+    allowed-failures: 5
+    work-stealing: true
+    bandwidth: 100000000
+
+  worker:
+    memory:
+      target: 0.40      # Start spilling at 40% - very conservative
+      spill: 0.50       # Aggressive spill at 50%
+      pause: 0.65       # Pause at 65%
+      terminate: 0.85   # Kill worker at 85%
+
+  client:
+    heartbeat: 5s
+
+dataframe:
+  shuffle:
+    method: tasks
+    compression: lz4
+
+  backend-kwargs:
+    engine: pyarrow
+
+array:
+  chunk-size: 32MiB     # Smaller chunks for safety
+
+optimization:
+  fuse:
+    active: true
+    ave-width: 2
