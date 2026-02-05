@@ -203,12 +203,12 @@ class DaskConnectedDrivingLargeDataCleaner:
                 # and manually initializing the required attributes
                 filter_instance = object.__new__(self.cleanerWithFilterClass)
                 filter_instance._generatorContextProvider = self._generatorContextProvider
-                filter_instance.start_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_day')
-                filter_instance.start_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_month')
-                filter_instance.start_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_year')
-                filter_instance.end_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_day')
-                filter_instance.end_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_month')
-                filter_instance.end_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_year')
+                filter_instance.start_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startday')
+                filter_instance.start_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startmonth')
+                filter_instance.start_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startyear')
+                filter_instance.end_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endday')
+                filter_instance.end_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endmonth')
+                filter_instance.end_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endyear')
                 filter_instance.max_dist = self.max_dist
                 filter_instance.x_col = self.x_col
                 filter_instance.y_col = self.y_col

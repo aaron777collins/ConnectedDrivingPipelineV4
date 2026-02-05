@@ -24,7 +24,7 @@ from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanW
 from Helpers.MathHelper import MathHelper
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
-from Generator.Cleaners.ConnectedDrivingLargeDataPipelineGathererAndCleaner import ConnectedDrivingLargeDataPipelineGathererAndCleaner
+from Generator.Cleaners.DaskConnectedDrivingLargeDataPipelineGathererAndCleaner import DaskConnectedDrivingLargeDataPipelineGathererAndCleaner
 from MachineLearning.MClassifierPipeline import MClassifierPipeline
 from MachineLearning.MConnectedDrivingDataCleaner import MConnectedDrivingDataCleaner
 from ServiceProviders.GeneratorContextProvider import GeneratorContextProvider
@@ -153,7 +153,7 @@ class DaskMClassifierConstOffsetPerIDWithRandDir50To100:
             self.logger.log(f"Workers: {len(self.client.scheduler_info()['workers'])}")
         
         self.logger.log("Starting data gathering and cleaning...")
-        mcdldpgac = ConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
+        mcdldpgac = DaskConnectedDrivingLargeDataPipelineGathererAndCleaner().run()
 
         self.logger.log("Loading all cleaned rows into memory...")
         data: DataFrame = mcdldpgac.getAllRows()

@@ -116,12 +116,12 @@ class DaskCleanerWithFilterWithinRangeXYAndDateRange(DaskConnectedDrivingLargeDa
 
     Configuration (from generatorContextProvider):
         - DaskConnectedDrivingLargeDataCleaner.max_dist: Maximum distance from origin (0, 0)
-        - CleanerWithFilterWithinRangeXYAndDateRange.start_day: Start day of range (1-31)
-        - CleanerWithFilterWithinRangeXYAndDateRange.start_month: Start month of range (1-12)
-        - CleanerWithFilterWithinRangeXYAndDateRange.start_year: Start year of range (e.g., 2021)
-        - CleanerWithFilterWithinRangeXYAndDateRange.end_day: End day of range (1-31)
-        - CleanerWithFilterWithinRangeXYAndDateRange.end_month: End month of range (1-12)
-        - CleanerWithFilterWithinRangeXYAndDateRange.end_year: End year of range (e.g., 2021)
+        - CleanerWithFilterWithinRangeXYAndDay.startday: Start day of range (1-31)
+        - CleanerWithFilterWithinRangeXYAndDay.startmonth: Start month of range (1-12)
+        - CleanerWithFilterWithinRangeXYAndDay.startyear: Start year of range (e.g., 2021)
+        - CleanerWithFilterWithinRangeXYAndDay.endday: End day of range (1-31)
+        - CleanerWithFilterWithinRangeXYAndDay.endmonth: End month of range (1-12)
+        - CleanerWithFilterWithinRangeXYAndDay.endyear: End year of range (e.g., 2021)
 
     Usage:
         cleaner = DaskCleanerWithFilterWithinRangeXYAndDateRange()
@@ -143,12 +143,12 @@ class DaskCleanerWithFilterWithinRangeXYAndDateRange(DaskConnectedDrivingLargeDa
         """
         super().__init__()
         self._generatorContextProvider = generatorContextProvider()
-        self.start_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_day')
-        self.start_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_month')
-        self.start_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.start_year')
-        self.end_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_day')
-        self.end_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_month')
-        self.end_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDateRange.end_year')
+        self.start_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startday')
+        self.start_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startmonth')
+        self.start_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.startyear')
+        self.end_day = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endday')
+        self.end_month = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endmonth')
+        self.end_year = self._generatorContextProvider.get('CleanerWithFilterWithinRangeXYAndDay.endyear')
         self.logger = Logger("DaskCleanerWithFilterWithinRangeXYAndDateRange")
 
     def within_rangeXY_and_date_range(self, df: DataFrame) -> DataFrame:
