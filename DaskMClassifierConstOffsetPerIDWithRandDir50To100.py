@@ -78,7 +78,7 @@ class DaskMClassifierConstOffsetPerIDWithRandDir50To100:
         })
 
         initialGathererModelName = f"{self.__class__.getClassNameHash()}-CreatingConnectedDrivingDataset"
-        numSubsectionRows = 100000
+        numSubsectionRows = -1
 
         self._initialGathererPathProvider = InitialGathererPathProvider(model=initialGathererModelName, contexts={
             "DataGatherer.filepath": lambda model: "data/data.csv",

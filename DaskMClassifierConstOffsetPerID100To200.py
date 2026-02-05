@@ -113,7 +113,7 @@ class DaskMClassifierConstOffsetPerID100To200:
         #################  CONFIG FOR ALL PROPERTIES IN THE PIPELINE #################################################
 
         initialGathererModelName = f"{self.__class__.getClassNameHash()}-CreatingConnectedDrivingDataset"
-        numSubsectionRows = 100000
+        numSubsectionRows = -1
 
         # Properties:
         # DataGatherer.filepath
