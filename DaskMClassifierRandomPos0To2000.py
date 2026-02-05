@@ -248,7 +248,7 @@ class DaskMClassifierRandomPos0To2000:
 
         # splitting into train and test sets
         seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
-        numRowsToTrain = 100000
+        numRowsToTrain = int(total_rows * 0.8)
 
         self.logger.log(f"Splitting data: {numRowsToTrain:,} train, {total_rows - numRowsToTrain:,} test")
         train = data.head(numRowsToTrain)
@@ -256,10 +256,10 @@ class DaskMClassifierRandomPos0To2000:
 
         # cleaning/adding attackers to the data
         self.logger.log("Adding RandomPos 0-2000m attacks to train set...")
-        train = StandardPositionFromOriginAttacker(train, "train").add_attackers().add_attacks_positional_offset_rand(min_dist=0, max_dist=2000).get_data()
+        train = StandardPositionFromOriginAttacker(train, "train").add_attackers().add_attacks_positional_override_rand(min_dist=0, max_dist=2000).get_data()
         
         self.logger.log("Adding RandomPos 0-2000m attacks to test set...")
-        test = StandardPositionFromOriginAttacker(test, "test").add_attackers().add_attacks_positional_offset_rand(min_dist=0, max_dist=2000).get_data()
+        test = StandardPositionFromOriginAttacker(test, "test").add_attackers().add_attacks_positional_override_rand(min_dist=0, max_dist=2000).get_data()
 
         # Cleaning for ML
         self.logger.log("Cleaning data for ML pipeline...")

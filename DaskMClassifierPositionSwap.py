@@ -248,7 +248,7 @@ class DaskMClassifierPositionSwap:
 
         # splitting into train and test sets
         seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
-        numRowsToTrain = 100000
+        numRowsToTrain = int(total_rows * 0.8)
 
         self.logger.log(f"Splitting data: {numRowsToTrain:,} train, {total_rows - numRowsToTrain:,} test")
         train = data.head(numRowsToTrain)
@@ -256,10 +256,10 @@ class DaskMClassifierPositionSwap:
 
         # cleaning/adding attackers to the data
         self.logger.log("Adding Position Swap attacks to train set...")
-        train = StandardPositionFromOriginAttacker(train, "train").add_attackers().add_attacks_positional_swap_rand().get_data()
+        train = StandardPositionalOffsetAttacker(train, "train").add_attackers().add_attacks_positional_swap_rand().get_data()
         
         self.logger.log("Adding Position Swap attacks to test set...")
-        test = StandardPositionFromOriginAttacker(test, "test").add_attackers().add_attacks_positional_swap_rand().get_data()
+        test = StandardPositionalOffsetAttacker(test, "test").add_attackers().add_attacks_positional_swap_rand().get_data()
 
         # Cleaning for ML
         self.logger.log("Cleaning data for ML pipeline...")

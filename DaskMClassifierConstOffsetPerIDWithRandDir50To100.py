@@ -162,7 +162,7 @@ class DaskMClassifierConstOffsetPerIDWithRandDir50To100:
         self.logger.log(f"Total cleaned rows: {total_rows:,}")
 
         seed = self.generatorContextProvider.get("ConnectedDrivingAttacker.SEED")
-        numRowsToTrain = 100000
+        numRowsToTrain = int(total_rows * 0.8)
 
         self.logger.log(f"Splitting data: {numRowsToTrain:,} train, {total_rows - numRowsToTrain:,} test")
         train = data.head(numRowsToTrain)
