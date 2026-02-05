@@ -85,8 +85,8 @@ class DaskConnectedDrivingLargeDataCleaner:
             generatorContextProvider = GeneratorContextProvider
             
         # Handle both class and instance - call if class, use directly if instance
-        self._generatorPathProvider = generatorPathProvider() if callable(generatorPathProvider) and not hasattr(generatorPathProvider, 'getPathWithModelName') else generatorPathProvider
-        self._initialgathererpathprovider = initialGathererPathProvider() if callable(initialGathererPathProvider) and not hasattr(initialGathererPathProvider, 'getPathWithModelName') else initialGathererPathProvider
+        self._generatorPathProvider = generatorPathProvider() if isinstance(generatorPathProvider, type) else generatorPathProvider
+        self._initialgathererpathprovider = initialGathererPathProvider() if isinstance(initialGathererPathProvider, type) else initialGathererPathProvider
         self._generatorContextProvider = generatorContextProvider() if callable(generatorContextProvider) and not hasattr(generatorContextProvider, 'get') else generatorContextProvider
         self.logger = Logger("DaskConnectedDrivingLargeDataCleaner")
 
