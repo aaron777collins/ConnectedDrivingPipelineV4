@@ -303,11 +303,20 @@ class DaskDataGatherer(IDataGatherer):
         # Apply row limit if specified
         if self.numrows is not None and self.numrows > 0:
             self.logger.log(f"Limiting to {self.numrows} rows")
-            # Use head() for row limiting in Dask
-            # Note: This computes the first N rows, not lazy
-            df = df.head(self.numrows, npartitions=1)
-            # Convert back to Dask DataFrame
-            df = dd.from_pandas(df, npartitions=max(1, self.numrows // 500000))
+            # Sample uniformly across all partitions to get representative data
+            # This avoids OOM from head(npartitions=-1) and temporal bias from npartitions=1
+            total_rows = len(df)
+            if total_rows > self.numrows:
+                frac = min(1.0, (self.numrows * 1.2) / total_rows)  # 20% buffer for sample variance
+                self.logger.log(f"Sampling {frac:.4f} fraction from {total_rows} rows across all partitions")
+                sampled = df.sample(frac=frac, random_state=42).compute()
+                # Trim to exact count
+                if len(sampled) > self.numrows:
+                    sampled = sampled.iloc[:self.numrows]
+                self.logger.log(f"Got {len(sampled)} rows from sampling")
+                df = dd.from_pandas(sampled, npartitions=max(1, len(sampled) // 500000))
+            else:
+                self.logger.log(f"Dataset already has {total_rows} rows (<= {self.numrows}), using all")
 
         self.logger.log(f"Loaded {df.npartitions} partitions")
 
