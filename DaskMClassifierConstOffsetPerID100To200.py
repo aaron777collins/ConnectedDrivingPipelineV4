@@ -98,9 +98,9 @@ class DaskMClassifierConstOffsetPerID100To200:
         try:
             # Use local cluster with configured memory limits
             self.cluster = LocalCluster(
-                n_workers=4,
+                n_workers=2,
                 threads_per_worker=2,
-                memory_limit='14GB',  # 64GB / 4 workers ≈ 14GB each with headroom
+                memory_limit='28GB',  # 64GB / 2 workers = 28GB each with headroom
                 silence_logs=30,  # Reduce log noise
             )
             self.client = Client(self.cluster)

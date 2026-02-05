@@ -62,9 +62,9 @@ class DaskMClassifierConstOffsetPerIDWithRandDir50To100:
         self.logger.log("Initializing Dask LocalCluster...")
         try:
             self.cluster = LocalCluster(
-                n_workers=4,
+                n_workers=2,
                 threads_per_worker=2,
-                memory_limit='14GB',
+                memory_limit='28GB',
                 silence_logs=30,
             )
             self.client = Client(self.cluster)
