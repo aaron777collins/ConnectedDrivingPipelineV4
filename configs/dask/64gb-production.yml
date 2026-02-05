@@ -1,41 +1,20 @@
+# Dask configuration for 64GB RAM server
 distributed:
-  version: 2
-
-  scheduler:
-    allowed-failures: 3
-    work-stealing: true
-    bandwidth: 100000000  # 100MB/s network bandwidth assumption
-
   worker:
     memory:
-      target: 0.50      # Start spilling at 50% (4.0GB per worker) - TASK 49: Reduced from 60% for earlier spilling
-      spill: 0.60       # Aggressive spill at 60% (4.8GB per worker) - TASK 49: Reduced from 70%
-      pause: 0.75       # Pause at 75% (6.0GB per worker) - TASK 49: Reduced from 80%
-      terminate: 0.90   # Kill worker at 90% (7.2GB per worker) - TASK 49: Reduced from 95%
+      target: 0.7
+      spill: 0.8
+      pause: 0.9
+      terminate: 0.95
 
-    # TASK 49: Enable spill-to-disk configuration
-    profile:
-      interval: 10ms
-      cycle: 1000ms
+  scheduler:
+    work-stealing: true
+    
+temporary-directory: /tmp/dask-worker-space
 
-  client:
-    heartbeat: 5s
+array:
+  chunk-size: 128MiB
 
 dataframe:
   shuffle:
-    method: tasks       # Memory-efficient shuffle (vs 'disk')
-    compression: lz4    # Fast compression for spilling
-
-  backend-kwargs:
-    engine: pyarrow     # For Parquet I/O
-
-# TASK 49: Array chunking to reduce memory footprint
-array:
-  chunk-size: 64MiB     # Reduced from default 128MiB for lower memory usage
-
-# TASK 49: Optimize task scheduling to reduce peak memory
-optimization:
-  fuse:
-    active: true        # Enable task fusion to reduce intermediate results
-    ave-width: 2        # Conservative fusion width to avoid memory spikes
-    subgraphs: null
+    compression: lz4
