@@ -37,7 +37,7 @@ from Generator.Cleaners.CleanersWithFilters.DaskCleanerWithFilterWithinRangeXYAn
 from Generator.Cleaners.ConnectedDrivingCleaner import ConnectedDrivingCleaner
 from Generator.Cleaners.ConnectedDrivingLargeDataCleaner import ConnectedDrivingLargeDataCleaner
 from Generator.Cleaners.DaskConnectedDrivingLargeDataCleaner import DaskConnectedDrivingLargeDataCleaner
-from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
+from Generator.Cleaners.DaskCleanWithTimestamps import DaskCleanWithTimestamps
 from Helpers.MathHelper import MathHelper
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
@@ -186,8 +186,8 @@ class DaskMClassifierPositionSwap:
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 2000,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
-            "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
-            "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanerClass": DaskCleanWithTimestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanFunc": DaskCleanWithTimestamps.clean_data_with_timestamps,
             # Use DASK cleaner for distributed filtering
             "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": DaskCleanerWithFilterWithinRangeXYAndDateRange,
             "ConnectedDrivingLargeDataCleaner.filterFunc": DaskCleanerWithFilterWithinRangeXYAndDateRange.within_rangeXY_and_date_range,

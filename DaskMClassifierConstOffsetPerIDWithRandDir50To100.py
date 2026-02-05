@@ -20,7 +20,7 @@ from dask.distributed import Client, LocalCluster
 from EasyMLLib.CSVWriter import CSVWriter
 from Generator.Attackers.Attacks.StandardPositionalOffsetAttacker import StandardPositionalOffsetAttacker
 from Generator.Cleaners.CleanersWithFilters.DaskCleanerWithFilterWithinRangeXYAndDateRange import DaskCleanerWithFilterWithinRangeXYAndDateRange
-from Generator.Cleaners.ExtraCleaningFunctions.CleanWithTimestamps import CleanWithTimestamps
+from Generator.Cleaners.DaskCleanWithTimestamps import DaskCleanWithTimestamps
 from Helpers.MathHelper import MathHelper
 
 from Logger.Logger import DEFAULT_LOG_PATH, Logger
@@ -115,8 +115,8 @@ class DaskMClassifierConstOffsetPerIDWithRandDir50To100:
             "ConnectedDrivingCleaner.columns": COLUMNS,
             "ConnectedDrivingLargeDataCleaner.max_dist": 2000,
             "ConnectedDrivingCleaner.shouldGatherAutomatically": False,
-            "ConnectedDrivingLargeDataCleaner.cleanerClass": CleanWithTimestamps,
-            "ConnectedDrivingLargeDataCleaner.cleanFunc": CleanWithTimestamps.clean_data_with_timestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanerClass": DaskCleanWithTimestamps,
+            "ConnectedDrivingLargeDataCleaner.cleanFunc": DaskCleanWithTimestamps.clean_data_with_timestamps,
             "ConnectedDrivingLargeDataCleaner.cleanerWithFilterClass": DaskCleanerWithFilterWithinRangeXYAndDateRange,
             "ConnectedDrivingLargeDataCleaner.filterFunc": DaskCleanerWithFilterWithinRangeXYAndDateRange.within_rangeXY_and_date_range,
             "CleanerWithFilterWithinRangeXYAndDay.startday": 1,
