@@ -174,3 +174,20 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 Full_Wyoming_Data.csv
+
+# Large data files
+*.csv
+*.parquet
+Full_Wyoming_Data*
+pq/
+pq-web/
+
+# Cache and results (generated)
+cache/
+results/
+
+# Backup files
+*.bak
+
+# Watch scripts
+watch-*.sh
