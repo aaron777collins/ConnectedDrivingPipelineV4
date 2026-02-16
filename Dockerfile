@@ -2,7 +2,7 @@
 # Optimized for Dask distributed computing on 64GB systems
 
 # Use Python 3.11 slim image as base (compatible with Dask 2024.1.0+)
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Set metadata
 LABEL maintainer="ConnectedDrivingPipelineV4"
