@@ -144,7 +144,7 @@ class DaskCleanWithTimestamps(DaskConnectedDrivingCleaner):
         self.cleaned_data = self.cleaned_data.assign(
             metadata_generatedAt=dd.to_datetime(
                 self.cleaned_data['metadata_generatedAt'],
-                format="%m/%d/%Y %I:%M:%S %p"
+                format='mixed'
             )
         )
 
