@@ -87,7 +87,7 @@ class ConfigurationGenerator:
         # Generate full configuration
         config = {
             "pipeline_name": template_data.get('output_config', {}).get('pipeline_name', 
-                                                                       f"{feature_set.lower()}-{spatial_radius}-{template_config.get('attack_type', 'constoffset')}"),
+                                                                       f"{feature_set.lower()}-{spatial_radius}-{template_config.get('attack_type', 'randomoffset')}"),
             "version": "1.0.0",
             "created": datetime.now().strftime("%Y-%m-%d"),
             "template_generated": True,
@@ -168,7 +168,7 @@ class ConfigurationGenerator:
                     "template_config": {
                         "spatial_radius": spatial_radius,
                         "feature_set": feature_set,
-                        "attack_type": "constant_offset_per_vehicle",
+                        "attack_type": "random_offset",
                         "malicious_ratio": 0.30
                     },
                     
@@ -181,7 +181,7 @@ class ConfigurationGenerator:
                     },
                     
                     "output_config": {
-                        "pipeline_name": f"{feature_set.lower()}-{spatial_radius}-constoffset",
+                        "pipeline_name": f"{feature_set.lower()}-{spatial_radius}-randomoffset",
                         "results_dir": f"results/matrix/{feature_set.lower()}-{spatial_radius}/",
                         "cache_dir": f"cache/matrix/{feature_set.lower()}-{spatial_radius}/"
                     },

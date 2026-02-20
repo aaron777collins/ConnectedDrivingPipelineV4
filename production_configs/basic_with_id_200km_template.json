@@ -1,0 +1,25 @@
+{
+  "template_config": {
+    "spatial_radius": "200km",
+    "feature_set": "BASIC_WITH_ID",
+    "attack_type": "random_offset",
+    "malicious_ratio": 0.3
+  },
+  "attack_parameters": {
+    "offset_distance_min": 100,
+    "offset_distance_max": 200,
+    "offset_direction_min": 0,
+    "offset_direction_max": 360,
+    "seed": 42
+  },
+  "output_config": {
+    "pipeline_name": "basic_with_id-200km-randomoffset",
+    "results_dir": "results/matrix/basic_with_id-200km/",
+    "cache_dir": "cache/matrix/basic_with_id-200km/"
+  },
+  "dask_config": {
+    "n_workers": 4,
+    "threads_per_worker": 2,
+    "memory_limit": "16GB"
+  }
+}
