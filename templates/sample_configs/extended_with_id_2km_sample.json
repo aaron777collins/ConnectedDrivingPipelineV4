@@ -1,0 +1,28 @@
+{
+  "template_config": {
+    "spatial_radius": "2km",
+    "feature_set": "EXTENDED_WITH_ID",
+    "attack_type": "random_offset",
+    "malicious_ratio": 0.25
+  },
+  
+  "attack_parameters": {
+    "offset_distance_min": 50,
+    "offset_distance_max": 150,
+    "offset_direction_min": 0,
+    "offset_direction_max": 360,
+    "seed": 123
+  },
+  
+  "output_config": {
+    "pipeline_name": "extended-with-id-2km-randoffset",
+    "results_dir": "results/matrix/extended-with-id-2km/",
+    "cache_dir": "cache/matrix/extended-with-id-2km/"
+  },
+  
+  "dask_config": {
+    "n_workers": 2,
+    "threads_per_worker": 1,
+    "memory_limit": "8GB"
+  }
+}

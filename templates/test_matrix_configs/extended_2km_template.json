@@ -1,0 +1,25 @@
+{
+  "template_config": {
+    "spatial_radius": "2km",
+    "feature_set": "EXTENDED",
+    "attack_type": "constant_offset_per_vehicle",
+    "malicious_ratio": 0.3
+  },
+  "attack_parameters": {
+    "offset_distance_min": 100,
+    "offset_distance_max": 200,
+    "offset_direction_min": 0,
+    "offset_direction_max": 360,
+    "seed": 42
+  },
+  "output_config": {
+    "pipeline_name": "extended-2km-constoffset",
+    "results_dir": "results/matrix/extended-2km/",
+    "cache_dir": "cache/matrix/extended-2km/"
+  },
+  "dask_config": {
+    "n_workers": 2,
+    "threads_per_worker": 2,
+    "memory_limit": "8GB"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "description": "Configuration schema for Connected Driving Simulation Matrix templates",
+  
+  "template_parameters": {
+    "spatial_radius": {
+      "type": "enum",
+      "values": ["200km", "100km", "2km"],
+      "description": "Spatial radius for data filtering from center point",
+      "required": true
+    },
+    
+    "feature_set": {
+      "type": "enum", 
+      "values": ["BASIC", "BASIC_WITH_ID", "MOVEMENT", "MOVEMENT_WITH_ID", "EXTENDED", "EXTENDED_WITH_ID"],
+      "description": "Feature set defining which columns to extract and use for ML",
+      "required": true
+    },
+    
+    "attack_type": {
+      "type": "enum",
+      "values": ["constant_offset_per_vehicle", "random_offset", "position_swap", "random_position"],
+      "description": "Type of attack simulation to perform",
+      "default": "constant_offset_per_vehicle"
+    },
+    
+    "malicious_ratio": {
+      "type": "float",
+      "min": 0.01,
+      "max": 0.50,
+      "description": "Percentage of vehicles to mark as attackers",
+      "default": 0.30
+    }
+  },
+  
+  "feature_set_mappings": {
+    "BASIC": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_position_lat", 
+        "coredata_position_long",
+        "coredata_elevation"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation"],
+      "includes_id": false
+    },
+    
+    "BASIC_WITH_ID": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_id",
+        "coredata_position_lat",
+        "coredata_position_long", 
+        "coredata_elevation"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation", "coredata_id"],
+      "includes_id": true
+    },
+    
+    "MOVEMENT": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_position_lat",
+        "coredata_position_long",
+        "coredata_elevation",
+        "coredata_heading",
+        "coredata_speed"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation", "coredata_heading", "coredata_speed"],
+      "includes_id": false
+    },
+    
+    "MOVEMENT_WITH_ID": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_id",
+        "coredata_position_lat",
+        "coredata_position_long",
+        "coredata_elevation", 
+        "coredata_heading",
+        "coredata_speed"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation", "coredata_heading", "coredata_speed", "coredata_id"],
+      "includes_id": true
+    },
+    
+    "EXTENDED": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_position_lat",
+        "coredata_position_long",
+        "coredata_elevation",
+        "coredata_speed",
+        "coredata_accelset_accelyaw",
+        "coredata_heading"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation", "coredata_speed", "coredata_accelset_accelyaw", "coredata_heading"],
+      "includes_id": false
+    },
+    
+    "EXTENDED_WITH_ID": {
+      "columns_to_extract": [
+        "metadata_receivedat",
+        "coredata_id",
+        "coredata_position_lat",
+        "coredata_position_long",
+        "coredata_elevation",
+        "coredata_speed",
+        "coredata_accelset_accelyaw", 
+        "coredata_heading"
+      ],
+      "ml_features": ["x_pos", "y_pos", "coredata_elevation", "coredata_speed", "coredata_accelset_accelyaw", "coredata_heading", "coredata_id"],
+      "includes_id": true
+    }
+  },
+  
+  "spatial_radius_mappings": {
+    "200km": {
+      "radius_meters": 200000,
+      "description": "Large area analysis - 200km radius from center point"
+    },
+    "100km": {
+      "radius_meters": 100000,
+      "description": "Medium area analysis - 100km radius from center point"
+    },
+    "2km": {
+      "radius_meters": 2000,
+      "description": "Local area analysis - 2km radius from center point"
+    }
+  },
+  
+  "template_constants": {
+    "center_longitude": -109.319556,
+    "center_latitude": 41.538689,
+    "source_file": "April_2021_Wyoming_Data_Fixed.csv",
+    "date_range": {
+      "start": "2021-04-01",
+      "end": "2021-04-30"
+    },
+    "train_test_split": {
+      "test_size": 0.20,
+      "random_state": 42,
+      "shuffle": true
+    },
+    "classifiers": ["RandomForest", "DecisionTree", "KNeighbors"]
+  }
+}

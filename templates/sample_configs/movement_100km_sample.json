@@ -1,0 +1,26 @@
+{
+  "template_config": {
+    "spatial_radius": "100km",
+    "feature_set": "MOVEMENT",
+    "attack_type": "position_swap",
+    "malicious_ratio": 0.20
+  },
+  
+  "attack_parameters": {
+    "swap_distance_min": 200,
+    "swap_distance_max": 500,
+    "seed": 456
+  },
+  
+  "output_config": {
+    "pipeline_name": "movement-100km-posswap",
+    "results_dir": "results/matrix/movement-100km/",
+    "cache_dir": "cache/matrix/movement-100km/"
+  },
+  
+  "dask_config": {
+    "n_workers": 3,
+    "threads_per_worker": 2,
+    "memory_limit": "10GB"
+  }
+}
