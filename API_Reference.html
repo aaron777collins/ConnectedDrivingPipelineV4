@@ -1,0 +1,4549 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="index.html">
+      
+      
+        <link rel="next" href="CACHE_KEY_SPECIFICATION.html">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>API Reference - Dask Components - ConnectedDrivingPipelineV4 Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+        <script src="https://unpkg.com/iframe-worker/shim"></script>
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference-dask-components" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="index.html" title="ConnectedDrivingPipelineV4 Docs" class="md-header__button md-logo" aria-label="ConnectedDrivingPipelineV4 Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ConnectedDrivingPipelineV4 Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference - Dask Components
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 2c-1.05 0-2.05.16-3 .46 4.06 1.27 7 5.04 7 9.54s-2.94 8.27-7 9.54c.95.3 1.95.46 3 .46a10 10 0 0 0 10-10A10 10 0 0 0 9 2"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="ConnectedDrivingPipelineV4 Docs" class="md-nav__button md-logo" aria-label="ConnectedDrivingPipelineV4 Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ConnectedDrivingPipelineV4 Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference - Dask Components
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="API_Reference.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference - Dask Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Infrastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dasksessionmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskSessionManager
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskSessionManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_cluster-localcluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_cluster() -&gt; LocalCluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_client-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_client() -&gt; Client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shutdown-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        shutdown() -&gt; None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        restart() -&gt; None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_dashboard_link-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_dashboard_link() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_worker_info-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_worker_info() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_memory_usage-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_memory_usage() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskparquetcache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskParquetCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskParquetCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decorator-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorator Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskpipelinerunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskPipelineRunner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskPipelineRunner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__config-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(config: dict)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from_configconfig_path-str-daskpipelinerunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_config(config_path: str) -&gt; DaskPipelineRunner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attack-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-column-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Column Sets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskmclassifierpipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskMClassifierPipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskMClassifierPipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run_classifierdata-classifier_type-test_size-random_state-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_classifier(data, classifier_type, test_size, random_state) -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskdatagatherer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskDataGatherer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskDataGatherer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gather_data-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gather_data() -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivingcleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanwithtimestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanWithTimestamps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanWithTimestamps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__start_time-str-end_time-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(start_time: str, end_time: str)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivinglargedatacleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingLargeDataCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingLargeDataCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__filter_type-str-filter_params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(filter_type: str, **filter_params)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithpassthroughfilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithPassthroughFilter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithPassthroughFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXY
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXY">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexyandday" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXYAndDay
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXYAndDay">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexyanddaterange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXYAndDateRange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXYAndDateRange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ml-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ML Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskmconnecteddrivingdatacleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskMConnectedDrivingDataCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskMConnectedDrivingDataCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__column_set-str-minimal_xy_elev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(column_set: str = 'minimal_xy_elev')
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivingattacker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingAttacker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingAttacker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__attack_type-str-attacker_percentage-float-attack_params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(attack_type: str, attacker_percentage: float, **attack_params)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_attackersdata-dddataframe-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_attackers(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attack-parameters-by-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Parameters by Type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskudfregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskUDFRegistry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskUDFRegistry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskfixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskFixtures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskFixtures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Fixtures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Guidelines
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partitioning-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partitioning Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Computation Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-from-pandas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration from Pandas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration from Pandas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sklearn-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sklearn Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CACHE_KEY_SPECIFICATION.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cache Key Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="DaskPipelineRunner_Configuration_Guide.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DaskPipelineRunner Configuration Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Troubleshooting_Guide.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dask Pipeline Troubleshooting Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="WYDOT_DATA_INFRASTRUCTURE_PLAN.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WYDOT Data Infrastructure Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="about.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Author
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ci_cd_fixes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI/CD Fixes Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="results.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Getting%20Started/Configuration%20Parameters.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Getting%20Started/development.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Getting%20Started/setup.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Infrastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dasksessionmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskSessionManager
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskSessionManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_cluster-localcluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_cluster() -&gt; LocalCluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_client-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_client() -&gt; Client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shutdown-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        shutdown() -&gt; None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        restart() -&gt; None
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_dashboard_link-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_dashboard_link() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_worker_info-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_worker_info() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_memory_usage-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_memory_usage() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskparquetcache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskParquetCache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskParquetCache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decorator-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decorator Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskpipelinerunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskPipelineRunner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskPipelineRunner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__config-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(config: dict)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from_configconfig_path-str-daskpipelinerunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_config(config_path: str) -&gt; DaskPipelineRunner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run() -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attack-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-column-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Column Sets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskmclassifierpipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskMClassifierPipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskMClassifierPipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run_classifierdata-classifier_type-test_size-random_state-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_classifier(data, classifier_type, test_size, random_state) -&gt; dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskdatagatherer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskDataGatherer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskDataGatherer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gather_data-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gather_data() -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivingcleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanwithtimestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanWithTimestamps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanWithTimestamps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__start_time-str-end_time-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(start_time: str, end_time: str)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivinglargedatacleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingLargeDataCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingLargeDataCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__filter_type-str-filter_params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(filter_type: str, **filter_params)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithpassthroughfilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithPassthroughFilter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithPassthroughFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXY
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXY">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexyandday" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXYAndDay
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXYAndDay">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskcleanerwithfilterwithinrangexyanddaterange" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskCleanerWithFilterWithinRangeXYAndDateRange
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskCleanerWithFilterWithinRangeXYAndDateRange">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ml-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ML Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskmconnecteddrivingdatacleaner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskMConnectedDrivingDataCleaner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskMConnectedDrivingDataCleaner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__column_set-str-minimal_xy_elev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(column_set: str = 'minimal_xy_elev')
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleandata-dddataframe-dddataframe_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daskconnecteddrivingattacker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskConnectedDrivingAttacker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskConnectedDrivingAttacker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-reference_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#__init__attack_type-str-attacker_percentage-float-attack_params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__(attack_type: str, attacker_percentage: float, **attack_params)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_attackersdata-dddataframe-dddataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_attackers(data: dd.DataFrame) -&gt; dd.DataFrame
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attack-parameters-by-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Parameters by Type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskudfregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskUDFRegistry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskUDFRegistry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#daskfixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DaskFixtures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DaskFixtures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Fixtures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-example_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Guidelines
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#memory-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partitioning-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partitioning Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Computation Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-from-pandas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration from Pandas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration from Pandas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sklearn-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sklearn Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="api-reference-dask-components">API Reference - Dask Components</h1>
+<p><strong>Version:</strong> 1.0.0
+<strong>Last Updated:</strong> 2026-01-18
+<strong>Framework:</strong> ConnectedDrivingPipelineV4 (Dask Migration)</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#core-infrastructure">Core Infrastructure</a></li>
+<li><a href="#dasksessionmanager">DaskSessionManager</a></li>
+<li><a href="#daskparquetcache">DaskParquetCache</a></li>
+<li><a href="#pipeline-components">Pipeline Components</a></li>
+<li><a href="#daskpipelinerunner">DaskPipelineRunner</a></li>
+<li><a href="#daskmclassifierpipeline">DaskMClassifierPipeline</a></li>
+<li><a href="#data-layer">Data Layer</a></li>
+<li><a href="#daskdatagatherer">DaskDataGatherer</a></li>
+<li><a href="#daskconnecteddrivingcleaner">DaskConnectedDrivingCleaner</a></li>
+<li><a href="#daskcleanwithtimestamps">DaskCleanWithTimestamps</a></li>
+<li><a href="#daskconnecteddrivinglargedatacleaner">DaskConnectedDrivingLargeDataCleaner</a></li>
+<li><a href="#filtering-components">Filtering Components</a></li>
+<li><a href="#daskcleanerwithpassthroughfilter">DaskCleanerWithPassthroughFilter</a></li>
+<li><a href="#daskcleanerwithfilterwithinrange">DaskCleanerWithFilterWithinRange</a></li>
+<li><a href="#daskcleanerwithfilterwithinrangexy">DaskCleanerWithFilterWithinRangeXY</a></li>
+<li><a href="#daskcleanerwithfilterwithinrangexyandday">DaskCleanerWithFilterWithinRangeXYAndDay</a></li>
+<li><a href="#daskcleanerwithfilterwithinrangexyanddaterange">DaskCleanerWithFilterWithinRangeXYAndDateRange</a></li>
+<li><a href="#ml-components">ML Components</a></li>
+<li><a href="#daskmconnecteddrivingdatacleaner">DaskMConnectedDrivingDataCleaner</a></li>
+<li><a href="#daskconnecteddrivingattacker">DaskConnectedDrivingAttacker</a></li>
+<li><a href="#utilities">Utilities</a></li>
+<li><a href="#daskudfregistry">DaskUDFRegistry</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#daskfixtures">DaskFixtures</a></li>
+</ol>
+<hr />
+<p><a name="overview"></a></p>
+<h2 id="overview">Overview</h2>
+<p>The Dask migration provides distributed, memory-efficient alternatives to the original pandas/PySpark components. All Dask components follow consistent patterns:</p>
+<ul>
+<li><strong>Lazy evaluation</strong>: Operations build computation graphs, execute with <code>.compute()</code></li>
+<li><strong>Parquet caching</strong>: Using <code>@DaskParquetCache</code> decorator for efficient persistence</li>
+<li><strong>Memory safety</strong>: Optimized for 64GB systems with 15M+ row datasets</li>
+<li><strong>Interface compatibility</strong>: Same method signatures as pandas versions where possible</li>
+</ul>
+<p><strong>System Requirements:</strong>
+- 64GB RAM (recommended)
+- 6-12 CPU cores
+- 500GB+ SSD storage</p>
+<p><strong>Dependencies:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dask</span><span class="p">[</span><span class="n">complete</span><span class="p">]</span><span class="o">&gt;=</span><span class="mf">2024.1.0</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">dask</span><span class="o">-</span><span class="n">ml</span><span class="o">&gt;=</span><span class="mf">2024.4.0</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">distributed</span><span class="o">&gt;=</span><span class="mf">2024.1.0</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">pyarrow</span><span class="o">&gt;=</span><span class="mf">14.0.0</span>
+</span></code></pre></div></p>
+<p>For installation instructions, see the main <a href="../README.md">README.md</a>.</p>
+<hr />
+<p><a name="core-infrastructure"></a></p>
+<h2 id="core-infrastructure">Core Infrastructure</h2>
+<p><a name="dasksessionmanager"></a></p>
+<h3 id="dasksessionmanager">DaskSessionManager</h3>
+<p><strong>Module:</strong> <code>Helpers/DaskSessionManager.py</code></p>
+<p>Centralized singleton for managing Dask distributed cluster and client lifecycle.</p>
+<h4 id="features">Features</h4>
+<ul>
+<li><strong>Singleton pattern</strong> - One cluster per application</li>
+<li><strong>Auto-configuration</strong> - Loads settings from YAML config files</li>
+<li><strong>Memory-safe defaults</strong> - Optimized for 64GB systems (6 workers × 8GB)</li>
+<li><strong>Dashboard integration</strong> - Built-in monitoring interface</li>
+<li><strong>Graceful shutdown</strong> - Proper resource cleanup</li>
+</ul>
+<h4 id="usage-example">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Helpers.DaskSessionManager</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskSessionManager</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Get or create Dask client (singleton)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_client</span><span class="p">()</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Access dashboard for monitoring</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dashboard: </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">dashboard_link</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Check worker info</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">workers</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_worker_info</span><span class="p">()</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active workers: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Check memory usage</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">memory</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_memory_usage</span><span class="p">()</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total memory: </span><span class="si">{</span><span class="n">memory</span><span class="p">[</span><span class="s1">&#39;total_memory_gb&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Used memory: </span><span class="si">{</span><span class="n">memory</span><span class="p">[</span><span class="s1">&#39;used_memory_gb&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># Restart cluster if needed</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="c1"># Shutdown at end of application</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</span></code></pre></div>
+<h4 id="api-reference">API Reference</h4>
+<h5 id="get_cluster-localcluster"><code>get_cluster() -&gt; LocalCluster</code></h5>
+<p>Creates or retrieves the singleton Dask LocalCluster.</p>
+<p><strong>Returns:</strong>
+- <code>LocalCluster</code>: Configured Dask cluster instance</p>
+<p><strong>Configuration:</strong>
+- Default: 6 workers, 8GB per worker (48GB total)
+- Configurable via <code>config/dask_config.yaml</code></p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">cluster</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_cluster</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scheduler address: </span><span class="si">{</span><span class="n">cluster</span><span class="o">.</span><span class="n">scheduler_address</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="get_client-client"><code>get_client() -&gt; Client</code></h5>
+<p>Gets or creates the Dask Client connected to the cluster.</p>
+<p><strong>Returns:</strong>
+- <code>Client</code>: Dask distributed client</p>
+<p><strong>Notes:</strong>
+- Automatically creates cluster if not exists
+- Reuses existing client (singleton)
+- Safe to call multiple times</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">client</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_client</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">futures</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">results</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="shutdown-none"><code>shutdown() -&gt; None</code></h5>
+<p>Shuts down the Dask cluster and client, releasing all resources.</p>
+<p><strong>Side Effects:</strong>
+- Closes all active workers
+- Terminates scheduler
+- Clears singleton state</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># At end of application</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="restart-none"><code>restart() -&gt; None</code></h5>
+<p>Restarts the Dask cluster (shutdown + get_client).</p>
+<p><strong>Use Cases:</strong>
+- Recovering from worker failures
+- Clearing memory leaks
+- Applying new configuration</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># After heavy computation</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="get_dashboard_link-str"><code>get_dashboard_link() -&gt; str</code></h5>
+<p>Returns the URL for the Dask diagnostic dashboard.</p>
+<p><strong>Returns:</strong>
+- <code>str</code>: Dashboard URL (e.g., <code>http://127.0.0.1:8787/status</code>)</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">url</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_dashboard_link</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Open dashboard: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="get_worker_info-dict"><code>get_worker_info() -&gt; dict</code></h5>
+<p>Returns information about active workers.</p>
+<p><strong>Returns:</strong>
+- <code>dict</code>: Worker information with keys:
+  - <code>num_workers</code> (int): Number of active workers
+  - <code>total_cores</code> (int): Total CPU cores
+  - <code>total_memory_gb</code> (float): Total worker memory in GB
+  - <code>workers</code> (list): List of worker details</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">info</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_worker_info</span><span class="p">()</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workers: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;num_workers&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cores: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_cores&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_memory_gb&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="get_memory_usage-dict"><code>get_memory_usage() -&gt; dict</code></h5>
+<p>Returns current memory usage statistics.</p>
+<p><strong>Returns:</strong>
+- <code>dict</code>: Memory stats with keys:
+  - <code>total_memory_gb</code> (float): Total available memory
+  - <code>used_memory_gb</code> (float): Currently used memory
+  - <code>available_memory_gb</code> (float): Available memory
+  - <code>percent_used</code> (float): Percentage used (0-100)</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">mem</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_memory_usage</span><span class="p">()</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">if</span> <span class="n">mem</span><span class="p">[</span><span class="s1">&#39;percent_used&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: High memory usage!&quot;</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+</span></code></pre></div></p>
+<hr />
+<p><a name="daskparquetcache"></a></p>
+<h3 id="daskparquetcache">DaskParquetCache</h3>
+<p><strong>Module:</strong> <code>Decorators/DaskParquetCache.py</code></p>
+<p>Decorator for caching Dask DataFrame function results as Parquet files.</p>
+<h4 id="features_1">Features</h4>
+<ul>
+<li><strong>MD5 hash-based cache keys</strong> - Automatic cache invalidation</li>
+<li><strong>Parquet columnar storage</strong> - Efficient compression (~70% size reduction)</li>
+<li><strong>Lazy evaluation compatible</strong> - Handles Dask DataFrames correctly</li>
+<li><strong>Selective caching</strong> - Choose which arguments affect cache key</li>
+<li><strong>Custom cache paths</strong> - Override default location</li>
+</ul>
+<h4 id="usage-example_1">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Decorators.DaskParquetCache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskParquetCache</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">dask.dataframe</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dd</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nd">@DaskParquetCache</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_large_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">year</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Process BSM data for specific year.&quot;&quot;&quot;</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">blocksize</span><span class="o">=</span><span class="s1">&#39;128MB&#39;</span><span class="p">)</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span><span class="p">]</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="c1"># ... expensive processing ...</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="k">return</span> <span class="n">df</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># First call: computes and caches</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="n">result</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">process_large_dataset</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="c1"># Second call: loads from cache (fast!)</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="n">result</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">process_large_dataset</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="advanced-usage">Advanced Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Cache only on specific variables</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nd">@DaskParquetCache</span><span class="p">(</span><span class="n">cache_variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;region&#39;</span><span class="p">])</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="c1"># &#39;debug&#39; flag won&#39;t affect cache key</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="k">return</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">year</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">region</span><span class="p">)]</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># Override cache location</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="nd">@DaskParquetCache</span><span class="p">(</span><span class="n">full_file_cache_path</span><span class="o">=</span><span class="s1">&#39;/custom/path/cache&#39;</span><span class="p">)</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">custom_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_file</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="k">return</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_1">API Reference</h4>
+<h5 id="decorator-parameters">Decorator Parameters</h5>
+<p><strong><code>cache_variables</code></strong> (optional)
+- Type: <code>list[str]</code>
+- Default: All function arguments (excluding <code>self</code>, <code>**kwargs</code>)
+- Description: Specify which arguments affect the cache key</p>
+<p><strong><code>full_file_cache_path</code></strong> (optional)
+- Type: <code>str</code>
+- Default: Auto-generated from function name + args hash
+- Description: Override cache file path (DO NOT include <code>.parquet</code> extension)</p>
+<h5 id="requirements">Requirements</h5>
+<ol>
+<li>
+<p><strong>Type annotation required:</strong>
+   <div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># ✅ Correct</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nd">@DaskParquetCache</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="k">return</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="c1"># ❌ Wrong (missing return type)</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nd">@DaskParquetCache</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="k">return</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Return type must be <code>dask.dataframe.DataFrame</code></strong></p>
+</li>
+<li>
+<p><strong>Cache directory automatically created</strong></p>
+</li>
+</ol>
+<h5 id="cache-location">Cache Location</h5>
+<p>Default cache directory: <code>.cache_files/parquet/</code></p>
+<p>Cache filename format: <code>{function_name}_{md5_hash}.parquet/</code></p>
+<p><strong>Example cache path:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>.cache_files/parquet/process_large_dataset_a3f2e1b9d4c5.parquet/
+</span></code></pre></div></p>
+<h5 id="cache-invalidation">Cache Invalidation</h5>
+<p>Cache is invalidated when:
+- Function arguments change (based on <code>cache_variables</code>)
+- Function source code changes
+- Cached file is manually deleted</p>
+<hr />
+<p><a name="pipeline-components"></a></p>
+<h2 id="pipeline-components">Pipeline Components</h2>
+<p><a name="daskpipelinerunner"></a></p>
+<h3 id="daskpipelinerunner">DaskPipelineRunner</h3>
+<p><strong>Module:</strong> <code>MachineLearning/DaskPipelineRunner.py</code></p>
+<p>Unified, config-driven ML pipeline executor that replaces 55+ individual pipeline scripts.</p>
+<h4 id="features_2">Features</h4>
+<ul>
+<li><strong>JSON configuration</strong> - Complete pipeline defined in config file</li>
+<li><strong>7 attack types</strong> - Rand offset, const offset, position swap, etc.</li>
+<li><strong>4 feature sets</strong> - From minimal (6 cols) to full (30+ cols)</li>
+<li><strong>3 filtering modes</strong> - No filter, XY offset, bounding box</li>
+<li><strong>Reproducible</strong> - Random seed support</li>
+<li><strong>Parquet caching</strong> - Intermediate results cached</li>
+</ul>
+<h4 id="usage-example_2">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">MachineLearning.DaskPipelineRunner</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskPipelineRunner</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># From JSON config file</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">DaskPipelineRunner</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="s2">&quot;configs/pipeline_2000m_rand_offset.json&quot;</span><span class="p">)</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">results</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Train size: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;train_size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test size: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;test_size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Precision: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;precision&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recall: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;recall&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="configuration-example">Configuration Example</h4>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">&quot;pipeline_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2000m_rand_offset_30pct&quot;</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nt">&quot;source_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data/BSM_2023.csv&quot;</span><span class="p">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nt">&quot;filtering_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;xy_offset_position&quot;</span><span class="p">,</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span><span class="nt">&quot;filtering_xy_offset_position_distance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="nt">&quot;partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">    </span><span class="nt">&quot;date_ranges&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;2023-01-01&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;2023-12-31&quot;</span><span class="p">]]</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="nt">&quot;features&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">    </span><span class="nt">&quot;column_set&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;minimal_xy_elev&quot;</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">  </span><span class="nt">&quot;attacks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="nt">&quot;attack_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rand_offset&quot;</span><span class="p">,</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="nt">&quot;attacker_percentage&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.30</span><span class="p">,</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">    </span><span class="nt">&quot;attack_min_distance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w">    </span><span class="nt">&quot;attack_max_distance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="w">    </span><span class="nt">&quot;random_seed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="w">  </span><span class="nt">&quot;ml&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">    </span><span class="nt">&quot;split_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fixed_size&quot;</span><span class="p">,</span>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">    </span><span class="nt">&quot;test_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100000</span><span class="p">,</span>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">    </span><span class="nt">&quot;random_seed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span>
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="w">  </span><span class="nt">&quot;cache&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>For complete configuration reference, see <a href="DaskPipelineRunner_Configuration_Guide.html">DaskPipelineRunner_Configuration_Guide.md</a>.</p>
+<h4 id="api-reference_2">API Reference</h4>
+<h5 id="__init__config-dict"><code>__init__(config: dict)</code></h5>
+<p>Initializes pipeline from configuration dictionary.</p>
+<p><strong>Parameters:</strong>
+- <code>config</code> (dict): Pipeline configuration</p>
+<p><strong>Raises:</strong>
+- <code>ValueError</code>: If config is invalid or missing required fields</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="s2">&quot;pipeline_name&quot;</span><span class="p">:</span> <span class="s2">&quot;baseline&quot;</span><span class="p">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;source_file&quot;</span><span class="p">:</span> <span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="o">...</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">}</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">DaskPipelineRunner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="from_configconfig_path-str-daskpipelinerunner"><code>from_config(config_path: str) -&gt; DaskPipelineRunner</code></h5>
+<p>Class method to create pipeline from JSON file.</p>
+<p><strong>Parameters:</strong>
+- <code>config_path</code> (str): Path to JSON configuration file</p>
+<p><strong>Returns:</strong>
+- <code>DaskPipelineRunner</code>: Configured pipeline instance</p>
+<p><strong>Raises:</strong>
+- <code>FileNotFoundError</code>: If config file doesn't exist
+- <code>json.JSONDecodeError</code>: If config file is invalid JSON
+- <code>ValueError</code>: If config validation fails</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">DaskPipelineRunner</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="s2">&quot;configs/experiment_001.json&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="run-dict"><code>run() -&gt; dict</code></h5>
+<p>Executes the complete ML pipeline.</p>
+<p><strong>Returns:</strong>
+- <code>dict</code>: Results dictionary with keys:
+  - <code>pipeline_name</code> (str): Pipeline identifier
+  - <code>train_size</code> (int): Training set size
+  - <code>test_size</code> (int): Test set size
+  - <code>attacker_count</code> (int): Number of attackers in dataset
+  - <code>accuracy</code> (float): Model accuracy (0-1)
+  - <code>precision</code> (float): Model precision (0-1)
+  - <code>recall</code> (float): Model recall (0-1)
+  - <code>f1_score</code> (float): F1 score (0-1)
+  - <code>confusion_matrix</code> (array): 2x2 confusion matrix
+  - <code>execution_time_seconds</code> (float): Total runtime
+  - <code>cache_hit_rate</code> (float): Parquet cache hit rate (0-1)</p>
+<p><strong>Pipeline Steps:</strong>
+1. Data gathering (CSV → Dask DataFrame)
+2. Large data cleaning (spatial/temporal filtering)
+3. Train/test split
+4. Attack simulation (add attackers + position attacks)
+5. ML feature preparation (hex conversion, column selection)
+6. Classifier training (RandomForest)
+7. Results collection</p>
+<p><strong>Example:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">results</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pipeline: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;pipeline_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Runtime: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;execution_time_seconds&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache hits: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;cache_hit_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h5 id="attack-types">Attack Types</h5>
+<p>The pipeline supports 7 attack simulation types:</p>
+<table>
+<thead>
+<tr>
+<th>Attack Type</th>
+<th>Description</th>
+<th>Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rand_offset</code></td>
+<td>Random position offset per message</td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>const_offset_per_id</code></td>
+<td>Fixed offset per vehicle ID</td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>rand_position</code></td>
+<td>Completely random positions</td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>position_swap</code></td>
+<td>Swap positions between vehicle pairs</td>
+<td><code>swap_distance</code> (optional)</td>
+</tr>
+<tr>
+<td><code>const_offset</code></td>
+<td>Fixed offset for all attackers</td>
+<td><code>offset_x</code>, <code>offset_y</code></td>
+</tr>
+<tr>
+<td><code>override_const</code></td>
+<td>All attackers report same position</td>
+<td><code>target_x</code>, <code>target_y</code></td>
+</tr>
+<tr>
+<td><code>override_rand</code></td>
+<td>Each message reports random position</td>
+<td><code>min_x</code>, <code>max_x</code>, <code>min_y</code>, <code>max_y</code></td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="DaskPipelineRunner_Configuration_Guide.html#attack-types-reference">Configuration Guide</a> for detailed parameter descriptions.</p>
+<hr />
+<h5 id="feature-column-sets">Feature Column Sets</h5>
+<p>Four predefined column sets for different analysis needs:</p>
+<table>
+<thead>
+<tr>
+<th>Column Set</th>
+<th>Columns</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>minimal_xy_elev</code></td>
+<td>6</td>
+<td>Core positional: <code>latitude</code>, <code>longitude</code>, <code>elevation</code>, <code>x</code>, <code>y</code>, <code>TxRxTime</code></td>
+</tr>
+<tr>
+<td><code>standard</code></td>
+<td>15</td>
+<td>Adds speed, heading, accuracy metrics</td>
+</tr>
+<tr>
+<td><code>full_standard</code></td>
+<td>25+</td>
+<td>Standard + acceleration, brake status, vehicle metadata</td>
+</tr>
+<tr>
+<td><code>all_available</code></td>
+<td>30+</td>
+<td>All BSM fields</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a name="daskmclassifierpipeline"></a></p>
+<h3 id="daskmclassifierpipeline">DaskMClassifierPipeline</h3>
+<p><strong>Module:</strong> <code>MachineLearning/DaskMClassifierPipeline.py</code></p>
+<p>ML classifier training pipeline using Dask DataFrames with sklearn integration.</p>
+<h4 id="features_3">Features</h4>
+<ul>
+<li><strong>Lazy evaluation</strong> - Builds computation graph, executes on <code>.compute()</code></li>
+<li><strong>sklearn compatibility</strong> - Auto-converts to pandas before training</li>
+<li><strong>Multiple classifiers</strong> - RandomForest, DecisionTree, KNeighbors</li>
+<li><strong>Attack labeling</strong> - Binary classification (normal vs attacker)</li>
+</ul>
+<h4 id="usage-example_3">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">MachineLearning.DaskMClassifierPipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskMClassifierPipeline</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">dask.dataframe</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dd</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Load cleaned, attacked data</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">data</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;cleaned_data.parquet&quot;</span><span class="p">)</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="c1"># Train classifier</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">DaskMClassifierPipeline</span><span class="p">()</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">results</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">run_classifier</span><span class="p">(</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">classifier_type</span><span class="o">=</span><span class="s1">&#39;RandomForest&#39;</span><span class="p">,</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="p">)</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;F1 Score: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;f1_score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_3">API Reference</h4>
+<h5 id="run_classifierdata-classifier_type-test_size-random_state-dict"><code>run_classifier(data, classifier_type, test_size, random_state) -&gt; dict</code></h5>
+<p>Trains ML classifier and returns performance metrics.</p>
+<p><strong>Parameters:</strong>
+- <code>data</code> (dd.DataFrame): Dask DataFrame with features and <code>isAttacker</code> label
+- <code>classifier_type</code> (str): One of <code>'RandomForest'</code>, <code>'DecisionTree'</code>, <code>'KNeighbors'</code>
+- <code>test_size</code> (float or int): Test set size (0-1 for fraction, &gt;1 for count)
+- <code>random_state</code> (int): Random seed for reproducibility</p>
+<p><strong>Returns:</strong>
+- <code>dict</code>: Results with keys:
+  - <code>accuracy</code> (float)
+  - <code>precision</code> (float)
+  - <code>recall</code> (float)
+  - <code>f1_score</code> (float)
+  - <code>confusion_matrix</code> (array)
+  - <code>train_size</code> (int)
+  - <code>test_size</code> (int)</p>
+<p><strong>Notes:</strong>
+- Automatically calls <code>.compute()</code> before sklearn training
+- Drops non-numeric columns automatically
+- Requires <code>isAttacker</code> column for labels</p>
+<hr />
+<p><a name="data-layer"></a></p>
+<h2 id="data-layer">Data Layer</h2>
+<p><a name="daskdatagatherer"></a></p>
+<h3 id="daskdatagatherer">DaskDataGatherer</h3>
+<p><strong>Module:</strong> <code>Gatherer/DaskDataGatherer.py</code></p>
+<p>Dask-based data loading with Parquet caching.</p>
+<h4 id="usage-example_4">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Gatherer.DaskDataGatherer</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskDataGatherer</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">gatherer</span> <span class="o">=</span> <span class="n">DaskDataGatherer</span><span class="p">()</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">data</span> <span class="o">=</span> <span class="n">gatherer</span><span class="o">.</span><span class="n">gather_data</span><span class="p">()</span>  <span class="c1"># Returns dd.DataFrame</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1"># Lazy evaluation - no computation yet</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="n">filtered</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="c1"># Trigger computation</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="n">result</span> <span class="o">=</span> <span class="n">filtered</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>  <span class="c1"># Returns pandas DataFrame</span>
+</span></code></pre></div>
+<h4 id="api-reference_4">API Reference</h4>
+<h5 id="gather_data-dddataframe"><code>gather_data() -&gt; dd.DataFrame</code></h5>
+<p>Gathers BSM data from source file with automatic Parquet caching.</p>
+<p><strong>Returns:</strong>
+- <code>dd.DataFrame</code>: Lazy Dask DataFrame</p>
+<p><strong>Caching:</strong>
+- First call: Reads CSV, caches as Parquet
+- Subsequent calls: Loads from Parquet (10x faster)</p>
+<p><strong>Configuration:</strong>
+- Source file: Set via dependency injection
+- Blocksize: 128MB default
+- Partitions: Auto-calculated</p>
+<hr />
+<p><a name="daskconnecteddrivingcleaner"></a></p>
+<h3 id="daskconnecteddrivingcleaner">DaskConnectedDrivingCleaner</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskConnectedDrivingCleaner.py</code></p>
+<p>Core data cleaner for BSM datasets.</p>
+<h4 id="features_4">Features</h4>
+<ul>
+<li>Drops invalid records (speed &lt; 0, missing coordinates)</li>
+<li>Converts hex IDs to integers</li>
+<li>Standardizes column types</li>
+<li>Handles timestamp parsing</li>
+</ul>
+<h4 id="usage-example_5">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskConnectedDrivingCleaner</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskConnectedDrivingCleaner</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">dask.dataframe</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dd</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">data</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;raw_data.csv&quot;</span><span class="p">)</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskConnectedDrivingCleaner</span><span class="p">()</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="n">cleaned</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># Count removed records</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="n">original_count</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="n">cleaned_count</span> <span class="o">=</span> <span class="n">cleaned</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed </span><span class="si">{</span><span class="n">original_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cleaned_count</span><span class="si">}</span><span class="s2"> invalid records&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_5">API Reference</h4>
+<h5 id="cleandata-dddataframe-dddataframe"><code>clean(data: dd.DataFrame) -&gt; dd.DataFrame</code></h5>
+<p>Cleans raw BSM data.</p>
+<p><strong>Parameters:</strong>
+- <code>data</code> (dd.DataFrame): Raw Dask DataFrame</p>
+<p><strong>Returns:</strong>
+- <code>dd.DataFrame</code>: Cleaned DataFrame</p>
+<p><strong>Cleaning Operations:</strong>
+1. Drop records with <code>speed &lt; 0</code>
+2. Drop records with missing <code>latitude</code>/<code>longitude</code>
+3. Convert hex <code>deviceId</code> to integer
+4. Parse timestamp fields
+5. Standardize column types</p>
+<hr />
+<p><a name="daskcleanwithtimestamps"></a></p>
+<h3 id="daskcleanwithtimestamps">DaskCleanWithTimestamps</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanWithTimestamps.py</code></p>
+<p>Cleaner with timestamp-based filtering.</p>
+<h4 id="usage-example_6">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanWithTimestamps</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanWithTimestamps</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanWithTimestamps</span><span class="p">(</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;2023-01-01 00:00:00&quot;</span><span class="p">,</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">end_time</span><span class="o">=</span><span class="s2">&quot;2023-12-31 23:59:59&quot;</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="p">)</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="n">cleaned</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_6">API Reference</h4>
+<h5 id="__init__start_time-str-end_time-str"><code>__init__(start_time: str, end_time: str)</code></h5>
+<p><strong>Parameters:</strong>
+- <code>start_time</code> (str): ISO format timestamp
+- <code>end_time</code> (str): ISO format timestamp</p>
+<h5 id="cleandata-dddataframe-dddataframe_1"><code>clean(data: dd.DataFrame) -&gt; dd.DataFrame</code></h5>
+<p>Filters data to timestamp range.</p>
+<hr />
+<p><a name="daskconnecteddrivinglargedatacleaner"></a></p>
+<h3 id="daskconnecteddrivinglargedatacleaner">DaskConnectedDrivingLargeDataCleaner</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskConnectedDrivingLargeDataCleaner.py</code></p>
+<p>Wrapper for applying spatial/temporal filtering to large datasets.</p>
+<h4 id="usage-example_7">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskConnectedDrivingLargeDataCleaner</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskConnectedDrivingLargeDataCleaner</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskConnectedDrivingLargeDataCleaner</span><span class="p">(</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">filter_type</span><span class="o">=</span><span class="s2">&quot;xy_offset_position&quot;</span><span class="p">,</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">distance</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">center_x</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">center_y</span><span class="o">=</span><span class="mi">4500000</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="p">)</span>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="n">cleaned</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_7">API Reference</h4>
+<h5 id="__init__filter_type-str-filter_params"><code>__init__(filter_type: str, **filter_params)</code></h5>
+<p><strong>Parameters:</strong>
+- <code>filter_type</code> (str): One of <code>'passthrough'</code>, <code>'xy_offset_position'</code>, <code>'bounding_box'</code>
+- <code>**filter_params</code>: Filter-specific parameters</p>
+<h5 id="cleandata-dddataframe-dddataframe_2"><code>clean(data: dd.DataFrame) -&gt; dd.DataFrame</code></h5>
+<p>Applies configured filtering.</p>
+<hr />
+<p><a name="filtering-components"></a></p>
+<h2 id="filtering-components">Filtering Components</h2>
+<p><a name="daskcleanerwithpassthroughfilter"></a></p>
+<h3 id="daskcleanerwithpassthroughfilter">DaskCleanerWithPassthroughFilter</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanerWithPassthroughFilter.py</code></p>
+<p>No-op filter (returns data unchanged).</p>
+<h4 id="usage">Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanerWithPassthroughFilter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanerWithPassthroughFilter</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanerWithPassthroughFilter</span><span class="p">()</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># Returns data as-is</span>
+</span></code></pre></div>
+<hr />
+<p><a name="daskcleanerwithfilterwithinrange"></a></p>
+<h3 id="daskcleanerwithfilterwithinrange">DaskCleanerWithFilterWithinRange</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanerWithFilterWithinRange.py</code></p>
+<p>Filters records within distance from center point.</p>
+<h4 id="usage_1">Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanerWithFilterWithinRange</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanerWithFilterWithinRange</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanerWithFilterWithinRange</span><span class="p">(</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">distance</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>  <span class="c1"># meters</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">center_x</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    <span class="n">center_y</span><span class="o">=</span><span class="mi">4500000</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="p">)</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="n">filtered</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a name="daskcleanerwithfilterwithinrangexy"></a></p>
+<h3 id="daskcleanerwithfilterwithinrangexy">DaskCleanerWithFilterWithinRangeXY</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanerWithFilterWithinRangeXY.py</code></p>
+<p>Filters using XY offset (rectangular bounding box).</p>
+<h4 id="usage_2">Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanerWithFilterWithinRangeXY</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanerWithFilterWithinRangeXY</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanerWithFilterWithinRangeXY</span><span class="p">(</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="n">x_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="n">y_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="n">center_x</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    <span class="n">center_y</span><span class="o">=</span><span class="mi">4500000</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="p">)</span>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="n">filtered</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a name="daskcleanerwithfilterwithinrangexyandday"></a></p>
+<h3 id="daskcleanerwithfilterwithinrangexyandday">DaskCleanerWithFilterWithinRangeXYAndDay</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanerWithFilterWithinRangeXYAndDay.py</code></p>
+<p>Filters by XY offset and specific day.</p>
+<h4 id="usage_3">Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanerWithFilterWithinRangeXYAndDay</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanerWithFilterWithinRangeXYAndDay</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanerWithFilterWithinRangeXYAndDay</span><span class="p">(</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="n">x_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>    <span class="n">y_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="n">center_x</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">center_y</span><span class="o">=</span><span class="mi">4500000</span><span class="p">,</span>
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    <span class="n">day</span><span class="o">=</span><span class="mi">15</span>  <span class="c1"># Day of month</span>
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="p">)</span>
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="n">filtered</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a name="daskcleanerwithfilterwithinrangexyanddaterange"></a></p>
+<h3 id="daskcleanerwithfilterwithinrangexyanddaterange">DaskCleanerWithFilterWithinRangeXYAndDateRange</h3>
+<p><strong>Module:</strong> <code>Cleaners/DaskCleanerWithFilterWithinRangeXYAndDateRange.py</code></p>
+<p>Filters by XY offset and date range.</p>
+<h4 id="usage_4">Usage</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Cleaners.DaskCleanerWithFilterWithinRangeXYAndDateRange</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskCleanerWithFilterWithinRangeXYAndDateRange</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskCleanerWithFilterWithinRangeXYAndDateRange</span><span class="p">(</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="n">x_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="n">y_offset</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    <span class="n">center_x</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>    <span class="n">center_y</span><span class="o">=</span><span class="mi">4500000</span><span class="p">,</span>
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2023-01-01&quot;</span><span class="p">,</span>
+</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    <span class="n">end_date</span><span class="o">=</span><span class="s2">&quot;2023-12-31&quot;</span>
+</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="p">)</span>
+</span><span id="__span-27-11"><a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="n">filtered</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a name="ml-components"></a></p>
+<h2 id="ml-components">ML Components</h2>
+<p><a name="daskmconnecteddrivingdatacleaner"></a></p>
+<h3 id="daskmconnecteddrivingdatacleaner">DaskMConnectedDrivingDataCleaner</h3>
+<p><strong>Module:</strong> <code>MachineLearning/DaskMConnectedDrivingDataCleaner.py</code></p>
+<p>Prepares data for ML training (feature engineering, column selection).</p>
+<h4 id="features_5">Features</h4>
+<ul>
+<li>Hex ID conversion</li>
+<li>Column selection (4 feature sets)</li>
+<li>Missing value handling</li>
+<li>Type standardization</li>
+</ul>
+<h4 id="usage-example_8">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">MachineLearning.DaskMConnectedDrivingDataCleaner</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskMConnectedDrivingDataCleaner</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">cleaner</span> <span class="o">=</span> <span class="n">DaskMConnectedDrivingDataCleaner</span><span class="p">(</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="n">column_set</span><span class="o">=</span><span class="s1">&#39;minimal_xy_elev&#39;</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="p">)</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="n">ml_ready</span> <span class="o">=</span> <span class="n">cleaner</span><span class="o">.</span><span class="n">clean</span><span class="p">(</span><span class="n">attacked_data</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_8">API Reference</h4>
+<h5 id="__init__column_set-str-minimal_xy_elev"><code>__init__(column_set: str = 'minimal_xy_elev')</code></h5>
+<p><strong>Parameters:</strong>
+- <code>column_set</code> (str): One of <code>'minimal_xy_elev'</code>, <code>'standard'</code>, <code>'full_standard'</code>, <code>'all_available'</code></p>
+<h5 id="cleandata-dddataframe-dddataframe_3"><code>clean(data: dd.DataFrame) -&gt; dd.DataFrame</code></h5>
+<p>Prepares data for ML training.</p>
+<p><strong>Returns:</strong>
+- <code>dd.DataFrame</code>: ML-ready features + <code>isAttacker</code> label</p>
+<hr />
+<p><a name="daskconnecteddrivingattacker"></a></p>
+<h3 id="daskconnecteddrivingattacker">DaskConnectedDrivingAttacker</h3>
+<p><strong>Module:</strong> <code>Attacks/DaskConnectedDrivingAttacker.py</code></p>
+<p>Simulates position falsification attacks on BSM data.</p>
+<h4 id="features_6">Features</h4>
+<ul>
+<li>7 attack types (rand_offset, const_offset, position_swap, etc.)</li>
+<li>Configurable attacker percentage</li>
+<li>Random seed support</li>
+<li>Adds <code>isAttacker</code> label column</li>
+</ul>
+<h4 id="usage-example_9">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Attacks.DaskConnectedDrivingAttacker</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskConnectedDrivingAttacker</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="n">attacker</span> <span class="o">=</span> <span class="n">DaskConnectedDrivingAttacker</span><span class="p">(</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="n">attack_type</span><span class="o">=</span><span class="s1">&#39;rand_offset&#39;</span><span class="p">,</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="n">attacker_percentage</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="n">min_distance</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    <span class="n">max_distance</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>    <span class="n">random_seed</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="p">)</span>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="n">attacked_data</span> <span class="o">=</span> <span class="n">attacker</span><span class="o">.</span><span class="n">add_attackers</span><span class="p">(</span><span class="n">clean_data</span><span class="p">)</span>
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>
+</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="c1"># Check attack statistics</span>
+</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="n">total</span> <span class="o">=</span> <span class="n">attacked_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a><span class="n">attackers</span> <span class="o">=</span> <span class="n">attacked_data</span><span class="p">[</span><span class="n">attacked_data</span><span class="p">[</span><span class="s1">&#39;isAttacker&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-29-15"><a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attackers: </span><span class="si">{</span><span class="n">attackers</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">attackers</span><span class="o">/</span><span class="n">total</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="api-reference_9">API Reference</h4>
+<h5 id="__init__attack_type-str-attacker_percentage-float-attack_params"><code>__init__(attack_type: str, attacker_percentage: float, **attack_params)</code></h5>
+<p><strong>Parameters:</strong>
+- <code>attack_type</code> (str): Attack type (see table below)
+- <code>attacker_percentage</code> (float): Fraction of attackers (0.0-1.0)
+- <code>random_seed</code> (int, optional): For reproducibility
+- <code>**attack_params</code>: Attack-specific parameters</p>
+<h5 id="add_attackersdata-dddataframe-dddataframe"><code>add_attackers(data: dd.DataFrame) -&gt; dd.DataFrame</code></h5>
+<p>Applies attack simulation.</p>
+<p><strong>Returns:</strong>
+- <code>dd.DataFrame</code>: Data with <code>isAttacker</code> column (0=normal, 1=attacker)</p>
+<h5 id="attack-parameters-by-type">Attack Parameters by Type</h5>
+<table>
+<thead>
+<tr>
+<th>Attack Type</th>
+<th>Required Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rand_offset</code></td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>const_offset_per_id</code></td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>rand_position</code></td>
+<td><code>min_distance</code>, <code>max_distance</code></td>
+</tr>
+<tr>
+<td><code>position_swap</code></td>
+<td>None (optional: <code>swap_distance</code>)</td>
+</tr>
+<tr>
+<td><code>const_offset</code></td>
+<td><code>offset_x</code>, <code>offset_y</code></td>
+</tr>
+<tr>
+<td><code>override_const</code></td>
+<td><code>target_x</code>, <code>target_y</code></td>
+</tr>
+<tr>
+<td><code>override_rand</code></td>
+<td><code>min_x</code>, <code>max_x</code>, <code>min_y</code>, <code>max_y</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a name="utilities"></a></p>
+<h2 id="utilities">Utilities</h2>
+<p><a name="daskudfregistry"></a></p>
+<h3 id="daskudfregistry">DaskUDFRegistry</h3>
+<p><strong>Module:</strong> <code>Helpers/DaskUDFs/DaskUDFRegistry.py</code></p>
+<p>Registry of Dask user-defined functions for common operations.</p>
+<h4 id="available-functions">Available Functions</h4>
+<ul>
+<li><code>haversine_distance(lat1, lon1, lat2, lon2)</code> - Great circle distance</li>
+<li><code>euclidean_distance_2d(x1, y1, x2, y2)</code> - Planar distance</li>
+<li><code>bearing(lat1, lon1, lat2, lon2)</code> - Heading between points</li>
+<li><code>hex_to_int(hex_str)</code> - Hex string to integer</li>
+<li><code>timestamp_to_unix(timestamp)</code> - Timestamp to epoch</li>
+</ul>
+<h4 id="usage-example_10">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Helpers.DaskUDFs.DaskUDFRegistry</span><span class="w"> </span><span class="kn">import</span> <span class="n">DaskUDFRegistry</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">dask.dataframe</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dd</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Register functions</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="n">registry</span> <span class="o">=</span> <span class="n">DaskUDFRegistry</span><span class="p">()</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="n">registry</span><span class="o">.</span><span class="n">register_all</span><span class="p">()</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="c1"># Use in Dask operations</span>
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="n">data</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">haversine_distance</span><span class="p">(</span>
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lat1&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lon1&#39;</span><span class="p">],</span>
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lat2&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lon2&#39;</span><span class="p">]</span>
+</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>For complete UDF documentation, see <a href="../Helpers/DaskUDFs/README.md">Helpers/DaskUDFs/README.md</a>.</p>
+<hr />
+<p><a name="testing"></a></p>
+<h2 id="testing">Testing</h2>
+<p><a name="daskfixtures"></a></p>
+<h3 id="daskfixtures">DaskFixtures</h3>
+<p><strong>Module:</strong> <code>Test/DaskFixtures.py</code></p>
+<p>Pytest fixtures for Dask testing.</p>
+<h4 id="available-fixtures">Available Fixtures</h4>
+<ul>
+<li><code>dask_client</code> - Configured Dask client</li>
+<li><code>sample_dask_dataframe</code> - Small test DataFrame</li>
+<li><code>large_dask_dataframe</code> - 100k row test DataFrame</li>
+</ul>
+<h4 id="usage-example_11">Usage Example</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Test.DaskFixtures</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_pipeline</span><span class="p">(</span><span class="n">dask_client</span><span class="p">,</span> <span class="n">sample_dask_dataframe</span><span class="p">):</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    <span class="c1"># Test with pre-configured client and data</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">my_pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sample_dask_dataframe</span><span class="p">)</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+</span></code></pre></div>
+<hr />
+<h2 id="performance-guidelines">Performance Guidelines</h2>
+<h3 id="memory-management">Memory Management</h3>
+<p><strong>Rule of thumb:</strong> Each worker needs ~8GB for 15M row datasets</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Recommended configuration</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="n">n_workers</span> <span class="o">=</span> <span class="mi">6</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="n">memory_per_worker</span> <span class="o">=</span> <span class="s1">&#39;8GB&#39;</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">total_memory_required</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># GB</span>
+</span></code></pre></div>
+<p><strong>Monitor memory:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">mem</span> <span class="o">=</span> <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">get_memory_usage</span><span class="p">()</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="k">if</span> <span class="n">mem</span><span class="p">[</span><span class="s1">&#39;percent_used&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>    <span class="c1"># Reduce partitions or restart cluster</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>    <span class="n">DaskSessionManager</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+</span></code></pre></div></p>
+<h3 id="caching-best-practices">Caching Best Practices</h3>
+<p><strong>When to use <code>@DaskParquetCache</code>:</strong>
+- ✅ Expensive operations (file reads, complex joins)
+- ✅ Repeated operations with same inputs
+- ✅ Intermediate pipeline stages</p>
+<p><strong>When NOT to cache:</strong>
+- ❌ Cheap operations (simple filters, column selection)
+- ❌ One-time operations
+- ❌ Operations on small DataFrames (&lt;1000 rows)</p>
+<p><strong>Cache hit rate target:</strong> ≥85% for iterative workflows</p>
+<h3 id="partitioning-guidelines">Partitioning Guidelines</h3>
+<p><strong>Partition size recommendations:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Dataset Size</th>
+<th>Recommended Partitions</th>
+<th>Blocksize</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1M rows</td>
+<td>20-30</td>
+<td>64MB</td>
+</tr>
+<tr>
+<td>5M rows</td>
+<td>40-50</td>
+<td>128MB</td>
+</tr>
+<tr>
+<td>15M rows</td>
+<td>60-80</td>
+<td>128MB</td>
+</tr>
+<tr>
+<td>50M+ rows</td>
+<td>100-120</td>
+<td>256MB</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Configure partitions:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># In DaskPipelineRunner config</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="p">{</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>    <span class="s2">&quot;partitions&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>  <span class="c1"># For 15M rows</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    <span class="o">...</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>  <span class="p">}</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<h3 id="computation-best-practices">Computation Best Practices</h3>
+<p><strong>Avoid eager evaluation:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># ❌ Bad: Forces computation multiple times</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="n">count</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="n">mean</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="n">max_val</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="c1"># ✅ Good: Build graph, compute once</span>
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>    <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span>
+</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>    <span class="s1">&#39;speed_mean&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>    <span class="s1">&#39;speed_max&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">)</span>
+</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a><span class="p">})</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span></code></pre></div></p>
+<p><strong>Use persist() for reused DataFrames:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1"># If data will be used multiple times</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="c1"># Now multiple operations are fast</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="n">filtered1</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="n">filtered2</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;heading&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">180</span><span class="p">]</span>
+</span></code></pre></div></p>
+<hr />
+<h2 id="migration-from-pandas">Migration from Pandas</h2>
+<h3 id="common-patterns">Common Patterns</h3>
+<p><strong>Pandas:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">)</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;deviceId&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</span></code></pre></div></p>
+<p><strong>Dask equivalent:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">df</span> <span class="o">=</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="n">blocksize</span><span class="o">=</span><span class="s1">&#39;128MB&#39;</span><span class="p">)</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;speed&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;deviceId&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="c1">#                                                        ^^^^^^^^^ Add this</span>
+</span></code></pre></div></p>
+<h3 id="key-differences">Key Differences</h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Pandas</th>
+<th>Dask</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read CSV</td>
+<td><code>pd.read_csv()</code></td>
+<td><code>dd.read_csv(..., blocksize='128MB')</code></td>
+</tr>
+<tr>
+<td>Get result</td>
+<td>Direct</td>
+<td>Append <code>.compute()</code></td>
+</tr>
+<tr>
+<td>Length</td>
+<td><code>len(df)</code></td>
+<td><code>df.shape[0].compute()</code></td>
+</tr>
+<tr>
+<td>Unique values</td>
+<td><code>df['col'].unique()</code></td>
+<td><code>df['col'].unique().compute()</code></td>
+</tr>
+<tr>
+<td>Iteration</td>
+<td><code>for row in df.iterrows()</code></td>
+<td>Not recommended (use map_partitions)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sklearn-integration">sklearn Integration</h3>
+<p>Always compute before sklearn:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># ❌ Wrong</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dask_df</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">dask_df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">])</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="c1"># ✅ Correct</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="n">X</span> <span class="o">=</span> <span class="n">dask_df</span><span class="p">[</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="n">y</span> <span class="o">=</span> <span class="n">dask_df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="common-errors">Common Errors</h3>
+<p><strong>1. <code>TypeError: expected DataFrame, got DataFrame</code></strong>
+- <strong>Cause:</strong> Passing Dask DataFrame to pandas/sklearn function
+- <strong>Solution:</strong> Call <code>.compute()</code> first</p>
+<p><strong>2. <code>MemoryError</code> or <code>KilledWorker</code></strong>
+- <strong>Cause:</strong> Partition too large, exceeded worker memory
+- <strong>Solution:</strong> Increase partitions or reduce blocksize</p>
+<p><strong>3. <code>KeyError: 'column_name'</code></strong>
+- <strong>Cause:</strong> Column doesn't exist (check case sensitivity)
+- <strong>Solution:</strong> Use <code>data.columns.tolist()</code> to verify</p>
+<p><strong>4. Low cache hit rate (&lt;50%)</strong>
+- <strong>Cause:</strong> Cache keys changing (arguments or code modified)
+- <strong>Solution:</strong> Check <code>cache_variables</code> parameter</p>
+<p>For comprehensive troubleshooting, see <a href="Troubleshooting_Guide.html">Troubleshooting_Guide.md</a>.</p>
+<hr />
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><strong>Configuration Guide:</strong> <a href="DaskPipelineRunner_Configuration_Guide.html">DaskPipelineRunner_Configuration_Guide.md</a></li>
+<li><strong>Troubleshooting:</strong> <a href="Troubleshooting_Guide.html">Troubleshooting_Guide.md</a></li>
+<li><strong>UDF Documentation:</strong> <a href="../Helpers/DaskUDFs/README.md">Helpers/DaskUDFs/README.md</a></li>
+<li><strong>Main README:</strong> <a href="../README.md">README.md</a></li>
+<li><strong>Example Configs:</strong> <a href="../MClassifierPipelines/configs/">MClassifierPipelines/configs/</a></li>
+</ul>
+<hr />
+<p><strong>Document Version:</strong> 1.0.0
+<strong>Last Updated:</strong> 2026-01-18
+<strong>Maintained by:</strong> ConnectedDrivingPipelineV4 Development Team</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["content.code.copy", "content.code.annotate", "search.suggest", "search.highlight", "search.share"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="javascripts/extra.js"></script>
+      
+    
+  </body>
+</html>
